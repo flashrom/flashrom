@@ -202,11 +202,15 @@ int probe_spi_res1(struct flashctx *flash)
 	/* Check if RDID is usable and does not return 0xff 0xff 0xff or
 	 * 0x00 0x00 0x00. In that case, RES is pointless.
 	 */
-	if (!spi_rdid(flash, readarr, 3) && memcmp(readarr, allff, 3) &&
-	    memcmp(readarr, all00, 3)) {
+	if ((!id_cache[RDID].is_cached && !spi_rdid(flash, readarr, 3) // If RDID is not in cache, read it
+		&& memcmp(readarr, allff, 3) && memcmp(readarr, all00, 3))
+	    ||
+	    (id_cache[RDID].is_cached
+	     && memcmp(id_cache[RDID].bytes, allff, 3) && memcmp(id_cache[RDID].bytes, all00, 3))) {
 		msg_cdbg("Ignoring RES in favour of RDID.\n");
 		return 0;
 	}
+
 	/* Check if REMS is usable and does not return 0xff 0xff or
 	 * 0x00 0x00. In that case, RES is pointless.
 	 */

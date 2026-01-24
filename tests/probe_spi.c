@@ -219,11 +219,10 @@ void probe_jedec_rdid3_try_all_flashchips(void **state)
 
 	print_probing_results(probe_io_state);
 
+	assert_int_equal(probe_io_state.opcode_counter, PROBE_COUNT_JEDEC_RDID_3);
 	// FIXME: change to assert_int_equal after caching is fully implemented.
 	// At the moment the number of opcode calls are greater than, because not all
 	// probing functions are using cache.
-	assert_true((probe_io_state.opcode_counter >= PROBE_COUNT_JEDEC_RDID_3)
-			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
@@ -249,11 +248,10 @@ void probe_jedec_rdid3_no_matches_found(void **state)
 	print_probing_results(probe_io_state);
 
 	/* No matches, but we needed to go through everything to discover that. */
+	assert_int_equal(probe_io_state.opcode_counter, PROBE_COUNT_JEDEC_RDID_3);
 	// FIXME: change to assert_int_equal after caching is fully implemented.
 	// At the moment the number of opcode calls are greater than, because not all
 	// probing functions are using cache.
-	assert_true((probe_io_state.opcode_counter >= PROBE_COUNT_JEDEC_RDID_3)
-		       && (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 			&& (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
