@@ -49,6 +49,8 @@ void probe_jedec_rdid3_fixed_chipname(void **state);
 void probe_jedec_rdid3_try_all_flashchips(void **state);
 void probe_jedec_rdid3_no_matches_found(void **state);
 void probe_jedec_res1_fixed_chipname(void **state);
+void probe_jedec_res1_try_all_flashchips(void **state);
+void probe_jedec_res1_no_matches_found(void **state);
 
 /* lifecycle.c */
 void dummy_basic_lifecycle_test_success(void **state);

@@ -293,9 +293,86 @@ void probe_jedec_res1_fixed_chipname(void **state)
 	assert_int_equal(3, probe_io_state.counter);
 }
 
+void probe_jedec_res1_try_all_flashchips(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= JEDEC_RES,
+		.readcount		= JEDEC_RES_INSIZE,
+		.writecount		= JEDEC_RES_OUTSIZE,
+		/* readarr[0] is used as chip model ID for probe_spi_res1,
+		 * unlike other probing functions which use readarr[0] as vendor ID. */
+		.vendor_id		= 0x05, /* ST_M25P05_RES */
+		.model_id_left_byte	= 0xff, /* Not used for M25P05 */
+		.model_id_right_byte	= 0xff, /* Not used for M25P05 */
+	};
+	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/null", NULL },
+		.flags = { O_RDWR },
+	};
+	const struct io_mock linux_spi_io = {
+		.state		= &probe_io_state,
+		.iom_fgets	= linux_spi_fgets,
+		.iom_ioctl	= probe_handler,
+		.fallback_open_state = &linux_spi_fallback_open_state,
+	};
+
+	const char *expected_matched_names[1] = {"M25P05"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_in_range(probe_io_state.opcode_counter, PROBE_COUNT_JEDEC_RES_1, flashchips_size);
+	assert_in_range(probe_io_state.counter, PROBE_COUNT_ALL_SPI_OPCODES, flashchips_size);
+}
+
+void probe_jedec_res1_no_matches_found(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= JEDEC_RES,
+		.readcount		= JEDEC_RES_INSIZE,
+		.writecount		= JEDEC_RES_OUTSIZE,
+		/* The values below represent non-existent chip. */
+		.vendor_id		= 0x00,
+		.model_id_left_byte	= 0xff,
+		.model_id_right_byte	= 0xff,
+	};
+	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/null", NULL },
+		.flags = { O_RDWR },
+	};
+	const struct io_mock linux_spi_io = {
+		.state		= &probe_io_state,
+		.iom_fgets	= linux_spi_fgets,
+		.iom_ioctl	= probe_handler,
+		.fallback_open_state = &linux_spi_fallback_open_state,
+	};
+
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				NULL, 0);
+
+	print_probing_results(probe_io_state);
+
+	/* No matches, but we need to go through everything to find that out. */
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_in_range(probe_io_state.opcode_counter, PROBE_COUNT_JEDEC_RES_1, flashchips_size);
+	assert_in_range(probe_io_state.counter, PROBE_COUNT_ALL_SPI_OPCODES, flashchips_size);
+}
+
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
 	SKIP_TEST(probe_jedec_rdid3_try_all_flashchips)
 	SKIP_TEST(probe_jedec_rdid3_no_matches_found)
 	SKIP_TEST(probe_jedec_res1_fixed_chipname)
+	SKIP_TEST(probe_jedec_res1_try_all_flashchips)
+	SKIP_TEST(probe_jedec_res1_no_matches_found)
 #endif /* CONFIG_LINUX_SPI */

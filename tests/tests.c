@@ -500,6 +500,8 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(probe_jedec_rdid3_try_all_flashchips),
 		cmocka_unit_test(probe_jedec_rdid3_no_matches_found),
 		cmocka_unit_test(probe_jedec_res1_fixed_chipname),
+		cmocka_unit_test(probe_jedec_res1_try_all_flashchips),
+		cmocka_unit_test(probe_jedec_res1_no_matches_found),
 	};
 	ret |= cmocka_run_group_tests_name("probe_spi.c tests", probe_spi_tests, NULL, NULL);
 
