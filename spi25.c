@@ -22,6 +22,7 @@ enum id_type {
 	RDID,
 	RDID4,
 	REMS,
+	RES1,
 	RES2,
 	AT25F,
 	NUM_ID_TYPES,
@@ -221,11 +222,13 @@ int probe_spi_res1(struct flashctx *flash)
 		return 0;
 	}
 
-	if (spi_res(flash, readarr, 1)) {
-		return 0;
+	if (!id_cache[RES1].is_cached) {
+		if (spi_res(flash, id_cache[RES1].bytes, 1))
+			return 0;
+		id_cache[RES1].is_cached = true;
 	}
 
-	id2 = readarr[0];
+	id2 = id_cache[RES1].bytes[0];
 
 	msg_cdbg("%s: id 0x%"PRIx32"\n", __func__, id2);
 
