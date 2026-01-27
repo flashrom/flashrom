@@ -410,6 +410,22 @@ int check_for_unwritable_regions(const struct flashctx *flash, unsigned int star
 }
 
 #ifdef FLASHROM_TEST
+dieselect_func_t *g_test_dieselect_injector;
+#endif
+
+static dieselect_func_t *lookup_dieselect_func_ptr(const struct flashchip *chip)
+{
+	switch (chip->die_select) {
+#ifdef FLASHROM_TEST
+		case TEST_DIESELECT_INJECTOR: return g_test_dieselect_injector;
+#endif
+		case NO_DIESELECT_FUNC: return NULL;
+	};
+
+	return NULL;
+}
+
+#ifdef FLASHROM_TEST
 /* special unit-test hooks */
 erasefunc_t *g_test_erase_injector[NUM_TEST_ERASE_INJECTORS];
 #endif
@@ -1177,6 +1193,19 @@ static int selfcheck_chip(const struct flashchip *chip)
 	}
 	if (selfcheck_eraseblocks(chip))
 		ret = 1;
+	if (chip->die_size == 0) {
+		if (chip->die_select != NO_DIESELECT_FUNC){
+			ret = 1;
+			msg_gerr("ERROR: die_select is set for flash chip '%s' "
+			"while die_size is not set.\n", name);
+		}
+	} else {
+		if (chip->die_select == NO_DIESELECT_FUNC){
+			ret = 1;
+			msg_gerr("ERROR: die_size is set for flash chip '%s' "
+			"while die_select is not set.\n", name);
+		}
+	}
 	return ret;
 }
 
@@ -1776,6 +1805,31 @@ static int chip_safety_check(const struct flashctx *flash, int force,
 	return 0;
 }
 
+static int multi_die_sanity_check(const struct flashctx *flash)
+{
+	const struct flashchip *chip = flash->chip;
+
+	if (chip->die_select == NO_DIESELECT_FUNC) {
+		if (chip->die_size) {
+			msg_cerr("flashrom has die_size defined but die_select "
+				 "not defined in %s definition\n", chip->name);
+			return 1;
+		}
+	} else {
+		if (!chip->die_size) {
+			msg_cerr("flashrom has die_select defined but die_size "
+				 "not defined in %s definition\n", chip->name);
+			return 1;
+		}
+		if (!lookup_dieselect_func_ptr(chip)) {
+			msg_cerr("flashrom has no die select function for enum "
+				 "value used in %s definition\n", chip->name);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 static int restore_flash_wp(struct flashctx *const flash, void *data)
 {
 	struct flashrom_wp_cfg *wp_cfg = data;
@@ -1905,6 +1959,11 @@ int prepare_flash_access(struct flashctx *const flash,
 			 const bool erase_it, const bool verify_it)
 {
 	if (chip_safety_check(flash, flash->flags.force, read_it, write_it, erase_it, verify_it)) {
+		msg_cerr("Aborting.\n");
+		return 1;
+	}
+
+	if (multi_die_sanity_check(flash)) {
 		msg_cerr("Aborting.\n");
 		return 1;
 	}

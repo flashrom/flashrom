@@ -428,6 +428,15 @@ enum printlock_func {
 typedef int (printlockfunc_t)(struct flashctx *flash);
 printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash);
 
+/* Die selection function for multi-die chips */
+enum dieselect_func {
+	NO_DIESELECT_FUNC = 0,
+#ifdef FLASHROM_TEST
+	TEST_DIESELECT_INJECTOR,
+#endif
+};
+typedef int (dieselect_func_t)(struct flashctx* flash, unsigned int die_num);
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -503,6 +512,12 @@ struct flashchip {
 	} voltage;
 
 	enum write_granularity gran;
+
+	/* Die size in kilobytes. Should be set for multi-die chips not needed otherwise. */
+	unsigned int die_size;
+
+	/* Die selection callback. Should be set for multi-die chips not needed otherwise. */
+	enum dieselect_func die_select;
 
 	struct reg_bit_map {
 		/* Status register protection bit (SRP) */

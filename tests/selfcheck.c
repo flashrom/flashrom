@@ -57,6 +57,9 @@ void selfcheck_flashchips_table(void **state)
 		assert_table(chip->vendor, "chip vendor is null", i, chip->name);
 		assert_table(chip->name, "chip name is null", i, chip->name);
 		assert_table(chip->bustype != BUS_NONE, "chip bustype is BUS_NONE", i, chip->name);
+		assert_table((chip->die_size != 0 && chip->die_select != NO_DIESELECT_FUNC) ||
+				(chip->die_size == 0 && chip->die_select == NO_DIESELECT_FUNC),
+				"die_size and die_select should be both zero or defined", i, chip->name);
 	}
 }
 
