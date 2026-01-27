@@ -10,8 +10,8 @@
  * These utilities abstract different byte orders across the supported hardware platforms.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__ 1
+#ifndef __PLATFORM_ENDIAN_H__
+#define __PLATFORM_ENDIAN_H__ 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -194,4 +194,4 @@ uint32_t read_be32(const void *base, size_t offset);
  */
 uint64_t read_be64(const void *base, size_t offset);
 
-#endif /* !__PLATFORM_H__ */
+#endif /* !__PLATFORM_ENDIAN_H__ */

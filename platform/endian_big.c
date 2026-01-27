@@ -5,7 +5,7 @@
  * SPDX-FileCopyrightText: 2022 secunet Security Networks AG and Thomas Heijligen <thomas.heijligen@secunet.com>
  */
 
-#include "platform.h"
+#include "platform/endian.h"
 #include "platform/swap.h"
 
 /* convert cpu native endian to little endian */

@@ -4,7 +4,7 @@
  * SPDX-FileCopyrightText: 2016 secunet Security Networks AG and Thomas Heijligen <thomas.heijligen@secunet.com>
  */
 
-#include "platform.h"
+#include "platform/endian.h"
 
 /*
  * macro to return endian aware read function

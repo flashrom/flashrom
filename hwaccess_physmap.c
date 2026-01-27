@@ -16,7 +16,7 @@
 #include <string.h>
 #include <errno.h>
 #include "flash.h"
-#include "platform.h"
+#include "platform/endian.h"
 #include "hwaccess_physmap.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)

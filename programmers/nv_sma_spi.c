@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <libusb.h>
 #include <errno.h>
-#include "platform.h"
+#include "platform/endian.h"
 #include "programmer.h"
 #include "flash.h"
 #include "usb_device.h"

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <libusb.h>
-#include "platform.h"
+#include "platform/endian.h"
 #include "programmer.h"
 #include "flash.h"
 #include "helpers.h"
