@@ -307,9 +307,12 @@ int fmap_read_from_rom(struct fmap **fmap_out,
 	 * TODO: Since flashrom is often used with high-latency external
 	 * programmers we should not be overly aggressive with bsearch.
 	 */
-	ret = fmap_bsearch_rom(fmap_out, flashctx, rom_offset, len, 256);
+	size_t bsearch_len = (len / FMAP_BSEARCH_MIN_STRIDE) * strlen(FMAP_SIGNATURE);
+	init_progress(flashctx, FLASHROM_PROGRESS_READ, bsearch_len);
+	ret = fmap_bsearch_rom(fmap_out, flashctx, rom_offset, len, FMAP_BSEARCH_MIN_STRIDE);
 	if (ret) {
 		msg_gdbg("Binary search failed, trying linear search...\n");
+		init_progress(flashctx, FLASHROM_PROGRESS_READ, len);
 		ret = fmap_lsearch_rom(fmap_out, flashctx, rom_offset, len);
 	}
 

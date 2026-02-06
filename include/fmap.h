@@ -14,6 +14,7 @@
 #define FMAP_VER_MAJOR		1	/* this header's FMAP minor version */
 #define FMAP_VER_MINOR		1	/* this header's FMAP minor version */
 #define FMAP_STRLEN		32	/* maximum length for strings */
+#define FMAP_BSEARCH_MIN_STRIDE 256	/* for searching for FMAP location on the rom */
 
 struct fmap_area {
 	uint32_t offset;		/* offset relative to base */
