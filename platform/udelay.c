@@ -75,8 +75,15 @@ static void clock_usec_delay(unsigned int usecs) {
 
 #endif /* HAVE_CLOCK_GETTIME == 1 */
 
-/* Not very precise sleep. */
-void internal_sleep(unsigned int usecs)
+/**
+ * @brief Delay for at least the specified number of microseconds, with low precision.
+ * @details
+ * This function will always us an OS-provided sleep()-like function which will usually
+ * save power but may delay for significantly longer than intended, especially if
+ * the delay is very short.
+ * @param usecs The number of microseconds to delay.
+ */
+static void internal_sleep(unsigned int usecs)
 {
 #if IS_WINDOWS
 	Sleep((usecs + 999) / 1000);
