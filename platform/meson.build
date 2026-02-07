@@ -3,13 +3,8 @@ srcs += files(
   'endian_common.c',
   'endian_' + host_machine.endian() + '.c',
 )
-
-if host_machine.endian() == 'little'
-  add_project_arguments('-D__FLASHROM_LITTLE_ENDIAN__=1', language : 'c')
-endif
-if host_machine.endian() == 'big'
-  add_project_arguments('-D__FLASHROM_BIG_ENDIAN__=1', language : 'c')
-endif
+# __FLASHROM_LITTLE_ENDIAN__ / __FLASHROM_BIG_ENDIAN__
+add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_ENDIAN__=1', language : 'c')
 
 # Select an appropriate delay implementation for the target OS
 delay_src = files('udelay.c')
