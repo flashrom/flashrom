@@ -7,11 +7,11 @@ srcs += files(
 add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_ENDIAN__=1', language : 'c')
 
 # Select an appropriate delay implementation for the target OS
-delay_src = files('udelay.c')
 if target_machine.system() == 'dos'
-  delay_src = files('udelay_dos.c')
+  srcs += files('udelay_dos.c')
+else
+  srcs += files('udelay.c')
 endif
-srcs += delay_src
 cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
   get_option('delay_minimum_sleep_us')
 )]
