@@ -5,6 +5,7 @@ Release notes
     :maxdepth: 1
 
     devel
+    v_1_7
     v_1_6
     v_1_5
     v_1_4
