@@ -177,7 +177,12 @@ void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_
 
 	stage_progress->current += increment;
 	if (stage_progress->current > stage_progress->total) {
-		msg_gwarn("Fixing total value of stage %d progress on the fly.", stage);
+		msg_gwarn(" Current progress value %lu exceeds total value %lu for stage [%d]. "
+				"Increasing total to %lu.",
+				stage_progress->current,
+				stage_progress->total,
+				stage,
+				stage_progress->current);
 		stage_progress->total = stage_progress->current;
 	}
 
