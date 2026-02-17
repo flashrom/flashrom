@@ -3641,7 +3641,7 @@
 		.total_size	= 16384,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
-		.tested 	= TEST_UNTESTED,
+		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3713,7 +3713,7 @@
 		.total_size	= 16384,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
-		.tested 	= TEST_UNTESTED,
+		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
