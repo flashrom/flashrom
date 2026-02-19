@@ -3706,7 +3706,7 @@
 
 	{
 		.vendor 	= "Winbond",
-		.name		= "W77Q128NW",
+		.name		= "W77T128NW",
 		.bustype	= BUS_SPI,
 		.manufacture_id = WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W77T128NW,
