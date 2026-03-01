@@ -626,16 +626,29 @@ static char *get_optional_filename(char *argv[])
 	return filename;
 }
 
+/**
+ * @brief Allocate a chip-sized zeroed buffer.
+ *
+ * @param flash  Flash context used to determine buffer size.
+ * @return Pointer to zeroed buffer, or NULL on failure (already logged).
+ */
+static unsigned char *alloc_flashsize_buf(struct flashctx *const flash)
+{
+	size_t size = flashrom_flash_getsize(flash);
+	unsigned char *buf = calloc(size, 1);
+	if (!buf)
+		msg_gerr("Memory allocation failed!\n");
+	return buf;
+}
+
 static int do_read(struct flashctx *const flash, const char *const filename)
 {
 	int ret;
 
 	unsigned long size = flashrom_flash_getsize(flash);
-	unsigned char *buf = calloc(size, sizeof(unsigned char));
-	if (!buf) {
-		msg_gerr("Memory allocation failed!\n");
+	unsigned char *buf = alloc_flashsize_buf(flash);
+	if (!buf)
 		return 1;
-	}
 
 	ret = flashrom_image_read(flash, buf, size);
 	if (ret > 0)
@@ -664,13 +677,11 @@ static int do_write(struct flashctx *const flash, const char *const filename, co
 	const size_t flash_size = flashrom_flash_getsize(flash);
 	int ret = 1;
 
-	uint8_t *const newcontents = malloc(flash_size);
-	uint8_t *const refcontents = referencefile ? malloc(flash_size) : NULL;
+	uint8_t *const newcontents = alloc_flashsize_buf(flash);
+	uint8_t *const refcontents = referencefile ? alloc_flashsize_buf(flash) : NULL;
 
-	if (!newcontents || (referencefile && !refcontents)) {
-		msg_gerr("Out of memory!\n");
+	if (!newcontents || (referencefile && !refcontents))
 		goto _free_ret;
-	}
 
 	/* Read '-w' argument first... */
 	if (filename) {
@@ -702,11 +713,9 @@ static int do_verify(struct flashctx *const flash, const char *const filename)
 	const size_t flash_size = flashrom_flash_getsize(flash);
 	int ret = 1;
 
-	uint8_t *const newcontents = malloc(flash_size);
-	if (!newcontents) {
-		msg_gerr("Out of memory!\n");
+	uint8_t *const newcontents = alloc_flashsize_buf(flash);
+	if (!newcontents)
 		goto _free_ret;
-	}
 
 	/* Read '-v' argument first... */
 	if (filename) {
