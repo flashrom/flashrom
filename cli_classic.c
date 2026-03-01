@@ -1055,7 +1055,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int all_matched_count = 0;
 	const char **all_matched_names = NULL;
-	time_t time_start, time_end;
+	time_t time_start = 0, time_end = 0;
 
 	struct flashctx *context = NULL; /* holds the active detected chip and other info */
 	ret = flashrom_create_context(&context);
