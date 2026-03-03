@@ -14,6 +14,7 @@
 
 #include "programmer.h"
 #include "spi.h"
+#include "platform/i2c.h"
 #include "i2c_helper.h"
 #include "helpers.h"
 

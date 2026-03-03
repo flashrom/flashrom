@@ -6,6 +6,11 @@ srcs += files(
 # __FLASHROM_LITTLE_ENDIAN__ / __FLASHROM_BIG_ENDIAN__
 add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_ENDIAN__=1', language : 'c')
 
+# I2C
+if target_machine.system() == 'linux'
+  srcs += files('i2c_linux.c')
+endif
+
 # Select an appropriate delay implementation for the target OS
 if target_machine.system() == 'dos'
   srcs += files('udelay_dos.c')

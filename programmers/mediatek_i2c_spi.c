@@ -12,6 +12,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "platform/i2c.h"
 #include "i2c_helper.h"
 #include "programmer.h"
 #include "spi.h"
