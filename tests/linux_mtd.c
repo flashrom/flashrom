@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "lifecycle.h"
+#include "helpers.h"
 
 #if CONFIG_LINUX_MTD == 1
 struct linux_mtd_io_state {

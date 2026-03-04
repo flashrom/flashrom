@@ -18,6 +18,7 @@
 #include "spi.h"
 #include "ich_descriptors.h"
 #include "platform/udelay.h"
+#include "helpers.h"
 
 /* Apollo Lake */
 #define APL_REG_FREG12		0xe0	/* 32 Bytes Flash Region 12 */

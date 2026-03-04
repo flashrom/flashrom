@@ -25,6 +25,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "helpers.h"
 
 #define NOT_DONE_YET 1
 

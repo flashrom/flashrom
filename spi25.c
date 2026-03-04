@@ -17,6 +17,7 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
+#include "helpers.h"
 
 enum id_type {
 	RDID,

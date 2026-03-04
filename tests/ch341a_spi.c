@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "lifecycle.h"
+#include "helpers.h"
 
 #if CONFIG_CH341A_SPI == 1
 

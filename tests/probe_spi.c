@@ -14,6 +14,7 @@
  */
 
 #include "lifecycle.h"
+#include "helpers.h"
 
 /*
  * This test does probing based on linux_spi programmer, and therefore the test

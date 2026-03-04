@@ -20,6 +20,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "platform/udelay.h"
+#include "helpers.h"
 
 /*
  * Maximum number of bytes that can be transferred at once via the JTAG

@@ -21,6 +21,7 @@
 #include "hwaccess_x86_io.h"
 #include "spi.h"
 #include "platform/udelay.h"
+#include "helpers.h"
 
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e

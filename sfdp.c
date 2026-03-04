@@ -10,6 +10,7 @@
 #include <string.h>
 #include "spi.h"
 #include "chipdrivers.h"
+#include "helpers.h"
 
 static int spi_sfdp_read_sfdp_chunk(struct flashctx *flash, uint32_t address, uint8_t *buf, int len)
 {

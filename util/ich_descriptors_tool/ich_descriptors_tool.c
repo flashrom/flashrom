@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include "ich_descriptors.h"
+#include "helpers.h"
 /* Some DJGPP builds define __unix__ although they don't support mmap().
  * Cygwin defines __unix__ and supports mmap(), but it does not work well.
  */

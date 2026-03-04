@@ -8,7 +8,7 @@
 #include <include/test.h>
 
 #include "tests.h"
-#include "flash.h"
+#include "helpers.h"
 
 #include <stdint.h>
 #include <stdlib.h>

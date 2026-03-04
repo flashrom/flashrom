@@ -15,6 +15,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "i2c_helper.h"
+#include "helpers.h"
 
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_ADDRESS		(0x9e >> 1)

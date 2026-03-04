@@ -15,6 +15,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "layout.h"
+#include "helpers.h"
 
 struct flashrom_layout {
 	struct romentry *head;

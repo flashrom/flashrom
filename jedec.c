@@ -13,6 +13,7 @@
 #include "flash.h"
 #include "parallel.h"
 #include "chipdrivers.h"
+#include "helpers.h"
 
 #define MAX_REFLASH_TRIES 0x10
 #define MASK_FULL 0xffff

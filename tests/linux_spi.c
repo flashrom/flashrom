@@ -6,6 +6,7 @@
  */
 
 #include "lifecycle.h"
+#include "helpers.h"
 
 #if CONFIG_LINUX_SPI == 1
 static int linux_spi_ioctl(void *state, int fd, unsigned long request, va_list args) {

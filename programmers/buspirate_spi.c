@@ -16,6 +16,7 @@
 #include "spi.h"
 #include "platform/udelay.h"
 #include "serial.h"
+#include "helpers.h"
 
 /* Change this to #define if you want to test without a serial implementation */
 #undef FAKE_COMMUNICATION

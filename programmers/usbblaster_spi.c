@@ -29,6 +29,7 @@
 #include <ftdi.h>
 #include "programmer.h"
 #include "spi.h"
+#include "helpers.h"
 
 /* Please keep sorted by vendor ID, then device ID. */
 #define ALTERA_VID		0x09fb

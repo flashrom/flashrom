@@ -27,6 +27,7 @@
 #include <string.h>
 #include "flash.h" /* for msg_* */
 #include "programmer.h"
+#include "helpers.h"
 
 ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_content *const cont)
 {

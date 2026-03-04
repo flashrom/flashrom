@@ -15,6 +15,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "i2c_helper.h"
+#include "helpers.h"
 
 
 #define MCU_I2C_SLAVE_ADDR	0x94

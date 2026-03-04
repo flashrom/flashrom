@@ -24,6 +24,7 @@
 #include "fmap.h"
 #include "programmer.h"
 #include "libflashrom.h"
+#include "helpers.h"
 
 #if CONFIG_RPMC_ENABLED == 1
 #include "rpmc.h"

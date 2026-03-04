@@ -13,6 +13,7 @@
 #include "programmer.h"
 #include "flash.h"
 #include "usb_device.h"
+#include "helpers.h"
 
 /* This is common flashrom timeout for usb for 1 second. It works for erasing and programming 256 bytes */
 #define USB_TIMEOUT		1000

@@ -20,6 +20,7 @@
 #include "spi.h"
 #include "writeprotect.h"
 #include "platform/udelay.h"
+#include "helpers.h"
 
 enum emu_chip {
 	EMULATE_NONE,

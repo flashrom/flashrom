@@ -22,6 +22,7 @@
 
 #include "flash.h"
 #include "programmer.h"
+#include "helpers.h"
 
 static const char *test_state_to_text(enum test_state test_state)
 {
