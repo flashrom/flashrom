@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "platform/string.h"
 
+#include "log.h"
 #include "flash.h"
 #include "libflashrom.h"
 #include "read_extended.h"

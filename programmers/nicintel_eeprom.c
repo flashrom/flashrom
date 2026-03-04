@@ -29,6 +29,7 @@
 #include "platform/pci.h"
 #include "platform/udelay.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define MEMMAP_SIZE 0x1c /* Only EEC, EERD and EEWR are needed. */

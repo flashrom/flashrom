@@ -30,6 +30,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "helpers.h"
+#include "log.h"
 
 /* Please keep sorted by vendor ID, then device ID. */
 #define ALTERA_VID		0x09fb

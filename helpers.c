@@ -8,7 +8,7 @@
 
 #include "helpers.h"
 
-#include "flash.h"
+#include "log.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include "platform/string.h"

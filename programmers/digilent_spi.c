@@ -20,6 +20,7 @@
 #include "platform/string.h"
 #include <libusb.h>
 #include "programmer.h"
+#include "log.h"
 
 /* This is pretty much arbitrarily chosen. After one second without a
  * response we can be pretty sure we're not going to succeed. */

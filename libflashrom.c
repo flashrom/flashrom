@@ -19,6 +19,7 @@
 #include "ich_descriptors.h"
 #include "libflashrom.h"
 #include "writeprotect.h"
+#include "log.h"
 
 
 /** Pointer to log callback function. */

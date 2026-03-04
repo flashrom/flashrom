@@ -21,6 +21,7 @@
 #include "writeprotect.h"
 #include "platform/udelay.h"
 #include "helpers.h"
+#include "log.h"
 
 enum emu_chip {
 	EMULATE_NONE,

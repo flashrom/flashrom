@@ -11,6 +11,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 struct it8212_data {
 	struct pci_dev *dev;

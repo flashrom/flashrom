@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "platform/string.h"
 #include <stdlib.h>
+#include "log.h"
 
 
 static int get_bus_number(char *bus_str)

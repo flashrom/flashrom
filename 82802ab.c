@@ -17,6 +17,7 @@
 #include "flash.h"
 #include "parallel.h"
 #include "chipdrivers.h"
+#include "log.h"
 
 void print_status_82802ab(uint8_t status)
 {

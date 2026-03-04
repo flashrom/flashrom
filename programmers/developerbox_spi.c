@@ -27,6 +27,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "usbdev.h"
+#include "log.h"
 
 /* Bit positions for each pin. */
 #define DEVELOPERBOX_SPI_SCK	0

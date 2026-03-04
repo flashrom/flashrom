@@ -17,6 +17,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 /* Bit positions for each pin. */
 

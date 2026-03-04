@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <libusb.h>
 #include "programmer.h"
+#include "log.h"
 
 struct dirtyjtag_spi_data {
 	struct libusb_context *libusb_ctx;

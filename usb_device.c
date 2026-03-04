@@ -8,12 +8,13 @@
 #include "programmer.h"
 #include "spi.h"
 #include "usb_device.h"
+#include "platform/string.h"
+#include "log.h"
 
 #include <assert.h>
 #include <libusb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "platform/string.h"
 
 /*
  * Possibly extract a programmer parameter and use it to initialize the given

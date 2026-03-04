@@ -9,7 +9,7 @@
 
 #include "platform/i2c.h"
 
-#include "flash.h"
+#include "log.h"
 #include <errno.h>
 #include <stdio.h>
 #include "platform/string.h"

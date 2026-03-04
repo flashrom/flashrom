@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include "platform/string.h"
 #include <errno.h>
+#include "log.h"
 
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;

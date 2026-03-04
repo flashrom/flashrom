@@ -11,6 +11,7 @@
 #include "flash.h"
 #include "parallel.h"
 #include "chipdrivers.h"
+#include "log.h"
 
 bool w29ee011_can_override(const char *const chip_name, const char *const override_chip)
 {

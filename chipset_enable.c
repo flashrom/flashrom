@@ -26,6 +26,7 @@
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
 #include "helpers.h"
+#include "log.h"
 
 #define NOT_DONE_YET 1
 

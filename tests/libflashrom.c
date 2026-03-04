@@ -13,6 +13,7 @@
 #include "libflashrom.h"
 #include "flash.h"
 #include "programmer.h"
+#include "log.h"
 
 static int test_log_callback(enum flashrom_log_level level, const char *format,
 			     va_list vargs)

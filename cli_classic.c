@@ -25,6 +25,7 @@
 #include "programmer.h"
 #include "libflashrom.h"
 #include "helpers.h"
+#include "log.h"
 
 #if CONFIG_RPMC_ENABLED == 1
 #include "rpmc.h"

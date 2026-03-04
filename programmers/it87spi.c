@@ -22,6 +22,7 @@
 #include "spi.h"
 #include "platform/udelay.h"
 #include "helpers.h"
+#include "log.h"
 
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e

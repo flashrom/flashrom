@@ -7,6 +7,7 @@
 
 #include "flash.h"
 #include "programmer.h"
+#include "log.h"
 
 /* The limit of 4 is totally arbitrary. */
 #define MASTERS_MAX 4

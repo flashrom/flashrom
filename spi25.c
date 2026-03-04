@@ -18,6 +18,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "helpers.h"
+#include "log.h"
 
 enum id_type {
 	RDID,

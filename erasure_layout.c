@@ -15,6 +15,7 @@
 #include "layout.h"
 #include "erasure_layout.h"
 #include "helpers.h"
+#include "log.h"
 
 static size_t calculate_block_count(const struct flashchip *chip, size_t eraser_idx)
 {

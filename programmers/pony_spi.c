@@ -37,6 +37,7 @@
 #include "programmer.h"
 #include "platform/udelay.h"
 #include "serial.h"
+#include "log.h"
 
 enum pony_type {
 	TYPE_SI_PROG,

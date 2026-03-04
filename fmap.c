@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include "flash.h"
 #include "fmap.h"
+#include "log.h"
 
 static size_t fmap_size(const struct fmap *fmap)
 {

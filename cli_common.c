@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "platform/string.h"
 #include "flash.h"
+#include "log.h"
 
 void print_chip_support_status(const struct flashchip *chip)
 {

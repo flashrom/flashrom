@@ -14,6 +14,7 @@
 #include "parallel.h"
 #include "chipdrivers.h"
 #include "helpers.h"
+#include "log.h"
 
 #define MAX_REFLASH_TRIES 0x10
 #define MASK_FULL 0xffff

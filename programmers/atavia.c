@@ -13,6 +13,7 @@
 #include "programmer.h"
 #include "platform/udelay.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define PCI_VENDOR_ID_VIA	0x1106
 

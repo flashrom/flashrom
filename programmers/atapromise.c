@@ -12,6 +12,7 @@
 #include "hwaccess_x86_io.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define MAX_ROM_DECODE (32 * 1024)
 #define ADDR_MASK (MAX_ROM_DECODE - 1)

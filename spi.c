@@ -18,6 +18,7 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "helpers.h"
+#include "log.h"
 
 static int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 			     unsigned int readcnt,

@@ -14,6 +14,7 @@
 #include "hwaccess_x86_io.h"
 #include "spi.h"
 #include "platform/udelay.h"
+#include "log.h"
 
 #define WBSIO_PORT1	0x2e
 #define WBSIO_PORT2	0x4e

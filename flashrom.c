@@ -28,6 +28,7 @@
 #include "erasure_layout.h"
 #include "platform/udelay.h"
 #include "helpers.h"
+#include "log.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
 

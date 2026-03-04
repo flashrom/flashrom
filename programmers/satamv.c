@@ -13,6 +13,7 @@
 #include "hwaccess_x86_io.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 struct satamv_data {
 	uint8_t *bar;

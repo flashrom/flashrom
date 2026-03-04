@@ -6,12 +6,12 @@
  * SPDX-FileCopyrightText: 2011-2013 Stefan Tauner
  */
 
+#include "log.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "flash.h"
 #include "programmer.h"
 #include "layout.h"
 #include "helpers.h"

@@ -35,6 +35,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "helpers.h"
+#include "log.h"
 
 static const struct dev_entry devs_pickit2_spi[] = {
 	{0x04D8, 0x0033, OK, "Microchip", "PICkit 2"},

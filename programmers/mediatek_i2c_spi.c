@@ -16,6 +16,7 @@
 #include "i2c_helper.h"
 #include "programmer.h"
 #include "spi.h"
+#include "log.h"
 
 #define ISP_PORT   (0x92 >> 1)
 #define DEBUG_PORT (0xb2 >> 1)

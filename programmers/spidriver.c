@@ -24,6 +24,7 @@
 #include "spi.h"
 #include "platform/udelay.h"
 #include "serial.h"
+#include "log.h"
 
 static int spidriver_serialport_setup(char *dev)
 {

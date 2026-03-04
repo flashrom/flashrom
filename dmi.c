@@ -18,6 +18,7 @@
 #include "platform/string.h"
 #include "flash.h"
 #include "hwaccess_physmap.h"
+#include "log.h"
 
 /* Enable SMBIOS decoding. Currently legacy DMI decoding is enough. */
 #define SM_SUPPORT 0

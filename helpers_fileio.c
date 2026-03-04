@@ -18,6 +18,7 @@
 #endif
 
 #include "flash.h"
+#include "log.h"
 
 int read_buf_from_file(unsigned char *buf, unsigned long size,
 		       const char *filename)

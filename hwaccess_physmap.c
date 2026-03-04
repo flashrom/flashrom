@@ -18,6 +18,7 @@
 #include "flash.h"
 #include "platform/endian.h"
 #include "hwaccess_physmap.h"
+#include "log.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
 /* No file access needed/possible to get mmap access permissions or access MSR. */

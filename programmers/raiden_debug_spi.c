@@ -320,6 +320,7 @@
 #include <stdlib.h>
 #include "platform/string.h"
 #include <unistd.h>
+#include "log.h"
 
 /*
  * Table is empty as raiden_debug_spi matches against the class and

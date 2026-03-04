@@ -20,6 +20,7 @@
 #include <linux/i2c.h>
 #include "programmer.h"
 #include "spi.h"
+#include "log.h"
 
 struct mstarddc_spi_data {
 	int fd;

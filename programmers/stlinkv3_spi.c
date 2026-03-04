@@ -16,12 +16,13 @@
 #include "programmer.h"
 #include "spi.h"
 #include "usbdev.h"
+#include "platform/string.h"
+#include "log.h"
 
 #include <libusb.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "platform/string.h"
 
 enum fw_version_check_result {
 	FW_VERSION_OK,

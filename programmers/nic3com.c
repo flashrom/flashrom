@@ -10,6 +10,7 @@
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define BIOS_ROM_ADDR		0x04
 #define BIOS_ROM_DATA		0x08

@@ -17,6 +17,7 @@
 #include "platform/i2c.h"
 #include "i2c_helper.h"
 #include "helpers.h"
+#include "log.h"
 
 
 #define MCU_I2C_SLAVE_ADDR	0x94

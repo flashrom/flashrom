@@ -21,6 +21,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
+#include "log.h"
 
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.

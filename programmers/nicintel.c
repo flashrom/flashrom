@@ -12,6 +12,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 struct nicintel_data {
 	uint8_t *nicintel_bar;

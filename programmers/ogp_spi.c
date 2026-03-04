@@ -12,6 +12,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define PCI_VENDOR_ID_OGP 0x1227
 

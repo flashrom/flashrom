@@ -12,6 +12,7 @@
 #include "flash.h"
 #include "parallel.h"
 #include "chipdrivers.h"
+#include "log.h"
 
 static int check_sst_fwhub_block_lock(struct flashctx *flash, unsigned int offset)
 {

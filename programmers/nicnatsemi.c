@@ -10,6 +10,7 @@
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define PCI_VENDOR_ID_NATSEMI	0x100b
 

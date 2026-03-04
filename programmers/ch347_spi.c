@@ -12,6 +12,7 @@
 #include "programmer.h"
 #include "flash.h"
 #include "helpers.h"
+#include "log.h"
 
 #define CH347_CMD_SPI_SET_CFG	0xC0
 #define CH347_CMD_SPI_CS_CTRL	0xC1

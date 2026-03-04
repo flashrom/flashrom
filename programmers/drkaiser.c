@@ -10,6 +10,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "log.h"
 
 #define PCI_VENDOR_ID_DRKAISER		0x1803
 

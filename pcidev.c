@@ -13,6 +13,7 @@
 
 #include "flash.h"
 #include "programmer.h"
+#include "log.h"
 
 struct pci_access *pacc;
 

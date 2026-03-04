@@ -9,6 +9,8 @@
 #include "hwaccess_physmap.h"
 #include "ich_descriptors.h"
 
+#include "log.h"
+
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
 #include "platform/string.h"
@@ -21,7 +23,6 @@
  */
 #define UPPER_MAP_OFFSET (4096 - 256 - 4)
 #define getVTBA(flumap)	(((flumap)->FLUMAP1 << 4) & 0x00000ff0)
-
 #include <stdbool.h>
 #include <sys/types.h>
 #include "platform/string.h"

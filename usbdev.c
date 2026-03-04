@@ -9,10 +9,11 @@
 
 #include "usbdev.h"
 
-#include "flash.h" // msg_perr, msg_pdbg...
+#include "platform/string.h"
+#include "log.h"
+
 #include <inttypes.h>
 #include <stdbool.h>
-#include "platform/string.h"
 
 /*
  * Check whether we should filter the current device.

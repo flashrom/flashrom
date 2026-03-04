@@ -14,6 +14,7 @@
 
 #include "hwaccess_x86_msr.h"
 #include "flash.h"
+#include "log.h"
 
 #ifdef __linux__
 /*

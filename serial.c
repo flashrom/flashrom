@@ -29,6 +29,7 @@
 #include "programmer.h"
 #include "custom_baud.h"
 #include "platform/udelay.h"
+#include "log.h"
 
 fdtype sp_fd = SER_INV_FD;
 

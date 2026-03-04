@@ -20,6 +20,7 @@
 #include "usbdev.h"
 #include "platform/udelay.h"
 #include "helpers.h"
+#include "log.h"
 
 /* LIBUSB_CALL ensures the right calling conventions on libusb callbacks.
  * However, the macro is not defined everywhere. m(

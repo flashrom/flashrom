@@ -11,6 +11,7 @@
 #include "spi.h"
 #include "platform/pci.h"
 #include "platform/udelay.h"
+#include "log.h"
 
 /* same as serverengines */
 static void enter_conf_mode_ec(uint16_t port)

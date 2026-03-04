@@ -14,6 +14,7 @@
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "spi.h"
+#include "log.h"
 
 /* For ST95XXX chips which have RDID */
 int probe_spi_st95(struct flashctx *flash)

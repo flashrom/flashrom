@@ -14,6 +14,7 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
+#include "log.h"
 
 /* === Generic functions === */
 

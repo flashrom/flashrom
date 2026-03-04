@@ -8,6 +8,7 @@
 
 #include "platform/udelay.h"
 
+#include "log.h"
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
@@ -15,8 +16,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "flash.h"
-#include "programmer.h"
 
 /* loops per microsecond */
 static unsigned long micro = 1;

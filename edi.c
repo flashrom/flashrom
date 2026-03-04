@@ -10,6 +10,7 @@
 #include "chipdrivers.h"
 #include "ene.h"
 #include "edi.h"
+#include "log.h"
 
 static unsigned int edi_read_buffer_length = EDI_READ_BUFFER_LENGTH_DEFAULT;
 

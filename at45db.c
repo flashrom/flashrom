@@ -13,6 +13,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "helpers.h"
+#include "log.h"
 
 /* Status register bits */
 #define AT45DB_READY	(1<<7)

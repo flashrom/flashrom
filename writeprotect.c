@@ -14,6 +14,7 @@
 #include "chipdrivers.h"
 #include "writeprotect.h"
 #include "programmer.h"
+#include "log.h"
 
 /*
  * Allow specialisation in opaque masters, such as ichspi hwseq, to r/w to status registers.

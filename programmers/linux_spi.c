@@ -19,6 +19,7 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
+#include "log.h"
 /*
  * Linux versions prior to v4.14-rc7 may need linux/ioctl.h included here due
  * to missing from linux/spi/spidev.h. This was fixed in the following commit:

@@ -17,6 +17,7 @@
 #include "platform/i2c.h"
 #include "i2c_helper.h"
 #include "helpers.h"
+#include "log.h"
 
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_ADDRESS		(0x9e >> 1)

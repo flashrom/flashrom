@@ -14,6 +14,7 @@
 #include <openssl/rand.h>
 #include "platform/string.h"
 #include "spi.h"
+#include "log.h"
 
 // OP1 commands
 #define RPMC_WRITE_ROOT_KEY_MSG_LENGTH (RPMC_OP1_MSG_HEADER_LENGTH + RPMC_HMAC_KEY_LENGTH + RPMC_TRUNCATED_SIG_LENGTH)
