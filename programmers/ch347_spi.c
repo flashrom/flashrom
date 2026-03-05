@@ -279,7 +279,7 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 	uint16_t vid = devs_ch347_spi[0].vendor_id;
 	uint16_t pid = 0;
 	int index = 0;
-	int speed_index = 2;
+	int speed_index;
 	struct ch347_spi_data *ch347_data = calloc(1, sizeof(*ch347_data));
 	if (!ch347_data) {
 		msg_perr("Could not allocate space for SPI data\n");
@@ -344,6 +344,7 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 		(desc.bcdDevice >> 0) & 0x000F);
 
 	/* set CH347 clock division */
+	speed_index = 2; /* default: 15MHz */
 	arg = extract_programmer_param_str(cfg, "spispeed");
 	if (arg) {
 		for (speed_index = 0; spispeeds[speed_index].name; speed_index++) {
@@ -351,10 +352,10 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 				break;
 			}
 		}
-	}
-	if (!spispeeds[speed_index].name || !arg) {
-		msg_perr("Unknown value of spispeed parameter, using default 15MHz clock spi.\n");
-		speed_index = 2;
+		if (!spispeeds[speed_index].name) {
+			msg_pwarn("Unknown spispeed value '%s', using default 15MHz.\n", arg);
+			speed_index = 2;
+		}
 	}
 	free(arg);
 	if (ch347_spi_config(ch347_data, spispeeds[speed_index].divisor) < 0) {
