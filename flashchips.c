@@ -24,29 +24,6 @@
  */
 const struct flashchip flashchips[] = {
 
-	/*
-	 * .vendor		= Vendor name
-	 * .name		= Chip name
-	 * .bustype		= Supported flash bus types (Parallel, LPC...)
-	 * .manufacture_id	= Manufacturer chip ID
-	 * .model_id		= Model chip ID
-	 * .total_size		= Total size in (binary) kbytes
-	 * .page_size		= Page or eraseblock(?) size in bytes
-	 * .tested		= Test status
-	 * .probe		= Probe function
-	 * .probe_timing	= Probe function delay
-	 * .block_erasers[]	= Array of erase layouts and erase functions
-	 * {
-	 *	.eraseblocks[]	= Array of { blocksize, blockcount }
-	 *	.block_erase	= Block erase function
-	 * }
-	 * .printlock		= Chip lock status function
-	 * .unlock		= Chip unlock function
-	 * .write		= Chip write function
-	 * .read		= Chip read function
-	 * .voltage		= Voltage range in millivolt
-	 */
-
 /* TODO: Refactor implementation to avoid these .c includes */
 #include "flashchips/amd.c"
 #include "flashchips/amic.c"

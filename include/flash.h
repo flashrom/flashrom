@@ -442,7 +442,7 @@ struct flashchip {
 	uint32_t manufacture_id;
 	uint32_t model_id;
 
-	/* Total chip size in kilobytes */
+	/* Total chip size in kibibytes */
 	unsigned int total_size;
 	/* Chip page size in bytes */
 	unsigned int page_size;
@@ -495,10 +495,13 @@ struct flashchip {
 	enum blockprotect_func unlock;
 	enum write_func write;
 	enum read_func read;
+
+	/* Voltage range in millivolt */
 	struct voltage {
 		uint16_t min;
 		uint16_t max;
 	} voltage;
+
 	enum write_granularity gran;
 
 	struct reg_bit_map {
