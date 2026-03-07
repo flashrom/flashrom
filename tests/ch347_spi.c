@@ -13,6 +13,7 @@
 /* Constants mirrored from ch347_spi.c */
 #define WRITE_EP		0x06
 #define READ_EP			0x86
+#define CH347_CMD_SPI_SET_CFG	0xC0
 #define CH347_CMD_SPI_OUT	0xC4
 #define CH347_CMD_SPI_IN	0xC3
 
@@ -25,6 +26,7 @@
  * count seen on WRITE_EP so the following READ_EP returns a matching frame.
  */
 struct ch347_spi_io_state {
+	uint8_t last_cmd;
 	uint8_t last_spi_cmd;
 	unsigned int readcnt;
 	int expect_in;
@@ -36,6 +38,8 @@ static int ch347_spi_libusb_bulk_transfer(void *state, libusb_device_handle *dev
 	struct ch347_spi_io_state *s = state;
 
 	if (endpoint == WRITE_EP) {
+		if (length >= 1)
+			s->last_cmd = data[0];
 		if (length >= 4 && data[0] == CH347_CMD_SPI_OUT)
 			s->last_spi_cmd = data[3];
 		if (length >= 7 && data[0] == CH347_CMD_SPI_IN) {
@@ -65,6 +69,16 @@ static int ch347_spi_libusb_bulk_transfer(void *state, libusb_device_handle *dev
 		}
 		if (actual_length)
 			*actual_length = 3 + n;
+		return 0;
+	}
+
+	/* Config (0xC0) is acknowledged with [cmd][len][status], status 0 = ok. */
+	if (s->last_cmd == CH347_CMD_SPI_SET_CFG && length >= 4) {
+		memset(data, 0, length);
+		data[0] = CH347_CMD_SPI_SET_CFG;
+		data[1] = 1;
+		if (actual_length)
+			*actual_length = 4;
 		return 0;
 	}
 

@@ -218,47 +218,75 @@ static int ch347_spi_send_command(const struct flashctx *flash, unsigned int wri
 	return 0;
 }
 
+/*
+ * CH347 SPI config packet (0xC0), 29 bytes: a 3-byte header followed
+ * by a 26-byte payload.
+ *
+ * The payload maps to the vendor StreamHwCfgS struct, which embeds
+ * SPI_InitTypeDef, a set of u16 LE fields corresponding to the
+ * CH32V SPI Control Register 1 (SPI_CTLR1). All u16 fields are
+ * OR'd together by the firmware to produce the final register value.
+ *
+ * Offset  Size  Field                    Description
+ * ------  ----  -----                    -----------
+ *  0      u8    Command                  0xC0 (SPI_SET_CFG)
+ *  1-2    u16   Payload length           26
+ *  3-4    u16   SPI_Direction            Datamode (0=2-line full-duplex)
+ *  5-6    u16   SPI_Mode                 Master/Slave (0x0104=master)
+ *  7-8    u16   SPI_DataSize             Frame size (0=8-bit)
+ *  9-10   u16   SPI_CPOL                 Clock polarity (0=idle low, 0x0002=idle high)
+ * 11-12   u16   SPI_CPHA                 Clock phase (0=leading, 0x0001=trailing)
+ * 13-14   u16   SPI_NSS                  CS management (0=HW, 0x0200=SW)
+ * 15-16   u16   SPI_BaudRatePrescaler    Clock divisor (prescaler*8, 0=60M..7=468.75K)
+ * 17-18   u16   SPI_FirstBit             Bit order (0=MSB, 0x0080=LSB)
+ * 19-20   u16   SPI_CRCPolynomial        CRC polynomial (default 0x0007)
+ * 21-22   u16   SpiWriteReadInterval     R/W interval (us)
+ *    23   u8    SpiOutDefaultData        Default MOSI byte during reads
+ *    24   u8    OtherCfg                 Bit7: CS1 polarity, Bit6: CS2 polarity
+ * 25-28   u8[4] Reserved
+ *
+ * Research started in: https://github.com/nic3-14159/CH347-Research
+ * Reference: WCH vendor driver ch347_lib.h (StreamHwCfgS / SPI_InitTypeDef)
+ */
 static int32_t ch347_spi_config(struct ch347_spi_data *ch347_data, uint8_t divisor)
 {
 	int32_t ret;
+	int transferred = 0;
 	uint8_t buff[29] = {
 		[0] = CH347_CMD_SPI_SET_CFG,
 		[1] = (sizeof(buff) - 3) & 0xFF,
 		[2] = ((sizeof(buff) - 3) & 0xFF00) >> 8,
-		/* Not sure what these two bytes do, but the vendor
-		 * drivers seem to unconditionally set these values
-		 */
 		[5] = 4,
 		[6] = 1,
-		/* Clock polarity: bit 1 */
-		[9] = 0,
-		/* Clock phase: bit 0 */
-		[11] = 0,
-		/* Another mystery byte */
 		[14] = 2,
-		/* Clock divisor: bits 5:3 */
 		[15] = (divisor & 0x7) << 3,
-		/* Bit order: bit 7, 0=MSB */
-		[17] = 0,
-		/* Yet another mystery byte */
 		[19] = 7,
-		/* CS polarity: bit 7 CS2, bit 6 CS1. 0 = active low */
-		[24] = 0
 	};
 
 	ret = libusb_bulk_transfer(ch347_data->handle, WRITE_EP, buff, sizeof(buff), NULL, 1000);
 	if (ret < 0) {
 		msg_perr("Could not configure SPI interface\n");
+		return ret;
 	}
 
-	/* FIXME: Not sure if the CH347 sends error responses for
-	 * invalid config data, if so the code should check
+	/* Read the response into a full-size buffer to drain any extra
+	 * bytes from firmware variants that may echo back the entire
+	 * config. The expected ACK is 4 bytes: cmd, length(2), status.
 	 */
-	ret = libusb_bulk_transfer(ch347_data->handle, READ_EP, buff, sizeof(buff), NULL, 1000);
+	uint8_t rbuf[sizeof(buff)] = {0};
+	ret = libusb_bulk_transfer(ch347_data->handle, READ_EP, rbuf, sizeof(rbuf), &transferred, 1000);
 	if (ret < 0) {
 		msg_perr("Could not receive configure SPI command response\n");
+		return ret;
 	}
-	return ret;
+
+	if (transferred < 4 || rbuf[0] != CH347_CMD_SPI_SET_CFG || rbuf[3] != 0) {
+		msg_perr("CH347 SPI config failed (response: %d bytes, cmd=0x%02x, status=0x%02x)\n",
+			transferred, rbuf[0], transferred >= 4 ? rbuf[3] : 0xff);
+		return -1;
+	}
+
+	return 0;
 }
 
 static const struct spi_master spi_master_ch347_spi = {
