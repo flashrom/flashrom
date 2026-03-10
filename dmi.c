@@ -12,7 +12,9 @@
 #if (__GLIBC__ == 2 && __GLIBC_MINOR__ < 10) || __GLIBC__ < 2
 #define _GNU_SOURCE
 #else
+#if !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
+#endif
 #endif
 
 #include "dmi.h"
