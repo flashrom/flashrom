@@ -10,8 +10,8 @@
  * inline functions and macros shared by endian conversion functions
  */
 
-#ifndef ___SWAP_H___
-#define ___SWAP_H___ 1
+#ifndef __PLATFORM_SWAP_H__
+#define __PLATFORM_SWAP_H__
 
 #include <stdint.h>
 
@@ -68,4 +68,4 @@ static inline uint64_t ___swap64(const uint64_t value)
 #define ___return_swapped(name, bits) \
 	uint##bits##_t name##bits (const uint##bits##_t value) { return ___swap##bits (value); }
 
-#endif /* !___SWAP_H___ */
+#endif /* __PLATFORM_SWAP_H__ */

@@ -8,8 +8,8 @@
  * microsecond-level timing delays in a platform-independent manner.
  */
 
-#ifndef __UDELAY_H__
-#define __UDELAY_H__
+#ifndef __PLATFORM_UDELAY_H__
+#define __PLATFORM_UDELAY_H__
 
 /**
  * @brief Delay for at least the specified number of microseconds.
@@ -22,4 +22,4 @@
  */
 void default_delay(unsigned int usecs);
 
-#endif
+#endif /* __PLATFORM_UDELAY_H__ */
