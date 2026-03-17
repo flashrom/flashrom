@@ -413,9 +413,10 @@ int check_for_unwritable_regions(const struct flashctx *flash, unsigned int star
 dieselect_func_t *g_test_dieselect_injector;
 #endif
 
-static dieselect_func_t *lookup_dieselect_func_ptr(const struct flashchip *chip)
+dieselect_func_t *lookup_dieselect_func_ptr(const struct flashchip *chip)
 {
 	switch (chip->die_select) {
+        case SPI_DIESELECT_C2: return spi_dieselect_c2;
 #ifdef FLASHROM_TEST
 		case TEST_DIESELECT_INJECTOR: return g_test_dieselect_injector;
 #endif

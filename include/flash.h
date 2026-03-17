@@ -168,6 +168,13 @@ enum write_granularity {
  */
 #define FEATURE_FLASH_HARDENING (1 << 26)
 
+ /*
+ * Each die of the multi-die chip has its own status register.
+ * On such chips global chip commands (C7h/60h-Chip Erase), require
+ * polling SR on each die separately to assure completion.
+ */
+#define FEATURE_STATUS_PER_DIE	(1 << 27)
+
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 
@@ -431,6 +438,7 @@ printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash);
 /* Die selection function for multi-die chips */
 enum dieselect_func {
 	NO_DIESELECT_FUNC = 0,
+	SPI_DIESELECT_C2,       /* Winbond 0xC2 Software Die Select */
 #ifdef FLASHROM_TEST
 	TEST_DIESELECT_INJECTOR,
 #endif
@@ -686,6 +694,8 @@ erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser);
 int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len);
 unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len, unsigned int *first_start, enum write_granularity gran);
 int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+dieselect_func_t *lookup_dieselect_func_ptr(const struct flashchip *chip);
+
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_FLASHROM_NONFATAL 0x100

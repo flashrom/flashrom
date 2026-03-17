@@ -3683,8 +3683,9 @@
 		.manufacture_id = WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W77Q128_W,
 		.total_size	= 16384,
+		.die_size	= 8192,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA | FEATURE_STATUS_PER_DIE,
 		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
@@ -3699,16 +3700,17 @@
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
-			}, /*FIXME: opcode is supported but check for each die is required, {
+			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
-			}*/
+			}
 		},
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
+		.die_select	= SPI_DIESELECT_C2,
 		.voltage	= {1700, 1950},
 	},
 
@@ -3755,9 +3757,10 @@
 		.manufacture_id = WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W77T128NW,
 		.total_size	= 16384,
+		.die_size	= 8192,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
-		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA | FEATURE_STATUS_PER_DIE,
+		.tested 	= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3771,15 +3774,16 @@
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
-			}, /*FIXME: opcode is supported but check for each die is required, {
+			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
-			}*/
+			}
 		},
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
+		.die_select	= SPI_DIESELECT_C2,
 		.voltage	= {1700, 1950},
 	},

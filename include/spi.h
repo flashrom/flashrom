@@ -221,6 +221,9 @@
    From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
 #define JEDEC_BYTE_PROGRAM_4BA	0x12
 
+/* One of possible Die Select commands */
+#define WINBOND_SW_DIE_SELECT_C2    0xC2
+
 /* Error codes */
 #define SPI_GENERIC_ERROR	-1
 #define SPI_INVALID_OPCODE	-2
@@ -245,5 +248,7 @@ int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start
 int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
 bool spi_probe_opcode(const struct flashctx *flash, uint8_t opcode);
+int spi_dieselect_c2(struct flashctx *flash, unsigned int die_num);
+int spi_poll_wip_multidie(struct flashctx *const flash, unsigned int poll_delay);
 
 #endif		/* !__SPI_H__ */

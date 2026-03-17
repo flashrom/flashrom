@@ -466,22 +466,25 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 	return result ? result : status;
 }
 
-static int spi_chip_erase_60(struct flashctx *flash)
+static int spi_chip_erase(struct flashctx *flash, const uint8_t op)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, JEDEC_CE_60, 1000 * 1000);
+	if (flash->chip->feature_bits & FEATURE_STATUS_PER_DIE) {
+		/* Send WREN + erase command without WIP polling */
+		int result = spi_simple_write_cmd(flash, op, 0);
+		if (result)
+			return result;
+		/* Poll each die separately */
+		return spi_poll_wip_multidie(flash, 1000 * 1000);
+	}
+	/* Single-die chip: polling single die */
+	return spi_simple_write_cmd(flash, op, 1000 * 1000);
 }
 
 static int spi_chip_erase_62(struct flashctx *flash)
 {
 	/* This usually takes 2-5s, so wait in 100ms steps. */
 	return spi_simple_write_cmd(flash, JEDEC_CE_62, 100 * 1000);
-}
-
-static int spi_chip_erase_c7(struct flashctx *flash)
-{
-	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, JEDEC_CE_C7, 1000 * 1000);
 }
 
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
@@ -558,7 +561,7 @@ int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
 			__func__);
 		return -1;
 	}
-	return spi_chip_erase_60(flash);
+	return spi_chip_erase(flash, JEDEC_CE_60);
 }
 
 int spi_block_erase_62(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
@@ -579,7 +582,7 @@ int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
 			__func__);
 		return -1;
 	}
-	return spi_chip_erase_c7(flash);
+	return spi_chip_erase(flash, JEDEC_CE_C7);
 }
 
 /* Erase 4 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
@@ -846,4 +849,65 @@ int spi_enter_4ba(struct flashctx *const flash)
 int spi_exit_4ba(struct flashctx *flash)
 {
 	return spi_enter_exit_4ba(flash, false);
+}
+
+int spi_dieselect_c2(struct flashctx *flash, unsigned int die_num)
+{
+	const unsigned char cmd[] = { WINBOND_SW_DIE_SELECT_C2, (uint8_t)die_num };
+	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+}
+
+/**
+ * Poll WIP on all dies until ALL are ready.
+ * For multi-die chips where chip erase (C7h or 60h) is broadcast to all dies
+ * but status register only reflects currently selected die.
+ *
+ * Note: If we change to a non-zero die, we always restore to die 0 on
+ * completion or failure to leave the chip in a known state.
+ */
+int spi_poll_wip_multidie(struct flashctx *const flash, unsigned int poll_delay)
+{
+	int ret = 0;
+	unsigned int die;
+	dieselect_func_t *die_select = lookup_dieselect_func_ptr(flash->chip);
+
+	if (!die_select) {
+		msg_cerr("Die select function not set for %s\n", flash->chip->name);
+		return -1;
+	}
+
+	const unsigned int num_dies = flash->chip->total_size / flash->chip->die_size;
+	msg_cdbg("Polling %u dies for %s\n", num_dies, flash->chip->name);
+
+	for (die = 0; die < num_dies; die++) {
+		if (die_select(flash, die)) {
+			msg_cerr("Failed to switch to die %u during WIP polling\n", die);
+			ret = -1;
+			goto restore_die;
+		}
+
+		while (1) {
+			uint8_t status;
+			if (spi_read_register(flash, STATUS1, &status)) {
+				ret = -1;
+				goto restore_die;
+			}
+
+			if (!(status & SPI_SR_WIP)) {
+				msg_cdbg("Die %d finished \n", die);
+				break;
+			}
+
+			programmer_delay(flash, poll_delay);
+		}
+	}
+
+restore_die:
+	/* Always restore to die 0 if we switched to another die */
+	if (die_select(flash, 0)) {
+		msg_cerr("Failed to restore die 0 after multi-die WIP polling\n");
+		return -1;
+	}
+
+	return ret;
 }
