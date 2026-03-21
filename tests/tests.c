@@ -558,6 +558,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(erase_chip_test_success),
 		cmocka_unit_test(erase_chip_with_progress),
 		cmocka_unit_test(erase_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(erase_chip_dual_die_c2),
 		cmocka_unit_test(read_chip_test_success),
 		cmocka_unit_test(read_chip_with_progress),
 		cmocka_unit_test(read_chip_with_dummyflasher_test_success),

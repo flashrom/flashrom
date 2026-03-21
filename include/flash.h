@@ -445,6 +445,10 @@ enum dieselect_func {
 };
 typedef int (dieselect_func_t)(struct flashctx* flash, unsigned int die_num);
 
+#ifdef FLASHROM_TEST
+extern dieselect_func_t *g_test_dieselect_injector;
+#endif
+
 struct flashchip {
 	const char *vendor;
 	const char *name;

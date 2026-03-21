@@ -101,6 +101,7 @@ void layout_region_invalid_range_test_success(void **state);
 void erase_chip_test_success(void **state);
 void erase_chip_with_progress(void **state);
 void erase_chip_with_dummyflasher_test_success(void **state);
+void erase_chip_dual_die_c2(void **state);
 void read_chip_test_success(void **state);
 void read_chip_with_progress(void **state);
 void read_chip_with_dummyflasher_test_success(void **state);

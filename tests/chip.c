@@ -34,8 +34,13 @@
 
 static struct {
 	uint8_t buf[MOCK_CHIP_SIZE]; /* buffer of total size of chip, to emulate a chip */
+	/* Die fields can be ignored for single-die chip. */
+	unsigned int current_die;
+	unsigned int die_selected[8]; /* how many times die select was called for the die #index */
 } g_chip_state = {
 	.buf = { 0 },
+	.current_die = 0,
+	.die_selected = { 0 },
 };
 
 struct progress_user_data {
@@ -73,6 +78,17 @@ static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsi
 	return 0;
 }
 
+static int select_die(struct flashctx* flash, unsigned int die_num)
+{
+	printf("Die select called for die #%d.\n", die_num);
+
+	assert_true(die_num < flash->chip->total_size / flash->chip->die_size);
+
+	g_chip_state.current_die = die_num;
+	g_chip_state.die_selected[die_num]++;
+	return 0;
+}
+
 static void progress_callback(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data) {
 	struct progress_user_data *progress_user_data = user_data;
 
@@ -97,6 +113,8 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 	flashctx->chip = chip;
 
 	memset(g_chip_state.buf, MOCK_CHIP_CONTENT, sizeof(g_chip_state.buf));
+	g_chip_state.current_die = 0;
+	memset(g_chip_state.die_selected, 0, sizeof(g_chip_state.die_selected));
 
 	printf("Creating layout with one included region... ");
 	assert_int_equal(0, flashrom_layout_new(layout));
@@ -162,6 +180,31 @@ static const struct flashchip chip_no_erase = {
 			.eraseblocks = { {16 * 1024 * 1024, 1} },
 			/* Special erase fn for chips without erase capability. */
 			.block_erase = SPI_BLOCK_ERASE_EMULATION,
+		}
+	},
+};
+
+/* Setup the struct for W25Q128.V, all values come from flashchips.c */
+static const struct flashchip chip_dual_die_c2 = {
+	.vendor		= "aklm&dummyflasher",
+	.total_size	= 16 * 1024,
+	.die_size	= 8 * 1024,
+	.page_size	= 256,
+	.feature_bits   = FEATURE_WRSR_WREN | FEATURE_STATUS_PER_DIE,
+	.tested		= TEST_OK_PREW,
+	.read		= SPI_CHIP_READ,
+	.write		= SPI_CHIP_WRITE256,
+	.die_select	= TEST_DIESELECT_INJECTOR,
+	.block_erasers  =
+	{
+		/* The goal is to test select die feature, which is used for
+		 * chip erase ops 60h and C7h. No other ops are needed for this mock. */
+		{
+			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.block_erase = SPI_BLOCK_ERASE_60,
+		}, {
+			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.block_erase = SPI_BLOCK_ERASE_C7,
 		}
 	},
 };
@@ -282,6 +325,47 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
 	printf("Erase chip operation done.\n");
+
+	teardown(&layout);
+}
+
+void erase_chip_dual_die_c2(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	g_test_dieselect_injector = select_die;
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_dual_die_c2;
+	/*
+	 * Tricking the dummyflasher by asking to emulate W25Q128FV but giving to it
+	 * mock chip with FEATURE_STATUS_PER_DIE.
+	 * As long as chip size is the same, this is fine.
+	 */
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
+
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
+
+	printf("Erase chip operation started.\n");
+	assert_int_equal(0, flashrom_flash_erase(&flashctx));
+	printf("Erase chip operation done.\n");
+
+	/* Expected to always switch to die 0 after polling completes. */
+	assert_true(g_chip_state.current_die == 0);
+	printf("Active die switched to #%d after erase\n", g_chip_state.current_die);
+	/* Expected to poll each die at least once */
+	const unsigned int num_dies = flashctx.chip->total_size / flashctx.chip->die_size;
+	for (unsigned int i = 0; i < num_dies; i++)
+		assert_true(g_chip_state.die_selected[i] > 0);
+	printf("Each die was polled at least once.\n");
 
 	teardown(&layout);
 }
