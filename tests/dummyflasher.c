@@ -6,6 +6,7 @@
  */
 
 #include "lifecycle.h"
+#include "read_extended.h"
 
 #if CONFIG_DUMMY == 1
 void dummy_basic_lifecycle_test_success(void **state)
@@ -339,6 +340,32 @@ void dummy_probe_and_erase(void **state)
 	dummy_test_shutdown(flashctx, flashprog);
 }
 
+void dummy_probe_and_read_repeated(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_programmer *flashprog = NULL;
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
+
+	dummy_test_init_and_probe(flashctx, flashprog);
+
+	const int read_count = 3;
+	unsigned char *result_buf = NULL;
+	size_t result_size = 0;
+
+	printf("Testing read_repeated with count=%d ...\n", read_count);
+	assert_int_equal(0, read_repeated(flashctx, read_count, &result_buf, &result_size));
+	printf("... read_repeated successful, size=%zu.\n", result_size);
+
+	assert_non_null(result_buf);
+	assert_true(result_size > 0);
+
+	flashrom_data_free(result_buf);
+
+	dummy_test_shutdown(flashctx, flashprog);
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
@@ -356,4 +383,5 @@ void dummy_probe_and_erase(void **state)
 	SKIP_TEST(dummy_probe_and_read)
 	SKIP_TEST(dummy_probe_and_write)
 	SKIP_TEST(dummy_probe_and_erase)
+	SKIP_TEST(dummy_probe_and_read_repeated)
 #endif /* CONFIG_DUMMY */

@@ -111,6 +111,12 @@ F:	libflashrom*
 F:	include/flash.h
 F:	include/libflashrom.h
 
+READ EXTENDED
+M:	Abdelkader Boudih <flashrom@seuros.com>
+S:	Maintained
+F:	read_extended*
+F:	include/read_extended*
+
 REPLAY PROTECTED MONOTONIC COUNTER
 M:	Matti Finder <matti.finder@gmail.com>
 S:	Maintained

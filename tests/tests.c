@@ -522,6 +522,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(dummy_probe_and_read),
 		cmocka_unit_test(dummy_probe_and_write),
 		cmocka_unit_test(dummy_probe_and_erase),
+		cmocka_unit_test(dummy_probe_and_read_repeated),
 		cmocka_unit_test(nicrealtek_basic_lifecycle_test_success),
 		cmocka_unit_test(raiden_debug_basic_lifecycle_test_success),
 		cmocka_unit_test(raiden_debug_targetAP_basic_lifecycle_test_success),

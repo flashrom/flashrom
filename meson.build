@@ -91,6 +91,7 @@ srcs = files(
   'print.c',
   'programmer.c',
   'programmer_table.c',
+  'read_extended.c',
   's25f.c',
   'sfdp.c',
   'spi25.c',

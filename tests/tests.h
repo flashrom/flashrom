@@ -69,6 +69,7 @@ void dummy_freq_param_init(void **state);
 void dummy_probe_and_read(void **state);
 void dummy_probe_and_write(void **state);
 void dummy_probe_and_erase(void **state);
+void dummy_probe_and_read_repeated(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
 void raiden_debug_basic_lifecycle_test_success(void **state);
 void raiden_debug_targetAP_basic_lifecycle_test_success(void **state);
