@@ -9,6 +9,8 @@ add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_END
 # Select an appropriate delay implementation for the target OS
 if target_machine.system() == 'dos'
   srcs += files('udelay_dos.c')
+elif target_machine.system() == 'windows'
+  srcs += files('udelay_windows.c')
 else
   srcs += files('udelay.c')
 endif

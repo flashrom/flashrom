@@ -11,17 +11,10 @@
 
 #include "platform/udelay.h"
 
-#include <stdbool.h>
-#include <unistd.h>
+#include <stddef.h>
 #include <errno.h>
 #include <time.h>
 #include <sys/time.h>
-#include <stdlib.h>
-#include <limits.h>
-#include "flash.h"
-#include "programmer.h"
-
-#if HAVE_CLOCK_GETTIME == 1
 
 static void clock_usec_delay(int usecs)
 {
@@ -51,30 +44,6 @@ static void clock_usec_delay(int usecs)
 	} while (now.tv_sec < end.tv_sec || (now.tv_sec == end.tv_sec && now.tv_nsec < end.tv_nsec));
 }
 
-#else
-
-static void clock_usec_delay(unsigned int usecs) {
-	struct timeval start, end;
-	unsigned long elapsed = 0;
-
-	gettimeofday(&start, NULL);
-
-	while (elapsed < usecs) {
-		gettimeofday(&end, NULL);
-		elapsed = 1000000 * (end.tv_sec - start.tv_sec) +
-			   (end.tv_usec - start.tv_usec);
-		/* Protect against time going forward too much. */
-		if ((end.tv_sec > start.tv_sec) &&
-		    ((end.tv_sec - start.tv_sec) >= LONG_MAX / 1000000 - 1))
-			elapsed = 0;
-		/* Protect against time going backwards during leap seconds. */
-		if ((end.tv_sec < start.tv_sec) || (elapsed > LONG_MAX))
-			elapsed = 0;
-	}
-}
-
-#endif /* HAVE_CLOCK_GETTIME == 1 */
-
 /**
  * @brief Delay for at least the specified number of microseconds, with low precision.
  * @details
@@ -85,11 +54,7 @@ static void clock_usec_delay(unsigned int usecs) {
  */
 static void internal_sleep(unsigned int usecs)
 {
-#if IS_WINDOWS
-	Sleep((usecs + 999) / 1000);
-#else
 	nanosleep(&(struct timespec){usecs / 1000000, (usecs * 1000) % 1000000000UL}, NULL);
-#endif
 }
 
 static const unsigned min_sleep = CONFIG_DELAY_MINIMUM_SLEEP_US;
