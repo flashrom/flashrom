@@ -47,7 +47,7 @@ static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, u
 {
 	printf("Read chip called with start=0x%x, len=0x%x\n", start, len);
 
-	assert_in_range(start + len, 0, MOCK_CHIP_SIZE);
+	assert_true(start + len <= MOCK_CHIP_SIZE);
 
 	memcpy(buf, &g_chip_state.buf[start], len);
 	return 0;
@@ -57,7 +57,7 @@ static int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int s
 {
 	printf("Write chip called with start=0x%x, len=0x%x\n", start, len);
 
-	assert_in_range(start + len, 0, MOCK_CHIP_SIZE);
+	assert_true(start + len <= MOCK_CHIP_SIZE);
 
 	memcpy(&g_chip_state.buf[start], buf, len);
 	return 0;
@@ -67,7 +67,7 @@ static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsi
 {
 	printf("Block erase called with blockaddr=0x%x, blocklen=0x%x\n", blockaddr, blocklen);
 
-	assert_in_range(blockaddr + blocklen, 0, MOCK_CHIP_SIZE);
+	assert_true(blockaddr + blocklen <= MOCK_CHIP_SIZE);
 
 	memset(&g_chip_state.buf[blockaddr], 0xff, blocklen);
 	return 0;

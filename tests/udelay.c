@@ -42,7 +42,7 @@ void udelay_test_short(void **state) {
      * It's not useful to test the sleep path because we assume the OS won't
      * sleep for less time than we ask.
      */
-    int64_t delay_us = 100;
+    uint64_t delay_us = 100;
     if (delay_us >= min_sleep)
       delay_us = min_sleep - 1;
     /* No point in running this test if delay always sleeps. */
@@ -53,5 +53,5 @@ void udelay_test_short(void **state) {
     default_delay(delay_us);
     uint64_t elapsed = now_us() - start;
 
-    assert_in_range(elapsed, delay_us, 10 * delay_us);
+    assert_true((elapsed >= delay_us) && (elapsed <= 10 * delay_us));
 }

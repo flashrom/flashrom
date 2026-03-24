@@ -29,8 +29,11 @@ static int realtek_mst_read(void *state, int fd, void *buf, size_t sz)
 static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 {
 	assert_int_equal(fd, MOCK_FD);
-	const LargestIntegralType accepted_sizes[] = {1, 2};
-	assert_in_set(sz, accepted_sizes, ARRAY_SIZE(accepted_sizes));
+
+	//const LargestIntegralType accepted_sizes[] = {1, 2};
+	//assert_in_set(sz, accepted_sizes, ARRAY_SIZE(accepted_sizes));
+	// TODO: return the assert_in_set back after upgrading cmocka version
+	assert_true((sz == 1) || (sz == 2));
 	return sz;
 }
 
