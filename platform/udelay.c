@@ -7,8 +7,6 @@
  * SPDX-FileCopyrightText: 2024 Google LLC
  */
 
-#ifndef __LIBPAYLOAD__
-
 #include "platform/udelay.h"
 
 #include <stddef.h>
@@ -68,12 +66,3 @@ void default_delay(unsigned int usecs)
 		internal_sleep(usecs);
 	}
 }
-
-#else
-#include <libpayload.h>
-
-void default_delay(unsigned int usecs)
-{
-	udelay(usecs);
-}
-#endif

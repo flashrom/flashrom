@@ -16,6 +16,8 @@ if target_machine.system() == 'dos'
   srcs += files('udelay_dos.c')
 elif target_machine.system() == 'windows'
   srcs += files('udelay_windows.c')
+elif target_machine.system() == 'libpayload'
+  srcs += files('udelay_libpayload.c')
 else
   srcs += files('udelay.c')
 endif
