@@ -6,7 +6,7 @@
  */
 
 #ifndef __CUSTOM_BAUD_H__
-#define __CUSTOM_BAUD_H__ 1
+#define __CUSTOM_BAUD_H__
 
 struct baudentry {
 	int flag;
@@ -25,4 +25,4 @@ int set_custom_baudrate(int fd, unsigned int baud, const enum custom_baud_stage 
    The baudtable must be in ascending order and terminated with a 0-baud entry. */
 int use_custom_baud(unsigned int baud, const struct baudentry *baudtable);
 
-#endif
+#endif /* __CUSTOM_BAUD_H__ */
