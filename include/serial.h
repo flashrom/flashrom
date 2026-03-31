@@ -5,7 +5,7 @@
  */
 
 #ifndef __SERIAL_H__
-#define __SERIAL_H__ 1
+#define __SERIAL_H__
 
 #if IS_WINDOWS
 #include <windows.h>
@@ -53,4 +53,4 @@ enum SP_PIN {
 void sp_set_pin(enum SP_PIN pin, int val);
 int sp_get_pin(enum SP_PIN pin);
 
-#endif /* !__SERIAL_H__ */
+#endif /* __SERIAL_H__ */
