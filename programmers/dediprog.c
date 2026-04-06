@@ -1164,7 +1164,7 @@ static int dediprog_init(const struct programmer_cfg *cfg)
 			free(param_str);
 			return 1;
 		}
-		if (target < 1 || target > 2) {
+		if (target < 1 || target > 3) {
 			msg_perr("Error: Value for 'target' is out of range.\n");
 			free(param_str);
 			return 1;
@@ -1182,6 +1182,10 @@ static int dediprog_init(const struct programmer_cfg *cfg)
 		case 2:
 			msg_pinfo("Using target %s.\n", "FLASH_TYPE_APPLICATION_FLASH_2");
 			target = FLASH_TYPE_APPLICATION_FLASH_2;
+			break;
+		case 3:
+			msg_pinfo("Using target %s.\n", "FLASH_TYPE_SOCKET");
+			target = FLASH_TYPE_SOCKET;
 			break;
 		default:
 			break;

@@ -1071,7 +1071,7 @@ An optional ``target`` parameter specifies which target chip should be used. Syn
 
         flashrom -p dediprog:target=value
 
-where ``value`` can be ``1`` or ``2`` to select target chip 1 or 2 respectively. The default is target chip 1.
+where ``value`` can be ``1``, ``2``, or ``3`` to select target chip 1, 2, or socket (3) respectively. The default is target chip 1.
 
 
 rayer_spi programmer
