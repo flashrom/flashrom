@@ -433,7 +433,8 @@ static int serprog_shutdown(void *data)
 	return 0;
 }
 
-static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
+/* print_as_warn makes the message shown above default log level */
+static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len, bool print_as_warn)
 {
 	/* Serprog transmits 24 bits only and assumes the underlying implementation handles any remaining bits
 	 * correctly (usually setting them to one either in software (for FWH/LPC) or relying on the fact that
@@ -443,15 +444,30 @@ static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
 	if ((phys_addr & 0xFF000000) == 0xFF000000) {
 		return (void*)phys_addr;
 	}
-	msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
-		  descr, len, PRIxPTR_WIDTH, phys_addr);
+
+	if (print_as_warn)
+		msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
+			  descr, len, PRIxPTR_WIDTH, phys_addr);
+	else
+		msg_pdbg(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
+			  descr, len, PRIxPTR_WIDTH, phys_addr);
 	return NULL;
+}
+
+static void *serprog_spi_map(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	return serprog_map(descr, phys_addr, len, false);
+}
+
+static void *serprog_par_map(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	return serprog_map(descr, phys_addr, len, true);
 }
 
 static void serprog_delay(const struct flashctx *flash, unsigned int usecs);
 
 static struct spi_master spi_master_serprog = {
-	.map_flash_region	= serprog_map,
+	.map_flash_region	= serprog_spi_map,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
@@ -585,7 +601,7 @@ static void serprog_delay(const struct flashctx *flash, unsigned int usecs)
 }
 
 static const struct par_master par_master_serprog = {
-	.map_flash_region	= serprog_map,
+	.map_flash_region	= serprog_par_map,
 	.chip_readb	= serprog_chip_readb,
 	.chip_readn	= serprog_chip_readn,
 	.chip_writeb	= serprog_chip_writeb,
