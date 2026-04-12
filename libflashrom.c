@@ -467,7 +467,6 @@ bool flashrom_flag_get(const struct flashrom_flashctx *const flashctx, const enu
 	}
 }
 
-#ifdef __FLASHROM_LITTLE_ENDIAN__
 static int compare_region_with_dump(const struct romentry *const a, const struct romentry *const b)
 {
 	if (a->region.start != b->region.start
@@ -513,7 +512,6 @@ int flashrom_layout_compare(const struct flashrom_layout *layout1,
 
 	return 0;
 }
-#endif /* __FLASHROM_LITTLE_ENDIAN__ */
 
 int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct flashctx *const flashctx,
 				  const void *const dump, const size_t len)
