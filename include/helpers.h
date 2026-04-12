@@ -26,12 +26,5 @@ char *strcat_realloc(char *dest, const char *src);
 void tolower_string(char *str);
 uint8_t reverse_byte(uint8_t x);
 void reverse_bytes(uint8_t *dst, const uint8_t *src, size_t length);
-#ifdef __MINGW32__
-char* strtok_r(char *str, const char *delim, char **nextp);
-char *strndup(const char *str, size_t size);
-#endif
-#if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
-size_t strnlen(const char *str, size_t n);
-#endif
 
 #endif /* __HELPERS_H__ */

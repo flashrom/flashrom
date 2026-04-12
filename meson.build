@@ -111,9 +111,6 @@ srcs = files(
 if cc.has_function('clock_gettime')
   add_project_arguments('-DHAVE_CLOCK_GETTIME=1', language : 'c')
 endif
-if cc.has_function('strnlen')
-  add_project_arguments('-DHAVE_STRNLEN=1', language : 'c')
-endif
 if cc.check_header('getopt.h')
   add_project_arguments('-DHAVE_GETOPT_H=1', language : 'c')
 endif

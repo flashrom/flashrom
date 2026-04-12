@@ -11,6 +11,12 @@ if target_machine.system() == 'linux'
   srcs += files('i2c_linux.c')
 endif
 
+# String
+if cc.has_function('strnlen')
+  add_project_arguments('-DHAVE_STRNLEN=1', language : 'c')
+endif
+srcs += files('string.c')
+
 # Select an appropriate delay implementation for the target OS
 if target_machine.system() == 'dos'
   srcs += files('udelay_dos.c')
