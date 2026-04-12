@@ -11,6 +11,10 @@ if target_machine.system() == 'linux'
   srcs += files('i2c_linux.c')
 endif
 
+if cc.check_header('pciutils/pci.h')
+  add_project_arguments('-DHAVE_PCIUTILS_PCI_H=1', language : 'c')
+endif
+
 # String
 if cc.has_header_symbol('string.h', 'strndup')
   add_project_arguments('-DHAVE_STRNDUP=1', language : 'c')
