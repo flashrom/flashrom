@@ -9,6 +9,7 @@
  */
 
 #include "platform/string.h"
+#include "platform/getopt.h"
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"
@@ -16,7 +17,6 @@
 #include "libflashrom.h"
 #include "helpers.h"
 #include "log.h"
-#include "cli_getopt.h"
 #include "cli_output.h"
 #include "read_extended.h"
 #include <errno.h>

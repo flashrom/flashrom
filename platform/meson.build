@@ -8,6 +8,18 @@ dep_platform_endian = declare_dependency(
 # __FLASHROM_LITTLE_ENDIAN__ / __FLASHROM_BIG_ENDIAN__
 add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_ENDIAN__=1', language : 'c')
 
+# Getopt
+if cc.check_header('getopt.h')
+  add_project_arguments('-DHAVE_GETOPT_H=1', language : 'c')
+endif
+if not cc.has_function('getopt_long')
+  dep_platform_getopt = declare_dependency(
+    sources : files('getopt.c'),
+  )
+else
+  dep_platform_getopt = dependency('', required : false)
+endif
+
 # I2C
 if target_machine.system() == 'linux'
   dep_platform_i2c = declare_dependency(

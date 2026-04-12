@@ -7,10 +7,10 @@
  * SPDX-FileCopyrightText: Thomas Heijligen <thomas.heijligen@secunet.com>
  */
 
-#include "cli_getopt.h"
+#include "platform/getopt.h"
 
-#include "flash.h"
 #include "platform/string.h"
+#include "log.h"
 #include <unistd.h>
 #include <wchar.h>
 #include <limits.h>

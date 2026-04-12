@@ -112,9 +112,6 @@ srcs = files(
 if cc.has_function('clock_gettime')
   add_project_arguments('-DHAVE_CLOCK_GETTIME=1', language : 'c')
 endif
-if cc.check_header('getopt.h')
-  add_project_arguments('-DHAVE_GETOPT_H=1', language : 'c')
-endif
 if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
 endif
@@ -711,14 +708,11 @@ if get_option('classic_cli').enabled() or get_option('classic_cli').auto() and n
     'cli_output.c'
   )
 
-  if not cc.has_function('getopt_long')
-    cli_srcs += files('cli_getopt.c')
-  endif
-
   classic_cli = executable(
     'flashrom',
     cli_srcs,
     c_args : cargs,
+    dependencies : dep_platform_getopt,
     include_directories : include_dir,
     install : true,
     install_dir : get_option('sbindir'),
