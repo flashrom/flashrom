@@ -602,6 +602,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
 	case CHIPSET_WILDCAT_LAKE:
+	case CHIPSET_NOVA_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
@@ -713,6 +714,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
 	case CHIPSET_WILDCAT_LAKE:
+	case CHIPSET_NOVA_LAKE:
 		boot_straps = boot_straps_pch500;
 		break;
 	case CHIPSET_APOLLO_LAKE:
@@ -751,6 +753,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
 	case CHIPSET_WILDCAT_LAKE:
+	case CHIPSET_NOVA_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
@@ -1039,6 +1042,11 @@ static int enable_flash_ptl(const struct programmer_cfg *cfg, struct pci_dev *co
 static int enable_flash_wcl(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
 {
         return enable_flash_pch100_or_c620(cfg, dev, name, 0x1f, 5, CHIPSET_WILDCAT_LAKE);
+}
+
+static int enable_flash_nvl(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(cfg, dev, name, 0x1f, 5, CHIPSET_NOVA_LAKE);
 }
 
 static int enable_flash_mcc(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
@@ -2224,6 +2232,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xe323, B_S,    DEP, "Intel", "Panther Lake-U/H 12Xe",		enable_flash_ptl},
 	{0x8086, 0xe423, B_S,    DEP, "Intel", "Panther Lake-H 4Xe",		enable_flash_ptl},
 	{0x8086, 0x4d23, B_S,    DEP, "Intel", "Wildcat Lake",                  enable_flash_wcl},
+	{0x8086, 0xd323, B_S,    DEP, "Intel", "Nova Lake",			enable_flash_nvl},
 #endif
 	{0},
 };
