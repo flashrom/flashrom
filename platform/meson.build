@@ -12,8 +12,14 @@ if target_machine.system() == 'linux'
 endif
 
 # String
-if cc.has_function('strnlen')
+if cc.has_header_symbol('string.h', 'strndup')
+  add_project_arguments('-DHAVE_STRNDUP=1', language : 'c')
+endif
+if cc.has_header_symbol('string.h', 'strnlen')
   add_project_arguments('-DHAVE_STRNLEN=1', language : 'c')
+endif
+if cc.has_header_symbol('string.h', 'strtok_r')
+  add_project_arguments('-DHAVE_STRTOK_R=1', language : 'c')
 endif
 srcs += files('string.c')
 

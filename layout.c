@@ -10,12 +10,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
 #include "flash.h"
 #include "programmer.h"
 #include "layout.h"
 #include "helpers.h"
+#include "platform/string.h"
 
 struct flashrom_layout {
 	struct romentry *head;

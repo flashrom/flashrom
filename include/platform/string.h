@@ -15,7 +15,6 @@
  * Platform independent interface to handle strings handling.
  */
 
-
 #ifndef __PLATFORM_STRING_H__
 #define __PLATFORM_STRING_H__
 
@@ -30,14 +29,16 @@
 
 #include <string.h>
 
-#ifdef __MINGW32__
-char* strtok_r(char *str, const char *delim, char **nextp);
-char *strndup(const char *str, size_t size);
+#if !defined(HAVE_STRNDUP)
+char *strndup(const char *src, size_t maxlen);
 #endif
 
-#if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
+#if !defined(HAVE_STRNLEN)
 size_t strnlen(const char *str, size_t n);
 #endif
 
-#endif /* ___PLATFOMR_STRING_H__ */
+#if !defined(HAVE_STRTOK_R)
+char* strtok_r(char *str, const char *delim, char **nextp);
+#endif
 
+#endif /* ___PLATFOMR_STRING_H__ */

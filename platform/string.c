@@ -17,9 +17,35 @@
 
 #include "platform/string.h"
 
+#include <stdlib.h>
 
-/* FIXME: Find a better solution for MinGW. Maybe wrap strtok_s (C11) if it becomes available */
-#ifdef __MINGW32__
+#if !defined(HAVE_STRNDUP)
+char *strndup(const char *src, size_t maxlen)
+{
+	char *retbuf;
+	size_t len;
+	for (len = 0; len < maxlen; len++)
+		if (src[len] == '\0')
+			break;
+	if ((retbuf = malloc(1 + len)) != NULL) {
+		memcpy(retbuf, src, len);
+		retbuf[len] = '\0';
+	}
+	return retbuf;
+}
+#endif
+
+#if !defined(HAVE_STRNLEN)
+size_t strnlen(const char *str, size_t n)
+{
+	size_t i;
+	for (i = 0; i < n && str[i] != '\0'; i++)
+		;
+	return i;
+}
+#endif
+
+#if !defined(HAVE_STRTOK_R)
 char* strtok_r(char *str, const char *delim, char **nextp)
 {
 	if (str == NULL)
@@ -37,31 +63,4 @@ char* strtok_r(char *str, const char *delim, char **nextp)
 	*nextp = str;
 	return ret;
 }
-
-/* strndup is a POSIX function not present in MinGW */
-char *strndup(const char *src, size_t maxlen)
-{
-	char *retbuf;
-	size_t len;
-	for (len = 0; len < maxlen; len++)
-		if (src[len] == '\0')
-			break;
-	if ((retbuf = malloc(1 + len)) != NULL) {
-		memcpy(retbuf, src, len);
-		retbuf[len] = '\0';
-	}
-	return retbuf;
-}
 #endif
-
-/* There is no strnlen in DJGPP */
-#if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
-size_t strnlen(const char *str, size_t n)
-{
-	size_t i;
-	for (i = 0; i < n && str[i] != '\0'; i++)
-		;
-	return i;
-}
-#endif
-
