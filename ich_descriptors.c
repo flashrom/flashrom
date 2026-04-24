@@ -1094,8 +1094,14 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 				return CHIPSET_JASPER_LAKE;
 			else if (content->CSSO == 0x70)
 				return CHIPSET_METEOR_LAKE;
-			else if (content->CSSO == 0x60)
-				return CHIPSET_PANTHER_LAKE;
+			else if (content->CSSO == 0x60) {
+				switch (content->ISL) {
+				case 0x78:
+					return CHIPSET_WILDCAT_LAKE;
+				default:
+					return CHIPSET_PANTHER_LAKE;
+				}
+			}
 		}
 		msg_pwarn("Unknown flash descriptor, assuming 500 series compatibility.\n");
 		return CHIPSET_500_SERIES_TIGER_POINT;
