@@ -537,6 +537,7 @@ const struct board_info boards_known[] = {
 	B("Shuttle",	"FN25",			OK, "http://www.shuttle.eu/products/discontinued/barebones/sn25p/?0=", NULL),
 	B("Shuttle",	"FN78S",		OK, "http://www.shuttle.eu/products/discontinued/barebones/sn78sh7/", NULL),
 	B("Shuttle",	"X50/X50(B)",		OK, "http://au.shuttle.com/product_detail_spec.jsp?PI=1241", NULL),
+	B("Sophos",	"XG 230r2",		DEP, NULL, "Skylake/Intel H110 PCH. Probing and reading the 16 MB image work via internal programmer (hardware sequencing; SPI configuration is locked by  OEM AMI BIOS). Writes are blocked by BIOS Interface."),
 	B("Soyo",	"SY-5VD",		BAD, "http://www.soyo.com/content/Downloads/163/&c=80&p=464&l=English", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("Soyo",	"SY-6BA+ III",		OK, "http://www.motherboard.cz/mb/soyo/SY-6BA+III.htm", NULL),
 	B("Soyo",	"SY-7VCA",		OK, "http://www.tomshardware.com/reviews/12-socket-370-motherboards,196-15.html", NULL),
