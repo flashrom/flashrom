@@ -277,6 +277,58 @@
 
 	{
 		.vendor		= "ISSI",
+		.name		= "IS25LP01GJ",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ISSI_ID_SPI,
+		.model_id	= ISSI_IS25LP01GJ,
+		.total_size	= 131072,
+		.page_size	= 256,
+		/* supports SFDP */
+		/* OTP: 4x1KB total; read 0x68; write 0x62, erase 0x64 */
+		/* Not FEATURE_4BA_ENTER: EX4B is 29h by default, or E9h with
+		 * the option-X ordering that swaps it with UNPWD. */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI |
+				  FEATURE_4BA_EAR7 | FEATURE_4BA_EAR_1716,
+		.tested		= TEST_UNTESTED,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32768} },
+				.block_erase = SPI_BLOCK_ERASE_21,
+			}, {
+				.eraseblocks = { {4 * 1024, 32768} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+				/* could also use SPI_BLOCK_ERASE_D7 */
+			}, {
+				.eraseblocks = { {32 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_5C,
+			}, {
+				.eraseblocks = { {32 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_DC,
+			}, {
+				.eraseblocks = { {64 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { {128 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {128 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+		},
+		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "ISSI",
 		.name		= "IS25LQ016",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
@@ -742,6 +794,58 @@
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+		},
+		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1650, 1950},
+	},
+
+	{
+		.vendor		= "ISSI",
+		.name		= "IS25WP01GJ",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ISSI_ID_SPI,
+		.model_id	= ISSI_IS25WP01GJ,
+		.total_size	= 131072,
+		.page_size	= 256,
+		/* supports SFDP */
+		/* OTP: 4x1KB total; read 0x68; write 0x62, erase 0x64 */
+		/* Not FEATURE_4BA_ENTER: EX4B is 29h by default, or E9h with
+		 * the option-X ordering that swaps it with UNPWD. */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI |
+				  FEATURE_4BA_EAR7 | FEATURE_4BA_EAR_1716,
+		.tested		= TEST_OK_PREW,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32768} },
+				.block_erase = SPI_BLOCK_ERASE_21,
+			}, {
+				.eraseblocks = { {4 * 1024, 32768} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+				/* could also use SPI_BLOCK_ERASE_D7 */
+			}, {
+				.eraseblocks = { {32 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_5C,
+			}, {
+				.eraseblocks = { {32 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_DC,
+			}, {
+				.eraseblocks = { {64 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { {128 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {128 * 1024 * 1024, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
