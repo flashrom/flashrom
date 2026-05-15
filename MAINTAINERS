@@ -147,55 +147,55 @@ F:	COPYING.rst
 AMD SB600SPI
 M:	Martin Roth <gaumless@tutanota.com>
 S:	Maintained
-F:	sb600spi.c
+F:	programmers/sb600spi.c
 
 BUS PIRATE
 M:	David Reguera <regueragarciadavid@gmail.com>
 S:	Maintained
-F:	buspirate_spi.c
+F:	programmers/buspirate_spi.c
 
 CH347
 M:	Nicholas Chin <nic.c3.14@gmail.com>
 S:	Maintained
-F:	ch347_spi.c
+F:	programmers/ch347_spi.c
 
 DirtyJTAG
 M:	Jean THOMAS <virgule@jeanthomas.me>
 S:	Maintained
-F:	dirtyjtag_spi.c
+F:	programmers/dirtyjtag_spi.c
 
 I2C PROGRAMMERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
-F:	mediatek_i2c_spi.c
-F:	parade_lspcon.c
-F:	realtek_mst_i2c_spi.c
+F:	programmers/mediatek_i2c_spi.c
+F:	programmers/parade_lspcon.c
+F:	programmers/realtek_mst_i2c_spi.c
 
 LINUX MTD
 M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Supported
-F:	linux_mtd.c
+F:	programmers/linux_mtd.c
 
 National Instruments USB-845x
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
-F:	ni845x_spi.c
+F:	programmers/ni845x_spi.c
 
 NVIDIA SMA SPI
 M:	Willie Thai <wthai@nvidia.com>
 M:	Gilbert Chen <gilbertc@nvidia.com>
 S:	Maintained
-F:	nv_sma_spi.c
+F:	programmers/nv_sma_spi.c
 
 RAIDEN DEBUG SPI
 M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Maintained
-F:	raiden_debug_spi.c
+F:	programmers/raiden_debug_spi.c
 
 STLINK-V3
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
-F:	stlinkv3_spi.c
+F:	programmers/stlinkv3_spi.c
 
 ################################################################################
 # TESTS
