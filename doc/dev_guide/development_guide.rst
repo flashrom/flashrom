@@ -144,9 +144,18 @@ The notable exception is line length limit. Our guidelines are:
 * Tables are the only exception to the hard limit and may be as long as needed
   for practical purposes.
 
-We try to **reuse as much code as possible** and create new files only if
-absolutely needed, so if you find a function somewhere in the tree which
-already does what you want, please use it.
+Other guidelines:
+
+* We try to **reuse as much code as possible** and create new files only if
+  absolutely needed, so if you find a function somewhere in the tree which
+  already does what you want, please use it.
+
+* Order of includes:
+
+   1. If applicable, header file with the same name as the current source, in double quotes
+   2. Other flashrom headers in double quotes
+   3. Third-party headers in angle brackets
+   4. Standard C and system headers in angle brackets
 
 Testing a patch
 ---------------
