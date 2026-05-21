@@ -24,7 +24,7 @@ SYNOPSIS
 |             [--counter-address <address>]
 |             [--get-rpmc-status] [--write-root-key] [--update-hmac-key]
 |             [--increment-counter <current>] [--get-counter])]
-|         [-V[V[V]]] [-o <logfile>] [--progress] [--sacrifice-ratio <ratio>]
+|         [-V[V[V]]] [-o <logfile>] [--progress] [--sacrifice-ratio <ratio>] [--read-repeated[=<count>] [<file>]]
 
 
 DESCRIPTION
@@ -404,6 +404,34 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
         DANGEROUS! It wears your chip faster!
 
+
+**--read-repeated [=<count>] [<file>]**
+        Read the flash chip <count> times (default: 3, minimum: 3, maximum: 100)
+        and use majority voting to detect unstable connections. A strict majority
+        (more than half of all reads) must agree for the result to be trusted.
+        A tie between two content groups is treated as a failure.
+
+        Reports ``X/N reads matched``. If all reads agree the connection is
+        declared stable; if a majority agrees but not all, a flakiness warning
+        is printed. If no majority is found the operation fails with an error.
+
+        If ``<file>`` is given and a majority is found, the majority content is
+        saved to that file. Without ``<file>``, the option acts as a connection
+        stability check only.
+
+        Cannot be combined with ``-r``, ``-w``, ``-E``, or ``-v``.
+
+        This option allocates memory proportional to the number of distinct read
+        results (not the total count). On a stable connection only one copy of the
+        flash content is kept. On unstable connections with many unique results,
+        memory usage may be significant and the option may not be suitable for
+        environments with very limited RAM.
+
+        Examples::
+
+                flashrom -p <programmer> --read-repeated
+                flashrom -p <programmer> --read-repeated=5
+                flashrom -p <programmer> --read-repeated=5 dump.bin
 
 **-R, --version**
         Show version information and exit.

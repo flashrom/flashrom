@@ -18,6 +18,7 @@
 #include "log.h"
 #include "cli_getopt.h"
 #include "cli_output.h"
+#include "read_extended.h"
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -47,6 +48,7 @@ enum {
 	OPTION_WP_LIST,
 	OPTION_PROGRESS,
 	OPTION_SACRIFICE_RATIO,
+	OPTION_READ_REPEATED,
 #if CONFIG_RPMC_ENABLED == 1
 	OPTION_RPMC_READ_DATA,
 	OPTION_RPMC_WRITE_ROOT_KEY,
@@ -86,6 +88,7 @@ struct cli_options {
 	char *referencefile;
 	const char *chip_to_probe;
 	int sacrifice_ratio;
+	int read_repeated;
 
 #if CONFIG_RPMC_ENABLED == 1
 	bool rpmc_read_data;
@@ -152,6 +155,12 @@ static void cli_classic_usage(const char *name)
 	       "                                    operation VS the longevity of the chip. Default is\n"
 	       "                                    longevity.\n"
 	       "                                    DANGEROUS! It wears your chip faster!\n"
+	       "      --read-repeated[=<count>] [<file>]\n"
+	       "                                    read flash <count> times (default: 3,\n"
+	       "                                    min: 3, max: 100) and use majority\n"
+	       "                                    voting to detect unstable connections.\n"
+	       "                                    Reports X/N reads matched. Saves\n"
+	       "                                    majority content to <file> if given.\n"
 #if CONFIG_RPMC_ENABLED == 1
 	       "RPMC COMMANDS\n"
 	       "      --get-rpmc-status             read the extended status\n"
@@ -642,6 +651,26 @@ static unsigned char *alloc_flashsize_buf(struct flashctx *const flash)
 	return buf;
 }
 
+static int do_read_repeated(struct flashctx *const flash, int count, const char *const filename)
+{
+	unsigned char *result_buf = NULL;
+	size_t result_size = 0;
+	int ret;
+
+	ret = read_repeated(flash, count, &result_buf, &result_size);
+	if (!ret) {
+		if (write_buf_to_include_args(get_layout(flash), result_buf)) {
+			ret = 1;
+		} else if (filename) {
+			ret = write_buf_to_file(result_buf, result_size, filename);
+			if (!ret)
+				msg_ginfo("Saved flash contents to \"%s\".\n", filename);
+		}
+	}
+	flashrom_data_free(result_buf);
+	return ret;
+}
+
 static int do_read(struct flashctx *const flash, const char *const filename)
 {
 	int ret;
@@ -1008,6 +1037,21 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			/* It is okay to convert invalid input to 0. */
 			options->sacrifice_ratio = atoi(optarg);
 			break;
+		case OPTION_READ_REPEATED:
+			cli_classic_validate_singleop(&operation_specified);
+			if (optarg) {
+				char *end;
+				long val = strtol(optarg, &end, 10);
+				if (*end != '\0' || val < 3 || val > 100) {
+					msg_gerr("Error: --read-repeated count must be between 3 and 100.\n");
+					cli_classic_abort_usage(NULL);
+				}
+				options->read_repeated = (int)val;
+			} else {
+				options->read_repeated = 3;
+			}
+			options->filename = get_optional_filename(argv);
+			break;
 #if CONFIG_RPMC_ENABLED == 1
 		case OPTION_RPMC_READ_DATA:
 			options->rpmc_read_data = true;
@@ -1112,6 +1156,7 @@ int main(int argc, char *argv[])
 		{"output",		1, NULL, 'o'},
 		{"progress",		0, NULL, OPTION_PROGRESS},
 		{"sacrifice-ratio",	1, NULL, OPTION_SACRIFICE_RATIO},
+		{"read-repeated",	2, NULL, OPTION_READ_REPEATED},
 #if CONFIG_RPMC_ENABLED == 1
 		{"get-rpmc-status",	0, NULL, OPTION_RPMC_READ_DATA},
 		{"write-root-key",	0, NULL, OPTION_RPMC_WRITE_ROOT_KEY},
@@ -1344,7 +1389,8 @@ int main(int argc, char *argv[])
 
 	const bool any_op = options.read_it || options.write_it || options.verify_it ||
 		options.erase_it || options.flash_name || options.flash_size ||
-		options.extract_it || any_wp_op || any_rpmc_op;
+		options.extract_it || any_wp_op || any_rpmc_op ||
+		options.read_repeated > 0;
 
 	if (!any_op) {
 		msg_ginfo("No operations were specified.\n");
@@ -1358,6 +1404,13 @@ int main(int argc, char *argv[])
 	}
 	if (options.set_wp_range && options.set_wp_region) {
 		msg_gerr("Error: Cannot use both --wp-range and --wp-region simultaneously.\n");
+		ret = 1;
+		goto out_shutdown;
+	}
+
+	if (options.read_repeated > 0 &&
+	    (options.read_it || options.write_it || options.erase_it || options.verify_it)) {
+		msg_gerr("Error: --read-repeated cannot be combined with read, write, erase, or verify.\n");
 		ret = 1;
 		goto out_shutdown;
 	}
@@ -1561,7 +1614,9 @@ int main(int argc, char *argv[])
 	 * Give the chip time to settle.
 	 */
 	programmer_delay(context, 100000);
-	if (options.read_it)
+	if (options.read_repeated > 0)
+		ret = do_read_repeated(context, options.read_repeated, options.filename);
+	else if (options.read_it)
 		ret = do_read(context, options.filename);
 	else if (options.extract_it)
 		ret = do_extract(context);

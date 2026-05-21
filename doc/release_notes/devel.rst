@@ -77,3 +77,12 @@ New programmers
   and partial writes. Uses a seeded PRNG for reproducibility. Intended for
   testing verification logic and retry mechanisms under realistic failure
   conditions.
+
+New options
+-----------
+
+* ``--read-repeated[=<count>] [<file>]``: Read the flash chip multiple times
+  (default: 3, minimum: 3) and use majority voting to detect unstable
+  connections. Deduplicates read results to minimise memory usage. If a file
+  is given and a strict majority is found, saves the majority content to it.
+  Useful for diagnosing flaky SPI wiring or unreliable programmers.

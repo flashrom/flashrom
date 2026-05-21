@@ -13,7 +13,7 @@ _flashrom()
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	case $prev in
 		'-r'|'--read'|'-w'|'--write'|'-v'|'--verify'|'-l'|'--layout'| \
-		'--fmap-file'|'-o'|'--output'|'--flash-contents')
+		'--fmap-file'|'-o'|'--output'|'--flash-contents'|'--read-repeated')
 			local IFS=$'\n'
 			compopt -o filenames
 			COMPREPLY=( $(compgen -f -- $cur) )
@@ -60,7 +60,8 @@ _flashrom()
 		--flash-contents
 		--list-supported
 		--progress
-		--programmer"
+		--programmer
+		--read-repeated"
 	COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
 	return 0
 }

@@ -112,7 +112,7 @@ F:	include/flash.h
 F:	include/libflashrom.h
 
 READ EXTENDED
-M:	Abdelkader Boudih <flashrom@seuros.com>
+M:	Abdelkader Boudih <coreboot@seuros.com>
 S:	Maintained
 F:	read_extended*
 F:	include/read_extended*
