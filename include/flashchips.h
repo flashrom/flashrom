@@ -1110,6 +1110,7 @@
 
 #define XTX_ID			0x0B	/* XTX Technology Limited */
 #define XTX_XT25F02E		0x4012
+#define XTX_XT25F16B		0x4015
 #define XTX_XT25F64B		0x4017
 #define XTX_XT25F128B		0x4018
 
