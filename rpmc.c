@@ -12,7 +12,7 @@
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
-#include <string.h>
+#include "platform/string.h"
 #include "spi.h"
 
 // OP1 commands

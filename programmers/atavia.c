@@ -8,7 +8,7 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h"
 #include "programmer.h"
 #include "platform/udelay.h"

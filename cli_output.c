@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
+#include "platform/string.h"
 #include <errno.h>
 
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;

@@ -8,7 +8,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include <stddef.h>
 #if HAVE_UTSNAME == 1

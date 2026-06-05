@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <strings.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h"
 #include "programmer.h"
 #include "coreboot_tables.h"

@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>

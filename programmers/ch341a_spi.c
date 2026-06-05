@@ -9,7 +9,7 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include <libusb.h>
 #include "flash.h"
 #include "programmer.h"

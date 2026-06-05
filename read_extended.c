@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 
 #include "flash.h"
 #include "libflashrom.h"

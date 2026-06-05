@@ -14,7 +14,7 @@
 
 #include <ctype.h>
 #include <inttypes.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ni845x.h>

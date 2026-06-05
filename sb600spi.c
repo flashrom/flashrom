@@ -10,7 +10,7 @@
  */
 
 #include <stdbool.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include "programmer.h"
 #include "hwaccess_physmap.h"

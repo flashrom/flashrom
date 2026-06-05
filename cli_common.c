@@ -8,7 +8,7 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h"
 
 void print_chip_support_status(const struct flashchip *chip)

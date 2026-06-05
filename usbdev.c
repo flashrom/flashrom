@@ -12,7 +12,7 @@
 #include "flash.h" // msg_perr, msg_pdbg...
 #include <inttypes.h>
 #include <stdbool.h>
-#include <string.h>
+#include "platform/string.h"
 
 /*
  * Check whether we should filter the current device.

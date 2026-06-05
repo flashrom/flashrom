@@ -11,7 +11,7 @@
 
 #include <unistd.h>
 #include <wchar.h>
-#include <string.h>
+#include "platform/string.h"
 #include <limits.h>
 #include <stdlib.h>
 #include "flash.h"

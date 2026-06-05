@@ -13,7 +13,7 @@
 #include "spi.h"
 
 #include <strings.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "programmer.h"

@@ -9,7 +9,7 @@
 /*
  * Contains SPI chip driver functions related to ST95XXX series (SPI EEPROM)
  */
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include "flashchips.h"
 #include "chipdrivers.h"

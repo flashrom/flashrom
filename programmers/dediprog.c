@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #include <limits.h>
 #include <errno.h>
 #include <libusb.h>

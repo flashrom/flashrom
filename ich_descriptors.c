@@ -11,7 +11,7 @@
 
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #define print(t, ...) printf(__VA_ARGS__)
 #endif
 
@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h" /* for msg_* */
 #include "programmer.h"
 #include "helpers.h"

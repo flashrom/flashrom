@@ -6,7 +6,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>

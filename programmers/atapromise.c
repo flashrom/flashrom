@@ -5,7 +5,7 @@
  * SPDX-FileCopyrightText: 2015 Joseph C. Lehner <joseph.c.lehner@gmail.com>
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"

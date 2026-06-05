@@ -21,7 +21,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 
 enum fw_version_check_result {
 	FW_VERSION_OK,

@@ -11,7 +11,7 @@
  * Contains the ITE IT87* SPI specific routines
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <errno.h>

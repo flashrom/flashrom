@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"

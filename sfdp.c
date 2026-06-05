@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include "spi.h"
 #include "chipdrivers.h"
 #include "helpers.h"

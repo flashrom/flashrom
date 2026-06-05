@@ -5,7 +5,7 @@
  * SPDX-FileCopyrightText: 2022 Nicholas Chin <nic.c3.14@gmail.com>
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include <libusb.h>
 #include "platform/endian.h"

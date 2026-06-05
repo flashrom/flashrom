@@ -13,7 +13,7 @@
 #include <libusb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 
 /*
  * Possibly extract a programmer parameter and use it to initialize the given

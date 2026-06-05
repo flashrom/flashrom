@@ -14,7 +14,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #include "client_tests.h"
 #include "libflashrom.h"
 

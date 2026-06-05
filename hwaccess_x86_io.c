@@ -29,7 +29,7 @@
  */
 
 #include <errno.h>
-#include <string.h>
+#include "platform/string.h"
 
 #include "flash.h"
 #include "hwaccess_x86_io.h"

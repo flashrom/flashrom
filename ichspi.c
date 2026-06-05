@@ -10,7 +10,7 @@
  * SPDX-FileCopyrightText: 2011 Stefan Tauner
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include "programmer.h"

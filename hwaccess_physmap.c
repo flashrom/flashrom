@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include <errno.h>
 #include "flash.h"
 #include "platform/endian.h"

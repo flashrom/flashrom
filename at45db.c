@@ -8,7 +8,7 @@
  * SPDX-FileCopyrightText: 2025 Marco Müller
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"

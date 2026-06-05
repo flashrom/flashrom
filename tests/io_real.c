@@ -9,7 +9,7 @@
 #include "wraps.h"
 
 #include "io_real.h"
-#include <string.h>
+#include "platform/string.h"
 
 static int io_real_open(void *state, const char *pathname, int flags, mode_t mode)
 {

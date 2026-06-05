@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 #include <sys/types.h>
 #include "flash.h"
 #include "fmap.h"

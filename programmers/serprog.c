@@ -24,7 +24,7 @@
 #else
 #include <termios.h>
 #endif
-#include <string.h>
+#include "platform/string.h"
 #include <errno.h>
 #include "flash.h"
 #include "programmer.h"

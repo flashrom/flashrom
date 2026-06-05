@@ -9,7 +9,7 @@
 #define __LIFECYCLE_H__
 
 #include <include/test.h>
-#include <string.h>
+#include "platform/string.h"
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <linux/spi/spidev.h>
 #endif

@@ -14,7 +14,7 @@
 
 #if defined (__MIPSEL__) && defined (__linux)
 #include <stdio.h>
-#include <string.h>
+#include "platform/string.h"
 #include <ctype.h>
 
 static int is_loongson(void)

@@ -5,7 +5,7 @@
  * SPDX-FileCopyrightText: 2025 NVIDIA CORPORATION
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include <libusb.h>
 #include <errno.h>

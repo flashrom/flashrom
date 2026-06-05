@@ -16,7 +16,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <string.h>
+#include "platform/string.h"
 #include <errno.h>
 #include "ich_descriptors.h"
 #include "helpers.h"

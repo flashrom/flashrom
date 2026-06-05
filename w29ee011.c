@@ -5,7 +5,7 @@
  * SPDX-FileCopyrightText: 2007 Markus Boas <ryven@ryven.de>
  */
 
-#include <string.h>
+#include "platform/string.h"
 #include <stdbool.h>
 
 #include "flash.h"

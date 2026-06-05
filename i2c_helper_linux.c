@@ -10,7 +10,7 @@
 #include "programmer.h"
 #include "platform/i2c.h"
 #include <errno.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 
 

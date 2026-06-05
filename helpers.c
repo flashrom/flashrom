@@ -11,7 +11,7 @@
 #include "flash.h"
 #include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
+#include "platform/string.h"
 
 /* Returns the minimum number of bits needed to represent the given address.
  * FIXME: use mind-blowing implementation. */

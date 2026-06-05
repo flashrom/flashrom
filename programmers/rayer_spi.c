@@ -17,7 +17,7 @@
 
 #include <stdlib.h>
 #include <strings.h>
-#include <string.h>
+#include "platform/string.h"
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"

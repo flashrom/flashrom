@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
+#include "platform/string.h"
 #include <errno.h>
 #include <libjaylink/libjaylink.h>
 

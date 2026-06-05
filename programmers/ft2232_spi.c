@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <strings.h>
-#include <string.h>
+#include "platform/string.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include "programmer.h"

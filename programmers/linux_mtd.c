@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mtd/mtd-user.h>
-#include <string.h>
+#include "platform/string.h"
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
