@@ -29,8 +29,10 @@ static void fallback_chip_writew(const struct flashctx *flash, uint16_t val,
 
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
 {
-	if (flash->mst->par.chip_writew)
+	if (flash->mst->par.chip_writew) {
 		flash->mst->par.chip_writew(flash, val, addr);
+		return;
+	}
 	fallback_chip_writew(flash, val, addr);
 }
 
@@ -44,8 +46,10 @@ static void fallback_chip_writel(const struct flashctx *flash, uint32_t val,
 
 void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	if (flash->mst->par.chip_writel)
+	if (flash->mst->par.chip_writel) {
 		flash->mst->par.chip_writel(flash, val, addr);
+		return;
+	}
 	fallback_chip_writel(flash, val, addr);
 }
 
@@ -59,8 +63,10 @@ static void fallback_chip_writen(const struct flashctx *flash, const uint8_t *bu
 
 void chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
 {
-	if (flash->mst->par.chip_writen)
+	if (flash->mst->par.chip_writen) {
 		flash->mst->par.chip_writen(flash, buf, addr, len);
+		return;
+	}
 	fallback_chip_writen(flash, buf, addr, len);
 }
 
@@ -113,8 +119,10 @@ static void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
 void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 		size_t len)
 {
-	if (flash->mst->par.chip_readn)
+	if (flash->mst->par.chip_readn) {
 		flash->mst->par.chip_readn(flash, buf, addr, len);
+		return;
+	}
 	fallback_chip_readn(flash, buf, addr, len);
 }
 
