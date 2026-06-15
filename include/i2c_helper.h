@@ -9,6 +9,7 @@
 #define I2C_HELPER_H
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 struct programmer_cfg; /* defined in programmer.h */
 
@@ -38,5 +39,16 @@ int i2c_write_buffer(int fd, uint16_t addr, void *buf, uint16_t len);
  * failure (including a short read).
  */
 int i2c_read_buffer(int fd, uint16_t addr, void *buf, uint16_t len);
+
+/**
+ * i2c_require_allow_brick: enforce the shared allow_brick programmer parameter
+ *
+ * I2C programmers can brick devices because the I2C address space can be
+ * overloaded, so they require the user to opt in with allow_brick=yes. This
+ * parses that parameter and, when it is absent or not "yes", prints the
+ * standard explanation. Returns 0 when allow_brick=yes was given, -1 otherwise
+ * (missing or malformed). I2C-based init functions should bail when it fails.
+ */
+int i2c_require_allow_brick(const struct programmer_cfg *cfg);
 
 #endif /* !I2C_HELPER_H */

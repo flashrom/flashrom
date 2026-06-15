@@ -52,6 +52,37 @@ static int get_bus_number(char *bus_str)
 	return bus;
 }
 
+int i2c_require_allow_brick(const struct programmer_cfg *cfg)
+{
+	char *brick_str = extract_programmer_param_str(cfg, "allow_brick");
+	bool allow_brick = false; /* Default behaviour is to bail. */
+
+	if (brick_str) {
+		if (!strcmp(brick_str, "yes")) {
+			allow_brick = true;
+		} else {
+			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
+			free(brick_str);
+			return -1;
+		}
+	}
+	free(brick_str);
+
+	/*
+	 * TODO: Once board_enable can facilitate safe i2c allow listing
+	 * 	 then this can be removed.
+	 */
+	if (!allow_brick) {
+		msg_perr("%s: For i2c drivers you must explicitly 'allow_brick=yes'. ", __func__);
+		msg_perr("There is currently no way to determine if the programmer works on a board "
+			 "as i2c device address space can be overloaded. Set 'allow_brick=yes' if "
+			 "you are sure you know what you are doing.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int i2c_open_from_programmer_params(const struct programmer_cfg *cfg, uint16_t addr, int force)
 {
 	int fd = -1;
