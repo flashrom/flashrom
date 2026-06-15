@@ -48,24 +48,6 @@ struct realtek_mst_i2c_spi_data {
 	bool reset;
 };
 
-static int realtek_mst_i2c_spi_write_data(int fd, uint16_t addr, void *buf, uint16_t len)
-{
-	i2c_buffer_t data;
-	if (i2c_buffer_t_fill(&data, buf, len))
-		return SPI_GENERIC_ERROR;
-
-	return i2c_write(fd, addr, &data) == len ? 0 : SPI_GENERIC_ERROR;
-}
-
-static int realtek_mst_i2c_spi_read_data(int fd, uint16_t addr, void *buf, uint16_t len)
-{
-	i2c_buffer_t data;
-	if (i2c_buffer_t_fill(&data, buf, len))
-		return SPI_GENERIC_ERROR;
-
-	return i2c_read(fd, addr, &data) == len ? 0 : SPI_GENERIC_ERROR;
-}
-
 static int get_fd_from_context(const struct flashctx *flash)
 {
 	if (!flash || !flash->mst || !flash->mst->spi.data) {
@@ -81,14 +63,14 @@ static int get_fd_from_context(const struct flashctx *flash)
 static int realtek_mst_i2c_spi_write_register(int fd, uint8_t reg, uint8_t value)
 {
 	uint8_t command[] = { reg, value };
-	return realtek_mst_i2c_spi_write_data(fd, REGISTER_ADDRESS, command, 2);
+	return i2c_write_buffer(fd, REGISTER_ADDRESS, command, 2);
 }
 
 static int realtek_mst_i2c_spi_read_register(int fd, uint8_t reg, uint8_t *value)
 {
 	uint8_t command[] = { reg };
-	int ret = realtek_mst_i2c_spi_write_data(fd, REGISTER_ADDRESS, command, 1);
-	ret |= realtek_mst_i2c_spi_read_data(fd, REGISTER_ADDRESS, value, 1);
+	int ret = i2c_write_buffer(fd, REGISTER_ADDRESS, command, 1);
+	ret |= i2c_read_buffer(fd, REGISTER_ADDRESS, value, 1);
 
 	return ret ? SPI_GENERIC_ERROR : 0;
 }
@@ -309,7 +291,7 @@ static int realtek_mst_i2c_spi_write_page(int fd, uint8_t reg, const uint8_t *bu
 
 	memcpy(&wbuf[1], buf, len);
 
-	return realtek_mst_i2c_spi_write_data(fd, REGISTER_ADDRESS, wbuf, len + 1);
+	return i2c_write_buffer(fd, REGISTER_ADDRESS, wbuf, len + 1);
 }
 
 static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
@@ -346,7 +328,7 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	realtek_mst_i2c_spi_read_register(fd, MCU_DATA_PORT, &dummy);
 
 	for (i = 0; i < len; i += RTK_PAGE_SIZE) {
-		ret |= realtek_mst_i2c_spi_read_data(fd, REGISTER_ADDRESS,
+		ret |= i2c_read_buffer(fd, REGISTER_ADDRESS,
 				buf + i, min(len - i, RTK_PAGE_SIZE));
 		if (ret)
 			return ret;

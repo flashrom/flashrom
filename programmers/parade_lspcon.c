@@ -74,24 +74,6 @@ typedef struct {
 	uint8_t control;
 } packet_t;
 
-static int parade_lspcon_write_data(int fd, uint16_t addr, void *buf, uint16_t len)
-{
-	i2c_buffer_t data;
-	if (i2c_buffer_t_fill(&data, buf, len))
-		return SPI_GENERIC_ERROR;
-
-	return i2c_write(fd, addr, &data) == len ? 0 : SPI_GENERIC_ERROR;
-}
-
-static int parade_lspcon_read_data(int fd, uint16_t addr, void *buf, uint16_t len)
-{
-	i2c_buffer_t data;
-	if (i2c_buffer_t_fill(&data, buf, len))
-		return SPI_GENERIC_ERROR;
-
-	return i2c_read(fd, addr, &data) == len ? 0 : SPI_GENERIC_ERROR;
-}
-
 static int get_fd_from_context(const struct flashctx *flash)
 {
 	if (!flash || !flash->mst || !flash->mst->spi.data) {
@@ -107,14 +89,14 @@ static int get_fd_from_context(const struct flashctx *flash)
 static int parade_lspcon_write_register(int fd, uint8_t i2c_register, uint8_t value)
 {
 	uint8_t command[] = { i2c_register, value };
-	return parade_lspcon_write_data(fd, REGISTER_ADDRESS, command, 2);
+	return i2c_write_buffer(fd, REGISTER_ADDRESS, command, 2);
 }
 
 static int parade_lspcon_read_register(int fd, uint8_t i2c_register, uint8_t *value)
 {
 	uint8_t command[] = { i2c_register };
-	int ret = parade_lspcon_write_data(fd, REGISTER_ADDRESS, command, 1);
-	ret |= parade_lspcon_read_data(fd, REGISTER_ADDRESS, value, 1);
+	int ret = i2c_write_buffer(fd, REGISTER_ADDRESS, command, 1);
+	ret |= i2c_read_buffer(fd, REGISTER_ADDRESS, value, 1);
 
 	return ret ? SPI_GENERIC_ERROR : 0;
 }
@@ -347,7 +329,7 @@ static int parade_lspcon_read(struct flashctx *flash, uint8_t *buf,
 
 	for (i = 0; i < len; i += TUNNEL_PAGE_SIZE) {
 		ret |= parade_lspcon_map_page(fd, start + i);
-		ret |= parade_lspcon_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
+		ret |= i2c_read_buffer(fd, PAGE_ADDRESS, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
 		update_progress(flash, FLASHROM_PROGRESS_READ, TUNNEL_PAGE_SIZE);
 	}
 
@@ -367,7 +349,7 @@ static int parade_lspcon_write_page(int fd, const uint8_t *buf, unsigned int len
 	/* First byte represents the writing offset and should always be zero. */
 	memcpy(&write_buffer[1], buf, len);
 
-	return parade_lspcon_write_data(fd, PAGE_ADDRESS, write_buffer, len + 1);
+	return i2c_write_buffer(fd, PAGE_ADDRESS, write_buffer, len + 1);
 }
 
 static int parade_lspcon_write_256(struct flashctx *flash, const uint8_t *buf,

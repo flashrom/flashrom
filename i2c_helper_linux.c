@@ -15,6 +15,24 @@
 #include "log.h"
 
 
+int i2c_write_buffer(int fd, uint16_t addr, void *buf, uint16_t len)
+{
+	i2c_buffer_t data;
+	if (i2c_buffer_t_fill(&data, buf, len))
+		return -1;
+
+	return i2c_write(fd, addr, &data) == len ? 0 : -1;
+}
+
+int i2c_read_buffer(int fd, uint16_t addr, void *buf, uint16_t len)
+{
+	i2c_buffer_t data;
+	if (i2c_buffer_t_fill(&data, buf, len))
+		return -1;
+
+	return i2c_read(fd, addr, &data) == len ? 0 : -1;
+}
+
 static int get_bus_number(char *bus_str)
 {
 	char *bus_suffix;
