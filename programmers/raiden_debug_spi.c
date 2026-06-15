@@ -789,6 +789,48 @@ static int read_response_v1(const struct raiden_debug_spi_data *ctx_data,
 }
 
 /*
+ * Report a failed write command attempt. Shared by the v1 and v2 transfer
+ * loops, which emit an identical diagnostic.
+ */
+static void report_write_failure(const struct raiden_debug_spi_data *ctx_data,
+		unsigned int write_count, unsigned int read_count,
+		size_t transmitted_bytes, unsigned int write_attempt, int status)
+{
+	msg_perr("Raiden: Write command failed\n"
+		 "    protocol          = %u\n"
+		 "    write count       = %u\n"
+		 "    read count        = %u\n"
+		 "    transmitted bytes = %zu\n"
+		 "    write attempt     = %u\n"
+		 "    status            = 0x%05x\n",
+		 ctx_data->protocol_version,
+		 write_count, read_count, transmitted_bytes,
+		 write_attempt + 1, status);
+}
+
+/*
+ * Report a failed read response attempt. Shared by the v1 and v2 transfer
+ * loops, which emit an identical diagnostic.
+ */
+static void report_read_failure(const struct raiden_debug_spi_data *ctx_data,
+		unsigned int write_count, unsigned int read_count,
+		size_t received_bytes, unsigned int write_attempt,
+		unsigned int read_attempt, int status)
+{
+	msg_perr("Raiden: Read response failed\n"
+		 "    protocol       = %u\n"
+		 "    write count    = %u\n"
+		 "    read count     = %u\n"
+		 "    received bytes = %zu\n"
+		 "    write attempt  = %u\n"
+		 "    read attempt   = %u\n"
+		 "    status         = 0x%05x\n",
+		 ctx_data->protocol_version,
+		 write_count, read_count, received_bytes,
+		 write_attempt + 1, read_attempt + 1, status);
+}
+
+/*
  * Version 1 Protocol: Sets up a USB SPI transfer, transmits data to the device,
  * reads the status code and any payload from the device. This will also handle
  * recovery if an error has occurred.
@@ -850,16 +892,8 @@ static int send_command_v1(const struct flashctx *flash,
 
 		if (status) {
 			/* Write operation failed. */
-			msg_perr("Raiden: Write command failed\n"
-				 "    protocol          = %u\n"
-				 "    write count       = %u\n"
-				 "    read count        = %u\n"
-				 "    transmitted bytes = %zu\n"
-				 "    write attempt     = %u\n"
-				 "    status            = 0x%05x\n",
-				 ctx_data->protocol_version,
-				 write_count, read_count, write_ctx.transmit_index,
-				 write_attempt + 1, status);
+			report_write_failure(ctx_data, write_count, read_count,
+					     write_ctx.transmit_index, write_attempt, status);
 			if (!retry_recovery(status)) {
 				/* Reattempting will not result in a recovery. */
 				return status;
@@ -884,17 +918,9 @@ static int send_command_v1(const struct flashctx *flash,
 			}
 
 			/* Read operation failed. */
-			msg_perr("Raiden: Read response failed\n"
-				 "    protocol       = %u\n"
-				 "    write count    = %u\n"
-				 "    read count     = %u\n"
-				 "    received bytes = %zu\n"
-				 "    write attempt  = %u\n"
-				 "    read attempt   = %u\n"
-				 "    status         = 0x%05x\n",
-				 ctx_data->protocol_version,
-				 write_count, read_count, read_ctx.receive_index,
-				 write_attempt + 1, read_attempt + 1, status);
+			report_read_failure(ctx_data, write_count, read_count,
+					    read_ctx.receive_index, write_attempt,
+					    read_attempt, status);
 			if (!retry_recovery(status)) {
 				/* Reattempting will not result in a recovery. */
 				return status;
@@ -1198,16 +1224,8 @@ static int send_command_v2(const struct flashctx *flash,
 
 		if (status) {
 			/* Write operation failed. */
-			msg_perr("Raiden: Write command failed\n"
-				 "    protocol          = %u\n"
-				 "    write count       = %u\n"
-				 "    read count        = %u\n"
-				 "    transmitted bytes = %zu\n"
-				 "    write attempt     = %u\n"
-				 "    status            = 0x%05x\n",
-				 ctx_data->protocol_version,
-				 write_count, read_count, write_ctx.transmit_index,
-				 write_attempt + 1, status);
+			report_write_failure(ctx_data, write_count, read_count,
+					     write_ctx.transmit_index, write_attempt, status);
 			if (!retry_recovery(status)) {
 				/* Reattempting will not result in a recovery. */
 				return status;
@@ -1232,17 +1250,9 @@ static int send_command_v2(const struct flashctx *flash,
 
 			if (status) {
 				/* Read operation failed. */
-				msg_perr("Raiden: Read response failed\n"
-					 "    protocol       = %u\n"
-					 "    write count    = %u\n"
-					 "    read count     = %u\n"
-					 "    received bytes = %zu\n"
-					 "    write attempt  = %u\n"
-					 "    read attempt   = %u\n"
-					 "    status         = 0x%05x\n",
-					 ctx_data->protocol_version,
-					 write_count, read_count, read_ctx.receive_index,
-					 write_attempt + 1, read_attempt + 1, status);
+				report_read_failure(ctx_data, write_count, read_count,
+						    read_ctx.receive_index, write_attempt,
+						    read_attempt, status);
 				if (!retry_recovery(status)) {
 					/* Reattempting will not result in a recovery. */
 					return status;
