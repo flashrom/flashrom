@@ -191,6 +191,7 @@ else
   libni845x = dependency('', required : false)
 endif
 
+# platform subdir should be built before programmers entries are processed
 subdir('platform')
 
 if systems_hwaccess.contains(host_machine.system())
@@ -202,8 +203,6 @@ endif
 
 # Pseudo dependencies
 linux_headers = \
-  cc.has_header('linux/i2c.h')     and \
-  cc.has_header('linux/i2c-dev.h') and \
   cc.has_header('mtd/mtd-user.h')  and \
   cc.has_header('linux/spi/spidev.h') ? declare_dependency() : dependency('', required : false)
 
@@ -387,7 +386,7 @@ programmer = {
   },
   'parade_lspcon' : {
     'systems' : [ 'linux' ],
-    'deps'    : [ linux_headers ],
+    'deps'    : [ dep_platform_i2c ],
     'groups'  : [ group_i2c ],
     'srcs'    : files('programmers/parade_lspcon.c', 'i2c_helper_linux.c'),
     'test_srcs' : files('tests/parade_lspcon.c'),
@@ -396,7 +395,7 @@ programmer = {
   },
   'mediatek_i2c_spi' : {
     'systems' : [ 'linux' ],
-    'deps'    : [ linux_headers ],
+    'deps'    : [ dep_platform_i2c ],
     'groups'  : [ group_i2c ],
     'srcs'    : files('programmers/mediatek_i2c_spi.c', 'i2c_helper_linux.c'),
     'test_srcs' : files('tests/mediatek_i2c_spi.c'),
@@ -405,7 +404,7 @@ programmer = {
   },
   'mstarddc_spi' : {
     'systems' : [ 'linux' ],
-    'deps'    : [ linux_headers ],
+    'deps'    : [ dep_platform_i2c ],
     'groups'  : [ group_i2c ],
     'srcs'    : files('programmers/mstarddc_spi.c', 'i2c_helper_linux.c'),
     'flags'   : [ '-DCONFIG_MSTARDDC_SPI=1' ],
@@ -508,7 +507,7 @@ programmer = {
   },
   'realtek_mst_i2c_spi' : {
     'systems' : [ 'linux' ],
-    'deps'    : [ linux_headers ],
+    'deps'    : [ dep_platform_i2c ],
     'groups'  : [ group_i2c ],
     'srcs'    : files('programmers/realtek_mst_i2c_spi.c', 'i2c_helper_linux.c'),
     'test_srcs' : files('tests/realtek_mst_i2c_spi.c'),

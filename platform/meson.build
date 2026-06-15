@@ -8,7 +8,11 @@ add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_END
 
 # I2C
 if target_machine.system() == 'linux'
-  srcs += files('i2c_linux.c')
+  dep_platform_i2c = declare_dependency(
+    sources : files('i2c_linux.c'),
+  )
+else
+  dep_platform_i2c = dependency('', required : false)
 endif
 
 if cc.check_header('pciutils/pci.h')
