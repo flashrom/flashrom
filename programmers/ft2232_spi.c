@@ -115,26 +115,27 @@ struct ft2232_data {
 	struct ftdi_context ftdic_context;
 };
 
-static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
+static const struct dev_entry *find_ft2232_dev(int ft2232_vid, int ft2232_type)
 {
 	int i;
 	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
 		if ((devs_ft2232spi[i].device_id == ft2232_type)
 			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
-				return devs_ft2232spi[i].device_name;
+				return &devs_ft2232spi[i];
 	}
-	return "unknown device";
+	return NULL;
+}
+
+static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
+{
+	const struct dev_entry *dev = find_ft2232_dev(ft2232_vid, ft2232_type);
+	return dev ? dev->device_name : "unknown device";
 }
 
 static const char *get_ft2232_vendorname(int ft2232_vid, int ft2232_type)
 {
-	int i;
-	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
-		if ((devs_ft2232spi[i].device_id == ft2232_type)
-			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
-				return devs_ft2232spi[i].vendor_name;
-	}
-	return "unknown vendor";
+	const struct dev_entry *dev = find_ft2232_dev(ft2232_vid, ft2232_type);
+	return dev ? dev->vendor_name : "unknown vendor";
 }
 
 static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf,
