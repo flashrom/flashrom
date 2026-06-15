@@ -283,56 +283,6 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 	return 0;
 }
 
-/* Copied from dediprog.c */
-/* Might be useful for other USB devices as well. static for now. */
-static int parse_voltage(char *voltage)
-{
-	char *tmp = NULL;
-	int i;
-	int millivolt = 0, fraction = 0;
-
-	if (!voltage || !strlen(voltage)) {
-		msg_perr("Empty voltage= specified.\n");
-		return -1;
-	}
-	millivolt = (int)strtol(voltage, &tmp, 0);
-	voltage = tmp;
-	/* Handle "," and "." as decimal point. Everything after it is assumed
-	 * to be in decimal notation.
-	 */
-	if ((*voltage == '.') || (*voltage == ',')) {
-		voltage++;
-		for (i = 0; i < 3; i++) {
-			fraction *= 10;
-			/* Don't advance if the current character is invalid,
-			 * but continue multiplying.
-			 */
-			if ((*voltage < '0') || (*voltage > '9'))
-				continue;
-			fraction += *voltage - '0';
-			voltage++;
-		}
-		/* Throw away remaining digits. */
-		voltage += strspn(voltage, "0123456789");
-	}
-	/* The remaining string must be empty or "mV" or "V". */
-	tolower_string(voltage);
-
-	/* No unit or "V". */
-	if ((*voltage == '\0') || !strncmp(voltage, "v", 1)) {
-		millivolt *= 1000;
-		millivolt += fraction;
-	} else if (!strncmp(voltage, "mv", 2) ||
-		   !strncmp(voltage, "millivolt", 9)) {
-		/* No adjustment. fraction is discarded. */
-	} else {
-		/* Garbage at the end of the string. */
-		msg_perr("Garbage voltage= specified.\n");
-		return -1;
-	}
-	return millivolt;
-}
-
 static int pickit2_shutdown(void *data)
 {
 	struct pickit2_spi_data *pickit2_data = data;

@@ -26,5 +26,6 @@ char *strcat_realloc(char *dest, const char *src);
 void tolower_string(char *str);
 uint8_t reverse_byte(uint8_t x);
 void reverse_bytes(uint8_t *dst, const uint8_t *src, size_t length);
+int parse_voltage(char *voltage);
 
 #endif /* __HELPERS_H__ */

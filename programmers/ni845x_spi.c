@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include "programmer.h"
 #include "spi.h"
+#include "helpers.h"
 
 #define NI845x_FIND_DEVICE_NO_DEVICE_FOUND			-301701
 
@@ -52,55 +53,6 @@ static const uint8_t usb8452_io_voltages_in_100mV[5] = {
 	kNi845x25Volts,
 	kNi845x33Volts
 };
-
-/* Copied from dediprog.c */
-/* Might be useful for other USB devices as well. static for now. */
-static int parse_voltage(char *voltage)
-{
-	char *tmp = NULL;
-	int i;
-	int millivolt = 0, fraction = 0;
-
-	if (!voltage || !strlen(voltage)) {
-		msg_perr("Empty voltage= specified.\n");
-		return -1;
-	}
-	millivolt = (int)strtol(voltage, &tmp, 0);
-	voltage = tmp;
-	/* Handle "," and "." as decimal point. Everything after it is assumed
-	 * to be in decimal notation.
-	 */
-	if ((*voltage == '.') || (*voltage == ',')) {
-		voltage++;
-		for (i = 0; i < 3; i++) {
-			fraction *= 10;
-			/* Don't advance if the current character is invalid,
-			 * but continue multiplying.
-			 */
-			if ((*voltage < '0') || (*voltage > '9'))
-				continue;
-			fraction += *voltage - '0';
-			voltage++;
-		}
-		/* Throw away remaining digits. */
-		voltage += strspn(voltage, "0123456789");
-	}
-	/* The remaining string must be empty or "mV" or "V". */
-	tolower_string(voltage);
-
-	/* No unit or "V". */
-	if ((*voltage == '\0') || !strncmp(voltage, "v", 1)) {
-		millivolt *= 1000;
-		millivolt += fraction;
-	} else if (!strncmp(voltage, "mv", 2) || !strncmp(voltage, "millivolt", 9)) {
-		/* No adjustment. fraction is discarded. */
-	} else {
-		/* Garbage at the end of the string. */
-		msg_perr("Garbage voltage= specified.\n");
-		return -1;
-	}
-	return millivolt;
-}
 
 static void ni845x_report_error(const char *const func, const int32 err)
 {

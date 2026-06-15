@@ -953,54 +953,6 @@ static bool dediprog_get_button(libusb_device_handle *dediprog_handle)
 }
 #endif
 
-static int parse_voltage(char *voltage)
-{
-	char *tmp = NULL;
-	int i;
-	int millivolt = 0, fraction = 0;
-
-	if (!voltage || !strlen(voltage)) {
-		msg_perr("Empty voltage= specified.\n");
-		return -1;
-	}
-	millivolt = (int)strtol(voltage, &tmp, 0);
-	voltage = tmp;
-	/* Handle "," and "." as decimal point. Everything after it is assumed
-	 * to be in decimal notation.
-	 */
-	if ((*voltage == '.') || (*voltage == ',')) {
-		voltage++;
-		for (i = 0; i < 3; i++) {
-			fraction *= 10;
-			/* Don't advance if the current character is invalid,
-			 * but continue multiplying.
-			 */
-			if ((*voltage < '0') || (*voltage > '9'))
-				continue;
-			fraction += *voltage - '0';
-			voltage++;
-		}
-		/* Throw away remaining digits. */
-		voltage += strspn(voltage, "0123456789");
-	}
-	/* The remaining string must be empty or "mV" or "V". */
-	tolower_string(voltage);
-
-	/* No unit or "V". */
-	if ((*voltage == '\0') || !strncmp(voltage, "v", 1)) {
-		millivolt *= 1000;
-		millivolt += fraction;
-	} else if (!strncmp(voltage, "mv", 2) ||
-		   !strncmp(voltage, "milliv", 6)) {
-		/* No adjustment. fraction is discarded. */
-	} else {
-		/* Garbage at the end of the string. */
-		msg_perr("Garbage voltage= specified.\n");
-		return -1;
-	}
-	return millivolt;
-}
-
 static int dediprog_shutdown(void *data)
 {
 	int ret = 0;
