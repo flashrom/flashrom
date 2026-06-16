@@ -5,9 +5,9 @@
  * SPDX-FileCopyrightText: 2017 Urja Rannikko <urjaman@gmail.com>
  */
 
-#include <errno.h>
-
 #include "custom_baud.h"
+
+#include <errno.h>
 
 /* Stub, should not get called. */
 int set_custom_baudrate(int fd, unsigned int baud, const enum custom_baud_stage stage, void *tio_wanted)

@@ -5,12 +5,13 @@
  * SPDX-FileCopyrightText: 2017 Urja Rannikko <urjaman@gmail.com>
  */
 
+#include "custom_baud.h"
+
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <asm-generic/termbits.h>
 #include <asm-generic/ioctls.h>
 
-#include "custom_baud.h"
 
 /*
  * This include hell above is why this is in a separate source file. See eg.

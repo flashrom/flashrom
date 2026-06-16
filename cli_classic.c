@@ -8,17 +8,7 @@
  * SPDX-FileCopyrightText: 2008,2009,2010 Carl-Daniel Hailfinger
  */
 
-#include <errno.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include "platform/string.h"
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <cli_getopt.h>
-#include <cli_output.h>
-#include <time.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"
@@ -26,6 +16,16 @@
 #include "libflashrom.h"
 #include "helpers.h"
 #include "log.h"
+#include "cli_getopt.h"
+#include "cli_output.h"
+#include <errno.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
 
 #if CONFIG_RPMC_ENABLED == 1
 #include "rpmc.h"

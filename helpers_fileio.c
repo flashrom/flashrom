@@ -6,9 +6,11 @@
  * SPDX-FileCopyrightText: 2013 Stefan Tauner
  */
 
+#include "platform/string.h"
+#include "flash.h"
+#include "log.h"
 #include <ctype.h>
 #include <stdlib.h>
-#include "platform/string.h"
 #include <errno.h>
 #include <unistd.h>
 
@@ -17,8 +19,6 @@
 #include <sys/stat.h>
 #endif
 
-#include "flash.h"
-#include "log.h"
 
 int read_buf_from_file(unsigned char *buf, unsigned long size,
 		       const char *filename)

@@ -4,14 +4,15 @@
  * SPDX-FileCopyrightText: 2018-present, Facebook Inc. All rights reserved.
  */
 
+#include "fmap.h"
+
+#include "platform/string.h"
+#include "flash.h"
+#include "log.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "platform/string.h"
 #include <sys/types.h>
-#include "flash.h"
-#include "fmap.h"
-#include "log.h"
 
 static size_t fmap_size(const struct fmap *fmap)
 {

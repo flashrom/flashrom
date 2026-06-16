@@ -8,6 +8,9 @@
 #ifndef __ERASURE_LAYOUT_H__
 #define __ERASURE_LAYOUT_H__ 1
 
+#include "layout.h"
+#include "flash.h"
+
 struct eraseblock_data {
 	chipoff_t start_addr;
 	chipoff_t end_addr;

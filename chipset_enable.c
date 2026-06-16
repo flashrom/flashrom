@@ -15,18 +15,18 @@
  * Contains the chipset specific flash enables.
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
 #include "platform/string.h"
-#include <unistd.h>
-#include <inttypes.h>
-#include <errno.h>
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
 #include "helpers.h"
 #include "log.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <inttypes.h>
+#include <errno.h>
 
 #define NOT_DONE_YET 1
 

@@ -6,13 +6,13 @@
  * SPDX-FileCopyrightText: 2011 Carl-Daniel Hailfinger
  */
 
-#include <cli_output.h>
+#include "cli_output.h"
 
+#include "platform/string.h"
+#include "log.h"
 #include <stdio.h>
 #include <stdarg.h>
-#include "platform/string.h"
 #include <errno.h>
-#include "log.h"
 
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;

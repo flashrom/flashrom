@@ -13,11 +13,11 @@
  *  - Order number: 290658-004
  */
 
-#include <stdbool.h>
 #include "flash.h"
 #include "parallel.h"
 #include "chipdrivers.h"
 #include "log.h"
+#include <stdbool.h>
 
 void print_status_82802ab(uint8_t status)
 {

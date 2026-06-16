@@ -5,6 +5,8 @@
  * SPDX-FileCopyrightText: 2015 Paul Kocialkowski <contact@paulk.fr>
  */
 
+#include "edi.h"
+
 #include "platform/string.h"
 #include "spi.h"
 #include "chipdrivers.h"

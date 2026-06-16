@@ -12,15 +12,15 @@
  * Contains the board specific flash enables.
  */
 
-#include <strings.h>
 #include "platform/string.h"
-#include <stdbool.h>
-#include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
 #include "pcidev.h"
 #include "dmi.h"
 #include "log.h"
+#include <strings.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #if defined(__i386__) || defined(__x86_64__)
 

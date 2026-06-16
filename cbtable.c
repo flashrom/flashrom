@@ -8,16 +8,16 @@
  * SPDX-FileCopyrightText: 2010 Carl-Daniel Hailfinger
  */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <strings.h>
 #include "platform/string.h"
 #include "flash.h"
 #include "programmer.h"
 #include "coreboot_tables.h"
 #include "hwaccess_physmap.h"
 #include "log.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <strings.h>
 
 static char *cb_vendor = NULL, *cb_model = NULL;
 

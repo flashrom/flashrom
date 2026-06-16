@@ -7,14 +7,14 @@
  * SPDX-FileCopyrightText: Thomas Heijligen <thomas.heijligen@secunet.com>
  */
 
-#include <cli_getopt.h>
+#include "cli_getopt.h"
 
+#include "flash.h"
+#include "platform/string.h"
 #include <unistd.h>
 #include <wchar.h>
-#include "platform/string.h"
 #include <limits.h>
 #include <stdlib.h>
-#include "flash.h"
 
 char *optarg;
 int optind=1, opterr=1, optopt, optpos;

@@ -10,8 +10,8 @@
  * SPDX-FileCopyrightText: 2025 Google LLC
  */
 
-#include "flash.h"
 #include "flashchips.h"
+
 #include "chipdrivers.h"
 
 /**

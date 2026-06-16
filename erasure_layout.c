@@ -5,17 +5,18 @@
  * SPDX-FileCopyrightText: 2022 Aarya Chaumal
  */
 
+#include "erasure_layout.h"
+
+#include "flash.h"
+#include "layout.h"
+#include "helpers.h"
+#include "platform/string.h"
+#include "log.h"
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "platform/string.h"
 
-#include "flash.h"
-#include "layout.h"
-#include "erasure_layout.h"
-#include "helpers.h"
-#include "log.h"
 
 static size_t calculate_block_count(const struct flashchip *chip, size_t eraser_idx)
 {

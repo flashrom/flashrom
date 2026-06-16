@@ -5,12 +5,13 @@
  * SPDX-FileCopyrightText: 2022 Peter Stuge <peter@stuge.se>
  */
 
+#include "custom_baud.h"
+
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <IOKit/serial/ioss.h>
 #include <errno.h>
 
-#include "custom_baud.h"
 
 int use_custom_baud(unsigned int baud, const struct baudentry *baudtable)
 {

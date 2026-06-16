@@ -7,6 +7,7 @@
 #ifndef __FMAP_H__
 #define __FMAP_H__ 1
 
+#include "flash.h"
 #include <inttypes.h>
 #include <stdbool.h>
 

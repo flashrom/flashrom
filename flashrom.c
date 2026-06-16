@@ -9,16 +9,7 @@
  * SPDX-FileCopyrightText: 2016 secunet Security Networks AG (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  */
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <sys/types.h>
 #include "platform/string.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <ctype.h>
-
 #include "flash.h"
 #include "parallel.h"
 #include "flashchips.h"
@@ -29,6 +20,14 @@
 #include "platform/udelay.h"
 #include "helpers.h"
 #include "log.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <ctype.h>
 
 const char flashrom_version[] = FLASHROM_VERSION;
 

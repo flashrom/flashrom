@@ -7,10 +7,10 @@
  * SPDX-FileCopyrightText: 2011-2014 Stefan Tauner
  */
 
-#include <stdlib.h>
 #include "platform/string.h"
 #include "flash.h"
 #include "log.h"
+#include <stdlib.h>
 
 void print_chip_support_status(const struct flashchip *chip)
 {
