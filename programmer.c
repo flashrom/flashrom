@@ -14,6 +14,20 @@
 struct registered_master registered_masters[MASTERS_MAX];
 int registered_master_count = 0;
 
+/*
+ * Register a master's shutdown callback, if it has one. On success the
+ * callback will run at flashrom shutdown. Returns non-zero if registration
+ * failed, having already invoked the callback once for cleanup.
+ */
+int register_master_shutdown(int (*shutdown)(void *data), void *data)
+{
+	if (shutdown && register_shutdown(shutdown, data)) {
+		shutdown(data); /* cleanup */
+		return 1;
+	}
+	return 0;
+}
+
 /* This function copies the struct registered_master parameter. */
 int register_master(const struct registered_master *mst)
 {

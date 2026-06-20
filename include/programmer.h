@@ -426,6 +426,7 @@ struct registered_master {
 extern struct registered_master registered_masters[];
 extern int registered_master_count;
 int register_master(const struct registered_master *mst);
+int register_master_shutdown(int (*shutdown)(void *data), void *data);
 
 /* spi_master feature checks */
 static inline bool spi_master_4ba(const struct flashctx *const flash)

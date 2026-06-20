@@ -132,12 +132,8 @@ int register_par_master(const struct par_master *mst,
 {
 	struct registered_master rmst = {0};
 
-	if (mst->shutdown) {
-		if (register_shutdown(mst->shutdown, data)) {
-			mst->shutdown(data); /* cleanup */
-			return 1;
-		}
-	}
+	if (register_master_shutdown(mst->shutdown, data))
+		return 1;
 
 	/* Bus masters supporting FWH/LPC cannot use chip physical maps, distinct
 	 * mappings are needed to support chips with FEATURE_REGISTERMAP

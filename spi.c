@@ -141,12 +141,8 @@ int register_spi_master(const struct spi_master *mst, void *data)
 {
 	struct registered_master rmst = {0};
 
-	if (mst->shutdown) {
-		if (register_shutdown(mst->shutdown, data)) {
-			mst->shutdown(data); /* cleanup */
-			return 1;
-		}
-	}
+	if (register_master_shutdown(mst->shutdown, data))
+		return 1;
 
 	if (!mst->write_256 || !mst->read || (!mst->command && !mst->multicommand)) {
 		msg_perr("%s called with incomplete master definition. "
