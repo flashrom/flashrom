@@ -13,6 +13,7 @@
 #include "flash.h"
 #include "helpers.h"
 #include "log.h"
+#include "usb_device.h"
 
 #define CH347_CMD_SPI_SET_CFG	0xC0
 #define CH347_CMD_SPI_CS_CTRL	0xC1
@@ -339,10 +340,7 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 		goto error_exit;
 	}
 
-	msg_pdbg("Device revision is %d.%01d.%01d\n",
-		(desc.bcdDevice >> 8) & 0x00FF,
-		(desc.bcdDevice >> 4) & 0x000F,
-		(desc.bcdDevice >> 0) & 0x000F);
+	usb_dev_msg_device_revision(&desc);
 
 	/* set CH347 clock division */
 	speed_index = 2; /* default: 15MHz */

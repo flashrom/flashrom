@@ -16,6 +16,7 @@
 #include "platform/udelay.h"
 #include "helpers.h"
 #include "log.h"
+#include "usb_device.h"
 
 /* LIBUSB_CALL ensures the right calling conventions on libusb callbacks.
  * However, the macro is not defined everywhere. m(
@@ -462,10 +463,7 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 		goto release_interface;
 	}
 
-	msg_pdbg("Device revision is %d.%01d.%01d\n",
-		(desc.bcdDevice >> 8) & 0x00FF,
-		(desc.bcdDevice >> 4) & 0x000F,
-		(desc.bcdDevice >> 0) & 0x000F);
+	usb_dev_msg_device_revision(&desc);
 
 	/* Allocate and pre-fill transfer structures. */
 	data->transfer_out = libusb_alloc_transfer(0);

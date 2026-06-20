@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "log.h"
+
 /*
  * The LIBUSB_ERROR macro converts a libusb failure code into an error code that
  * flashrom recognizes. It does so without displaying an error code allowing us
@@ -168,5 +170,14 @@ int usb_device_claim(struct usb_device *device);
  *     The next device in the device list.
  */
 struct usb_device *usb_device_free(struct usb_device *device);
+
+/* Log the BCD device revision from a USB descriptor at debug level. */
+static inline void usb_dev_msg_device_revision(const struct libusb_device_descriptor *desc)
+{
+	msg_pdbg("Device revision is %d.%01d.%01d\n",
+		 (desc->bcdDevice >> 8) & 0x00FF,
+		 (desc->bcdDevice >> 4) & 0x000F,
+		 (desc->bcdDevice >> 0) & 0x000F);
+}
 
 #endif /* USB_DEVICE_H */

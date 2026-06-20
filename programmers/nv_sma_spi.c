@@ -662,10 +662,7 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 		goto error_exit;
 	}
 
-	msg_pdbg("Device revision is %d.%01d.%01d\n",
-		(desc.bcdDevice >> 8) & 0x00FF,
-		(desc.bcdDevice >> 4) & 0x000F,
-		(desc.bcdDevice >> 0) & 0x000F);
+	usb_dev_msg_device_revision(&desc);
 
 	/* select CS pin - default to CS0 if not specified */
 	nv_sma_data->cs_bits = NV_SMA_CS0;  /* Default to CS0 bits */
