@@ -175,6 +175,25 @@ static int probe_timings(const struct flashchip *chip, unsigned int *tenter, uns
 	return 0;
 }
 
+/*
+ * Reset the chip to a clean slate; also serves as the JEDEC Product ID Exit
+ * command. FEATURE_LONG_RESET chips need the full unlock sequence first.
+ */
+static void jedec_reset(struct flashctx *flash, chipaddr bios, unsigned int mask,
+			bool shifted, unsigned int probe_timing_exit)
+{
+	if ((flash->chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
+		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+		if (probe_timing_exit)
+			programmer_delay(flash, 10);
+		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
+		if (probe_timing_exit)
+			programmer_delay(flash, 10);
+	}
+	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	programmer_delay(flash, probe_timing_exit);
+}
+
 int probe_jedec(struct flashctx *flash)
 {
 	const chipaddr bios = flash->virtual_memory;
@@ -194,17 +213,7 @@ int probe_jedec(struct flashctx *flash)
 	 * reset command.
 	 */
 	programmer_delay(flash, probe_timing_enter);
-	/* Reset chip to a clean slate */
-	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
-		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-		if (probe_timing_exit)
-			programmer_delay(flash, 10);
-		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
-		if (probe_timing_exit)
-			programmer_delay(flash, 10);
-	}
-	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	programmer_delay(flash, probe_timing_exit);
+	jedec_reset(flash, bios, mask, shifted, probe_timing_exit);
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
@@ -234,17 +243,7 @@ int probe_jedec(struct flashctx *flash)
 		largeid2 |= id2;
 	}
 
-	/* Issue JEDEC Product ID Exit command */
-	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
-		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-		if (probe_timing_exit)
-			programmer_delay(flash, 10);
-		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
-		if (probe_timing_exit)
-			programmer_delay(flash, 10);
-	}
-	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	programmer_delay(flash, probe_timing_exit);
+	jedec_reset(flash, bios, mask, shifted, probe_timing_exit);
 
 	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"", __func__, largeid1, largeid2);
 	if (!oddparity(id1))
