@@ -21,6 +21,26 @@
 #define MASK_2AA 0x7ff
 #define MASK_AAA 0xfff
 
+/*
+ * JEDEC command set (see e.g. the AMD Am29F040B "Command Definitions" table).
+ * A command is issued by writing the two unlock data bytes to the two unlock
+ * addresses, followed by the command byte.
+ */
+#define JEDEC_UNLOCK_ADDR1	0x5555	/* first unlock cycle address */
+#define JEDEC_UNLOCK_ADDR2	0x2AAA	/* second unlock cycle address */
+#define JEDEC_UNLOCK_DATA1	0xAA	/* first unlock cycle data */
+#define JEDEC_UNLOCK_DATA2	0x55	/* second unlock cycle data */
+#define JEDEC_CMD_RESET		0xF0	/* reset / read array / product ID exit */
+#define JEDEC_CMD_AUTOSELECT	0x90	/* autoselect / product ID entry */
+#define JEDEC_CMD_PROGRAM	0xA0	/* byte/word program setup */
+#define JEDEC_CMD_ERASE		0x80	/* erase setup (first cycle) */
+#define JEDEC_CMD_ERASE_SECTOR	0x30	/* sector erase confirm */
+#define JEDEC_CMD_ERASE_BLOCK	0x50	/* block erase confirm */
+#define JEDEC_CMD_ERASE_CHIP	0x10	/* chip erase confirm */
+#define JEDEC_CONTINUATION_ID	0x7F	/* manufacturer ID continuation marker */
+#define JEDEC_TOGGLE_DQ6	0x40	/* toggle bit: operation in progress */
+#define JEDEC_DATA_POLLING_DQ7	0x80	/* data# polling: inverted last data bit */
+
 /* Check one byte for odd parity */
 uint8_t oddparity(uint8_t val)
 {
@@ -32,11 +52,11 @@ uint8_t oddparity(uint8_t val)
 static void toggle_ready_jedec_common(const struct flashctx *flash, chipaddr dst, unsigned int delay)
 {
 	unsigned int i = 0;
-	uint8_t tmp1 = chip_readb(flash, dst) & 0x40;
+	uint8_t tmp1 = chip_readb(flash, dst) & JEDEC_TOGGLE_DQ6;
 
 	while (i++ < 0xFFFFFFF) {
 		programmer_delay(flash, delay);
-		uint8_t tmp2 = chip_readb(flash, dst) & 0x40;
+		uint8_t tmp2 = chip_readb(flash, dst) & JEDEC_TOGGLE_DQ6;
 		if (tmp1 == tmp2) {
 			break;
 		}
@@ -69,10 +89,10 @@ void data_polling_jedec(const struct flashctx *flash, chipaddr dst,
 {
 	unsigned int i = 0;
 
-	data &= 0x80;
+	data &= JEDEC_DATA_POLLING_DQ7;
 
 	while (i++ < 0xFFFFFFF) {
-		uint8_t tmp = chip_readb(flash, dst) & 0x80;
+		uint8_t tmp = chip_readb(flash, dst) & JEDEC_DATA_POLLING_DQ7;
 		if (tmp == data) {
 			break;
 		}
@@ -106,9 +126,9 @@ static void start_program_jedec_common(const struct flashctx *flash)
 	const bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	const unsigned int mask = getaddrmask(flash->chip);
 
-	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
-	chip_writeb(flash, 0xA0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA1, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA2, bios + ((shifted ? JEDEC_UNLOCK_ADDR1 : JEDEC_UNLOCK_ADDR2) & mask));
+	chip_writeb(flash, JEDEC_CMD_PROGRAM, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 }
 
 int probe_jedec_29gl(struct flashctx *flash)
@@ -118,12 +138,12 @@ int probe_jedec_29gl(struct flashctx *flash)
 	const struct flashchip *chip = flash->chip;
 
 	/* Reset chip to a clean slate */
-	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+	chip_writeb(flash, JEDEC_CMD_RESET, bios + (JEDEC_UNLOCK_ADDR1 & mask));
 
 	/* Issue JEDEC Product ID Entry command */
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
-	chip_writeb(flash, 0x90, bios + (0x5555 & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA1, bios + (JEDEC_UNLOCK_ADDR1 & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA2, bios + (JEDEC_UNLOCK_ADDR2 & mask));
+	chip_writeb(flash, JEDEC_CMD_AUTOSELECT, bios + (JEDEC_UNLOCK_ADDR1 & mask));
 
 	/* Read product ID */
 	// FIXME: Continuation loop, second byte is at word 0x100/byte 0x200
@@ -133,7 +153,7 @@ int probe_jedec_29gl(struct flashctx *flash)
 			  (chip_readb(flash, bios + 0x0F) <<  0);
 
 	/* Issue JEDEC Product ID Exit command */
-	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+	chip_writeb(flash, JEDEC_CMD_RESET, bios + (JEDEC_UNLOCK_ADDR1 & mask));
 
 	msg_cdbg("%s: man_id 0x%02"PRIx32", dev_id 0x%06"PRIx32"", __func__, man_id, dev_id);
 	if (!oddparity(man_id))
@@ -183,14 +203,14 @@ static void jedec_reset(struct flashctx *flash, chipaddr bios, unsigned int mask
 			bool shifted, unsigned int probe_timing_exit)
 {
 	if ((flash->chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
-		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+		chip_writeb(flash, JEDEC_UNLOCK_DATA1, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 		if (probe_timing_exit)
 			programmer_delay(flash, 10);
-		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
+		chip_writeb(flash, JEDEC_UNLOCK_DATA2, bios + ((shifted ? JEDEC_UNLOCK_ADDR1 : JEDEC_UNLOCK_ADDR2) & mask));
 		if (probe_timing_exit)
 			programmer_delay(flash, 10);
 	}
-	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, JEDEC_CMD_RESET, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 	programmer_delay(flash, probe_timing_exit);
 }
 
@@ -216,13 +236,13 @@ int probe_jedec(struct flashctx *flash)
 	jedec_reset(flash, bios, mask, shifted, probe_timing_exit);
 
 	/* Issue JEDEC Product ID Entry command */
-	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA1, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 	if (probe_timing_enter)
 		programmer_delay(flash, 10);
-	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA2, bios + ((shifted ? JEDEC_UNLOCK_ADDR1 : JEDEC_UNLOCK_ADDR2) & mask));
 	if (probe_timing_enter)
 		programmer_delay(flash, 10);
-	chip_writeb(flash, 0x90, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, JEDEC_CMD_AUTOSELECT, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 	programmer_delay(flash, probe_timing_enter);
 
 	/* Read product ID */
@@ -232,12 +252,12 @@ int probe_jedec(struct flashctx *flash)
 	largeid2 = id2;
 
 	/* Check if it is a continuation ID, this should be a while loop. */
-	if (id1 == 0x7F) {
+	if (id1 == JEDEC_CONTINUATION_ID) {
 		largeid1 <<= 8;
 		id1 = chip_readb(flash, bios + 0x100);
 		largeid1 |= id1;
 	}
-	if (id2 == 0x7F) {
+	if (id2 == JEDEC_CONTINUATION_ID) {
 		largeid2 <<= 8;
 		id2 = chip_readb(flash, bios + 0x101);
 		largeid2 |= id2;
@@ -254,11 +274,11 @@ int probe_jedec(struct flashctx *flash)
 	flashcontent2 = chip_readb(flash, bios + (0x01 << shifted));
 
 	/* Check if it is a continuation ID, this should be a while loop. */
-	if (flashcontent1 == 0x7F) {
+	if (flashcontent1 == JEDEC_CONTINUATION_ID) {
 		flashcontent1 <<= 8;
 		flashcontent1 |= chip_readb(flash, bios + 0x100);
 	}
-	if (flashcontent2 == 0x7F) {
+	if (flashcontent2 == JEDEC_CONTINUATION_ID) {
 		flashcontent2 <<= 8;
 		flashcontent2 |= chip_readb(flash, bios + 0x101);
 	}
@@ -283,11 +303,11 @@ static void issuecmd(const struct flashctx *flash, uint8_t op, unsigned int oper
 	unsigned int delay_us = (flash->chip->probe_timing == TIMING_ZERO) ? 0 : 10;
 
 	if (!operand)
-		operand = (shifted ? 0x2AAA : 0x5555) & mask;
+		operand = (shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask;
 
-	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA1, bios + ((shifted ? JEDEC_UNLOCK_ADDR2 : JEDEC_UNLOCK_ADDR1) & mask));
 	programmer_delay(flash, delay_us);
-	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
+	chip_writeb(flash, JEDEC_UNLOCK_DATA2, bios + ((shifted ? JEDEC_UNLOCK_ADDR1 : JEDEC_UNLOCK_ADDR2) & mask));
 	programmer_delay(flash, delay_us);
 	chip_writeb(flash, op, bios + operand);
 	programmer_delay(flash, delay_us);
@@ -296,8 +316,8 @@ static void issuecmd(const struct flashctx *flash, uint8_t op, unsigned int oper
 int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int size)
 {
 	/* Issue the Sector Erase command */
-	issuecmd(flash, 0x80, 0);
-	issuecmd(flash, 0x30, page);
+	issuecmd(flash, JEDEC_CMD_ERASE, 0);
+	issuecmd(flash, JEDEC_CMD_ERASE_SECTOR, page);
 
 	/* Wait for Toggle bit ready */
 	toggle_ready_jedec_slow(flash);
@@ -309,8 +329,8 @@ int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int s
 int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int size)
 {
 	/* Issue the Block Erase command */
-	issuecmd(flash, 0x80, 0);
-	issuecmd(flash, 0x50, block);
+	issuecmd(flash, JEDEC_CMD_ERASE, 0);
+	issuecmd(flash, JEDEC_CMD_ERASE_BLOCK, block);
 
 	/* Wait for Toggle bit ready */
 	toggle_ready_jedec_slow(flash);
@@ -328,8 +348,8 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned i
 	}
 
 	/* Issue the JEDEC Chip Erase command */
-	issuecmd(flash, 0x80, 0);
-	issuecmd(flash, 0x10, 0);
+	issuecmd(flash, JEDEC_CMD_ERASE, 0);
+	issuecmd(flash, JEDEC_CMD_ERASE_CHIP, 0);
 
 	toggle_ready_jedec_slow(flash);
 
