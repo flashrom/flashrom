@@ -20,6 +20,17 @@
 #endif
 
 
+#ifndef __LIBPAYLOAD__
+static int get_file_metadata(FILE *image, const char *filename, struct stat *st)
+{
+	if (fstat(fileno(image), st) != 0) {
+		msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n", filename, strerror(errno));
+		return 1;
+	}
+	return 0;
+}
+#endif
+
 int read_buf_from_file(unsigned char *buf, unsigned long size,
 		       const char *filename)
 {
@@ -40,8 +51,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 	}
 
 	struct stat image_stat;
-	if (fstat(fileno(image), &image_stat) != 0) {
-		msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n", filename, strerror(errno));
+	if (get_file_metadata(image, filename, &image_stat)) {
 		ret = 1;
 		goto out;
 	}
@@ -103,8 +113,7 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
 	// Try to fsync() only regular files and if that function is available at all (e.g. not on MinGW).
 #if defined(_POSIX_FSYNC) && (_POSIX_FSYNC != -1)
 	struct stat image_stat;
-	if (fstat(fileno(image), &image_stat) != 0) {
-		msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n", filename, strerror(errno));
+	if (get_file_metadata(image, filename, &image_stat)) {
 		ret = 1;
 		goto out;
 	}
