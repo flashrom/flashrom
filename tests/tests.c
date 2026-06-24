@@ -551,6 +551,14 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(ch341a_spi_probe_lifecycle_test_success),
 		cmocka_unit_test(spidriver_probe_lifecycle_test_success),
 		cmocka_unit_test(nv_sma_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(fault_basic_lifecycle_test_success),
+		cmocka_unit_test(fault_init_missing_backend_test_success),
+		cmocka_unit_test(fault_init_self_wrap_test_success),
+		cmocka_unit_test(fault_init_unknown_backend_test_success),
+		cmocka_unit_test(fault_probe_lifecycle_test_success),
+		cmocka_unit_test(fault_probe_and_read_test_success),
+		cmocka_unit_test(fault_all_fault_params_test_success),
+		cmocka_unit_test(fault_deterministic_seed_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 

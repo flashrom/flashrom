@@ -20,3 +20,13 @@ Added two new fields in the ``struct flashchip`` definition:
 This enables future support for multi-die flash chips without affecting existing single-die
 chip support. Chip definitions can now be prepared with die information ahead of time,
 and custom read/write functions can leverage this information for die-aware operations.
+
+New programmers
+---------------
+
+* ``fault`` -- A fault injection programmer that wraps an existing backend
+  (e.g. ``dummy``) and injects deterministic, reproducible faults. Supports
+  bit corruption, short reads, write failures, write lies (silent no-ops),
+  and partial writes. Uses a seeded PRNG for reproducibility. Intended for
+  testing verification logic and retry mechanisms under realistic failure
+  conditions.

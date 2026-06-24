@@ -305,6 +305,12 @@ programmer = {
     'test_srcs' : files('tests/dummyflasher.c'),
     'flags'   : [ '-DCONFIG_DUMMY=1' ],
   },
+  'fault'     : {
+    'srcs'    : files('programmers/fault.c'),
+    'test_srcs' : files('tests/fault.c'),
+    'flags'   : [ '-DCONFIG_FAULT=1' ],
+    'default' : false,
+  },
   'ft2232_spi' : {
     'deps'    : [ libftdi1 ],
     'groups'  : [ group_ftdi, group_external ],

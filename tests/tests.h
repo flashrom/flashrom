@@ -96,6 +96,14 @@ void ch341a_spi_basic_lifecycle_test_success(void **state);
 void ch341a_spi_probe_lifecycle_test_success(void **state);
 void spidriver_probe_lifecycle_test_success(void **state);
 void nv_sma_spi_basic_lifecycle_test_success(void **state);
+void fault_basic_lifecycle_test_success(void **state);
+void fault_init_missing_backend_test_success(void **state);
+void fault_init_self_wrap_test_success(void **state);
+void fault_init_unknown_backend_test_success(void **state);
+void fault_probe_lifecycle_test_success(void **state);
+void fault_probe_and_read_test_success(void **state);
+void fault_all_fault_params_test_success(void **state);
+void fault_deterministic_seed_test_success(void **state);
 
 /* layout.c */
 void included_regions_dont_overlap_test_success(void **state);

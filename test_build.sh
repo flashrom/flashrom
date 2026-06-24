@@ -7,7 +7,7 @@ is_scan_build_env=0
 
 meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group_serial group_usb	\
 			atahpt atapromise atavia buspirate_spi ch341a_spi ch347_spi dediprog		\
-			developerbox_spi digilent_spi dirtyjtag_spi drkaiser dummy ft2232_spi		\
+			developerbox_spi digilent_spi dirtyjtag_spi drkaiser dummy fault ft2232_spi	\
 			gfxnvidia internal it8212 jlink_spi linux_mtd linux_spi parade_lspcon		\
 			mediatek_i2c_spi mstarddc_spi nic3com nicintel nicintel_eeprom nicintel_spi	\
 			nicnatsemi nicrealtek nv_sma_spi ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi	\

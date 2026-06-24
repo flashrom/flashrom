@@ -170,6 +170,11 @@ M:	Jean THOMAS <virgule@jeanthomas.me>
 S:	Maintained
 F:	programmers/dirtyjtag_spi.c
 
+FAULT INJECTION PROGRAMMER
+M:	Abdelkader Boudih <coreboot@seuros.com>
+S:	Maintained
+F:	programmers/fault.c
+
 I2C PROGRAMMERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported

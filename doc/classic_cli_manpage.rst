@@ -333,6 +333,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
         * ``internal``            (for in-system flashing in the mainboard)
         * ``dummy``               (virtual programmer for testing **flashrom**)
+        * ``fault``               (fault injection wrapper for testing)
         * ``nic3com``             (for flash ROMs on 3COM network cards)
         * ``nicrealtek``          (for flash ROMs on Realtek and SMC 1211 network cards)
         * ``nicnatsemi``          (for flash ROMs on National Semiconductor DP838* network cards)
@@ -786,6 +787,63 @@ Example::
         and is calculated based on the assumption that we transfer at 1 bit/Hz::
 
                 flashrom -p dummy:emulate=W25Q128FV,freq=64mhz
+
+
+fault programmer
+^^^^^^^^^^^^^^^^
+
+The fault programmer is a programmable fault-injection layer that wraps an existing
+programmer and injects deterministic, reproducible faults to simulate unreliable
+hardware behaviour. It is intended for testing verification logic, retry mechanisms,
+and robustness of flashing workflows. Where ``dummy`` tests the happy path, ``fault``
+tests every other path.
+
+The ``backend`` parameter is required and names the underlying programmer::
+
+        flashrom -p fault:backend=dummy,bus=spi,emulate=W25Q128FV,seed=42
+
+All fault-specific parameters are extracted first; remaining parameters are forwarded
+to the backend programmer. Currently only SPI backends are supported.
+
+**Determinism**
+        The optional ``seed`` parameter initialises the PRNG (default: 0).
+        Same seed + same config = identical faults across runs::
+
+                flashrom -p fault:backend=dummy,...,seed=42
+
+**Bit corruption**
+        ``flip_prob`` sets the per-byte probability of flipping a random bit in read data::
+
+                flashrom -p fault:backend=dummy,...,flip_prob=0.001
+
+**Short reads**
+        ``short_read_prob`` returns a truncated read buffer.  ``min_read_ratio`` (default: 0.5)
+        controls the minimum fraction of bytes returned::
+
+                flashrom -p fault:backend=dummy,...,short_read_prob=0.1,min_read_ratio=0.8
+
+**Write faults**
+        ``write_fail_prob`` makes writes return an error.
+        ``write_lie_prob`` makes writes return success without writing anything.
+        ``partial_write_prob`` writes only a random subset of the data::
+
+                flashrom -p fault:backend=dummy,...,write_lie_prob=0.2
+
+**Logging**
+        All injected faults are logged at debug verbosity (``-V``).  A summary of
+        injected faults is printed on shutdown.
+
+**Example use cases**
+
+Detect unstable reads::
+
+        flashrom -p fault:backend=dummy,...,flip_prob=0.001,seed=1 -r a.bin
+        flashrom -p fault:backend=dummy,...,flip_prob=0.001,seed=2 -r b.bin
+        cmp a.bin b.bin
+
+Test write verification::
+
+        flashrom -p fault:backend=dummy,...,write_lie_prob=0.2 -w image.bin
 
 
 nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, gfxnvidia, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, atapromise, it8212 programmers

@@ -16,6 +16,10 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_dummy,
 #endif
 
+#if CONFIG_FAULT == 1
+    &programmer_fault,
+#endif
+
 #if CONFIG_NIC3COM == 1
     &programmer_nic3com,
 #endif
