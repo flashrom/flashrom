@@ -385,6 +385,12 @@ int spi_set_extended_address(struct flashctx *const flash, const uint8_t addr_hi
 static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 			       const bool native_4ba, const unsigned int addr)
 {
+	if (flash->chip->feature_bits & FEATURE_ADDR_2BYTE) {
+		/* Small SPI EEPROMs (e.g. ST M95320) use a 16-bit address. */
+		cmd_buf[1] = (addr >>  8) & 0xff;
+		cmd_buf[2] = (addr >>  0) & 0xff;
+		return 2;
+	}
 	if (native_4ba || flash->in_4ba_mode) {
 		if (!spi_master_4ba(flash)) {
 			msg_cwarn("4-byte address requested but master can't handle 4-byte addresses.\n");

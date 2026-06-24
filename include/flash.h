@@ -175,6 +175,13 @@ enum write_granularity {
  */
 #define FEATURE_STATUS_PER_DIE	(1 << 27)
 
+/*
+ * Chip uses a 16-bit (2-byte) address for read/program instructions instead of
+ * the default 24-bit (3-byte) address. Used by small SPI EEPROMs such as the
+ * ST M95320 (chips up to 64 KiB in the M95XXX family).
+ */
+#define FEATURE_ADDR_2BYTE	(1 << 28)
+
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 

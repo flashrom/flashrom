@@ -547,6 +547,37 @@
 
 	{
 		.vendor		= "ST",
+		.name		= "M95320",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= 0,	/* No RDID */
+		.total_size	= 4,	/* 32 Kbit */
+		.page_size	= 32,
+		/*
+		 * The M95320 has no RDID instruction: it cannot be probed or auto-detected,
+		 *so no probe function is set and it must be selected explicitly with -c M95320 --force.
+		 * It uses a 16-bit (2-byte) address (FEATURE_ADDR_2BYTE).
+		 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_NO_ERASE | FEATURE_ERASED_ZERO | FEATURE_ADDR_2BYTE,
+		/* probe: NA (no electronic signature). read verified on hardware; write/erase untested. */
+		.tested		= { .probe = NA, .read = OK, .erase = NT, .write = NT, .wp = NT },
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_EMULATION,
+			}
+		},
+
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {2500, 5500},
+	},
+
+	{
+		.vendor		= "ST",
 		.name		= "M95M02",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
