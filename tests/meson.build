@@ -8,6 +8,7 @@ test_srcs = files(
   'tests.c',
   'libusb_wraps.c',
   'helpers.c',
+  'i2c_helper.c',
   'flashrom.c',
   'libflashrom.c',
   'probe_spi.c',

@@ -22,6 +22,11 @@ void reverse_bytes_test_success(void **state);
 void parse_voltage_success(void **state);
 void parse_voltage_invalid(void **state);
 
+/* i2c_helper.c */
+void i2c_require_allow_brick_yes_test_success(void **state);
+void i2c_require_allow_brick_absent_test_success(void **state);
+void i2c_require_allow_brick_invalid_test_success(void **state);
+
 /* flashrom.c */
 void flashbuses_to_text_test_success(void **state);
 

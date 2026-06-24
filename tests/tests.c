@@ -458,6 +458,13 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("helpers.c tests", helpers_tests, NULL, NULL);
 
+	const struct CMUnitTest i2c_helper_tests[] = {
+		cmocka_unit_test(i2c_require_allow_brick_yes_test_success),
+		cmocka_unit_test(i2c_require_allow_brick_absent_test_success),
+		cmocka_unit_test(i2c_require_allow_brick_invalid_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("i2c_helper.c tests", i2c_helper_tests, NULL, NULL);
+
 	const struct CMUnitTest selfcheck[] = {
 		cmocka_unit_test(selfcheck_programmer_table),
 		cmocka_unit_test(selfcheck_flashchips_table),
