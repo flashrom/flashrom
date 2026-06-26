@@ -82,7 +82,6 @@ extern const struct programmer_entry programmer_ogp_spi;
 extern const struct programmer_entry programmer_pickit2_spi;
 extern const struct programmer_entry programmer_pony_spi;
 extern const struct programmer_entry programmer_raiden_debug_spi;
-extern const struct programmer_entry programmer_rayer_spi;
 extern const struct programmer_entry programmer_realtek_mst_i2c_spi;
 extern const struct programmer_entry programmer_satamv;
 extern const struct programmer_entry programmer_satasii;

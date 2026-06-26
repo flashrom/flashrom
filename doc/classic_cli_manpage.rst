@@ -350,7 +350,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``serprog``             (for flash ROMs attached to a programmer speaking serprog, including some Arduino-based devices)
         * ``buspirate_spi``       (for SPI flash ROMs attached to a Bus Pirate)
         * ``dediprog``            (for SPI flash ROMs attached to a Dediprog SF100)
-        * ``rayer_spi``           (for SPI flash ROMs attached to a parallel port by one of various cable types)
         * ``raiden_debug_spi``    (For Chrome EC based debug tools - SuzyQable, Servo V4, C2D2 & uServo)
         * ``pony_spi``            (for SPI flash ROMs attached to a SI-Prog serial port bitbanging adapter)
         * ``nicintel_spi``        (for SPI flash ROMs on Intel Gigabit network cards)
@@ -1185,31 +1184,6 @@ An optional ``target`` parameter specifies which target chip should be used. Syn
 where ``value`` can be ``1``, ``2``, or ``3`` to select target chip 1, 2, or socket (3) respectively. The default is target chip 1.
 
 
-rayer_spi programmer
-^^^^^^^^^^^^^^^^^^^^
-
-The default I/O base address used for the parallel port is 0x378 and you can use the optional ``iobase`` parameter to
-specify an alternate base I/O address with the::
-
-        flashrom -p rayer_spi:iobase=baseaddr
-
-syntax where ``baseaddr`` is base I/O port address of the parallel port, which must be a multiple of four.
-Make sure to not forget the "0x" prefix for hexadecimal port addresses.
-
-The default cable type is the RayeR cable. You can use the optional ``type`` parameter to specify the cable type with the::
-
-        flashrom -p rayer_spi:type=model
-
-syntax where ``model`` can be ``rayer`` for the RayeR cable, ``byteblastermv`` for the Altera ByteBlasterMV,
-``stk200`` for the Atmel, ``STK200/300``, ``wiggler`` for the Macraigor Wiggler, ``xilinx`` for the Xilinx Parallel Cable III (DLC 5),
-or ``spi_tt`` for SPI Tiny Tools-compatible hardware.
-
-More information about the RayeR hardware is available at `RayeR's website <http://rayer.g6.cz/elektro/spipgm.htm>`_.
-The Altera ByteBlasterMV datasheet can be obtained from `Altera <http://www.altera.co.jp/literature/ds/dsbytemv.pdf>`_.
-For more information about the Macraigor Wiggler see `their company homepage <http://www.macraigor.com/wiggler.htm>`_.
-The schematic of the Xilinx DLC 5 was published in `a Xilinx guide <http://www.xilinx.com/support/documentation/user_guides/xtp029.pdf>`_.
-
-
 raiden_debug_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1635,10 +1609,6 @@ REQUIREMENTS
 
         * need PCI configuration space access
         * raw memory access
-
-* rayer_spi
-
-        * needs raw I/O port access
 
 * raiden_debug_spi
 

@@ -473,13 +473,6 @@ programmer = {
     'test_srcs' : files('tests/raiden_debug_spi.c'),
     'flags'   : [ '-DCONFIG_RAIDEN_DEBUG_SPI=1' ],
   },
-  'rayer_spi' : {
-    'systems' : systems_hwaccess,
-    'cpu_families' : cpus_port_io,
-    'groups'  : [ group_internal ],
-    'srcs'    : files('programmers/rayer_spi.c'),
-    'flags'   : [ '-DCONFIG_RAYER_SPI=1' ],
-  },
   'realtek_mst_i2c_spi' : {
     'systems' : [ 'linux' ],
     'deps'    : [ dep_platform_i2c ],

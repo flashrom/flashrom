@@ -30,3 +30,11 @@ hardware has never been usable anywhere else.
 
 It has been disabled by default all the time and was not built or
 tested by CI scripts.
+
+Removed programmers
+-------------------
+The ``rayer_spi`` programmer has been removed. It bit-banged SPI over a PC
+parallel port (RayeR cable, Altera ByteBlasterMV, Atmel STK200/300, Macraigor
+Wiggler, Xilinx Parallel Cable III, and SPI Tiny Tools hardware). Parallel
+ports are absent from modern hardware, and the driver required raw x86 I/O port
+access, restricting it to legacy x86 hosts.
