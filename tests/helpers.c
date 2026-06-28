@@ -91,7 +91,14 @@ void parse_voltage_invalid(void **state)
 {
 	(void) state; /* unused */
 
-	const char *invalid_volt[] = {"2300millimeter", "___"};
+	const char *invalid_volt[] = {
+		"2300millimeter",
+		"___",
+		"village",
+		"2.3village",
+		"2300village",
+		"milliv1950",
+	};
 	const int count = sizeof(invalid_volt) / sizeof((invalid_volt)[0]);
 
 	for (int i = 0; i < count; i++) {

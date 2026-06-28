@@ -113,11 +113,11 @@ int parse_voltage(char *voltage)
 	tolower_string(voltage);
 
 	/* No unit or "V". */
-	if ((*voltage == '\0') || !strncmp(voltage, "v", 1)) {
+	if ((*voltage == '\0') || !strcmp(voltage, "v")) {
 		millivolt *= 1000;
 		millivolt += fraction;
-	} else if (!strncmp(voltage, "mv", 2) ||
-		   !strncmp(voltage, "milliv", 6)) {
+	} else if (!strcmp(voltage, "mv") ||
+		   !strcmp(voltage, "milliv")) {
 		/* No adjustment. fraction is discarded. */
 	} else {
 		/* Garbage at the end of the string. */
