@@ -38,14 +38,17 @@ dep_platform_string = declare_dependency(
 
 # Select an appropriate delay implementation for the target OS
 if target_machine.system() == 'dos'
-  srcs += files('udelay_dos.c')
+  udelay_c = 'udelay_dos.c'
 elif target_machine.system() == 'windows'
-  srcs += files('udelay_windows.c')
+  udelay_c = 'udelay_windows.c'
 elif target_machine.system() == 'libpayload'
-  srcs += files('udelay_libpayload.c')
+  udelay_c = 'udelay_libpayload.c'
 else
-  srcs += files('udelay.c')
+  udelay_c = 'udelay.c'
 endif
+dep_platform_udelay = declare_dependency(
+  sources : files(udelay_c),
+)
 cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
   get_option('delay_minimum_sleep_us')
 )]

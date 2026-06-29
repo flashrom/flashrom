@@ -195,6 +195,7 @@ endif
 subdir('platform')
 deps += dep_platform_endian
 deps += dep_platform_string
+deps += dep_platform_udelay
 
 if systems_hwaccess.contains(host_machine.system())
   srcs += files('hwaccess_physmap.c')
