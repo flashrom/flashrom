@@ -322,7 +322,7 @@ programmer = {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],
     'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/gfxnvidia.c', 'pcidev.c'),
+    'srcs'    : files('programmers/gfxnvidia.c', 'pcidev.c', 'programmers/par_mmio.c'),
     'flags'   : [ '-DCONFIG_GFXNVIDIA=1' ],
   },
   'internal' : {
@@ -366,7 +366,7 @@ programmer = {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],
     'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/it8212.c', 'pcidev.c'),
+    'srcs'    : files('programmers/it8212.c', 'pcidev.c', 'programmers/par_mmio.c'),
     'flags'   : [ '-DCONFIG_IT8212=1' ],
   },
   'jlink_spi' : {
@@ -437,7 +437,7 @@ programmer = {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],
     'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/nicintel.c', 'pcidev.c'),
+    'srcs'    : files('programmers/nicintel.c', 'pcidev.c', 'programmers/par_mmio.c'),
     'flags'   : [ '-DCONFIG_NICINTEL=1' ],
   },
   'nicintel_eeprom' : {

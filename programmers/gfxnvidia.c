@@ -12,6 +12,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "par_mmio.h"
 #include "log.h"
 
 #define PCI_VENDOR_ID_NVIDIA	0x10de
@@ -26,8 +27,9 @@
 #define BIT_FLASH_ACCESS	BIT(0)
 
 struct gfxnvidia_data {
+	/* Must stay first, see struct par_mmio_data. */
+	struct par_mmio_data mmio;
 	struct pci_dev *dev;
-	uint8_t *bar;
 	uint32_t flash_access;
 };
 
@@ -59,22 +61,6 @@ static const struct dev_entry gfx_nvidia[] = {
 	{0},
 };
 
-static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
-				  chipaddr addr)
-{
-	const struct gfxnvidia_data *data = flash->mst->par.data;
-
-	pci_mmio_writeb(val, data->bar + (addr & GFXNVIDIA_MEMMAP_MASK));
-}
-
-static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
-				    const chipaddr addr)
-{
-	const struct gfxnvidia_data *data = flash->mst->par.data;
-
-	return pci_mmio_readb(data->bar + (addr & GFXNVIDIA_MEMMAP_MASK));
-}
-
 static int gfxnvidia_shutdown(void *par_data)
 {
 	struct gfxnvidia_data *data = par_data;
@@ -87,8 +73,8 @@ static int gfxnvidia_shutdown(void *par_data)
 }
 
 static const struct par_master par_master_gfxnvidia = {
-	.chip_readb	= gfxnvidia_chip_readb,
-	.chip_writeb	= gfxnvidia_chip_writeb,
+	.chip_readb	= par_mmio_chip_readb,
+	.chip_writeb	= par_mmio_chip_writeb,
 	.shutdown	= gfxnvidia_shutdown,
 };
 
@@ -119,7 +105,8 @@ static int gfxnvidia_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 	data->dev = dev;
-	data->bar = bar;
+	data->mmio.bar = bar;
+	data->mmio.mask = GFXNVIDIA_MEMMAP_MASK;
 
 	/* Allow access to flash interface (will disable screen). */
 	data->flash_access = pci_read_long(dev, REG_FLASH_ACCESS);

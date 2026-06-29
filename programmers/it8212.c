@@ -11,11 +11,13 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "par_mmio.h"
 #include "log.h"
 
 struct it8212_data {
+	/* Must stay first, see struct par_mmio_data. */
+	struct par_mmio_data mmio;
 	struct pci_dev *dev;
-	uint8_t *bar;
 	uint32_t decode_access;
 };
 
@@ -30,20 +32,6 @@ static const struct dev_entry devs_it8212[] = {
 #define IT8212_MEMMAP_SIZE (128 * 1024)
 #define IT8212_MEMMAP_MASK (IT8212_MEMMAP_SIZE - 1)
 
-static void it8212_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-	const struct it8212_data *data = flash->mst->par.data;
-
-	pci_mmio_writeb(val, data->bar + (addr & IT8212_MEMMAP_MASK));
-}
-
-static uint8_t it8212_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	const struct it8212_data *data = flash->mst->par.data;
-
-	return pci_mmio_readb(data->bar + (addr & IT8212_MEMMAP_MASK));
-}
-
 static int it8212_shutdown(void *par_data)
 {
 	struct it8212_data *data = par_data;
@@ -56,8 +44,8 @@ static int it8212_shutdown(void *par_data)
 }
 
 static const struct par_master par_master_it8212 = {
-	.chip_readb	= it8212_chip_readb,
-	.chip_writeb	= it8212_chip_writeb,
+	.chip_readb	= par_mmio_chip_readb,
+	.chip_writeb	= par_mmio_chip_writeb,
 	.shutdown	= it8212_shutdown,
 };
 
@@ -84,7 +72,8 @@ static int it8212_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 	data->dev = dev;
-	data->bar = bar;
+	data->mmio.bar = bar;
+	data->mmio.mask = IT8212_MEMMAP_MASK;
 
 	/* Enable ROM BAR decoding. */
 	data->decode_access = pci_read_long(dev, PCI_ROM_ADDRESS);

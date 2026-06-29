@@ -12,10 +12,12 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "pcidev.h"
+#include "par_mmio.h"
 #include "log.h"
 
 struct nicintel_data {
-	uint8_t *bar;
+	/* Must stay first, see struct par_mmio_data. */
+	struct par_mmio_data mmio;
 	uint8_t *control_bar;
 };
 
@@ -36,22 +38,6 @@ static const struct dev_entry nics_intel[] = {
 
 #define CSR_FCR 0x0c
 
-static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
-				 chipaddr addr)
-{
-	const struct nicintel_data *data = flash->mst->par.data;
-
-	pci_mmio_writeb(val, data->bar + (addr & NICINTEL_MEMMAP_MASK));
-}
-
-static uint8_t nicintel_chip_readb(const struct flashctx *flash,
-				   const chipaddr addr)
-{
-	const struct nicintel_data *data = flash->mst->par.data;
-
-	return pci_mmio_readb(data->bar + (addr & NICINTEL_MEMMAP_MASK));
-}
-
 static int nicintel_shutdown(void *par_data)
 {
 	free(par_data);
@@ -59,8 +45,8 @@ static int nicintel_shutdown(void *par_data)
 }
 
 static const struct par_master par_master_nicintel = {
-	.chip_readb	= nicintel_chip_readb,
-	.chip_writeb	= nicintel_chip_writeb,
+	.chip_readb	= par_mmio_chip_readb,
+	.chip_writeb	= par_mmio_chip_writeb,
 	.shutdown	= nicintel_shutdown,
 };
 
@@ -108,7 +94,8 @@ static int nicintel_init(const struct programmer_cfg *cfg)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->bar = bar;
+	data->mmio.bar = bar;
+	data->mmio.mask = NICINTEL_MEMMAP_MASK;
 	data->control_bar = control_bar;
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
