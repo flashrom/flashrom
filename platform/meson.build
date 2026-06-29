@@ -1,7 +1,9 @@
 # Endian
-srcs += files(
-  'endian_common.c',
-  'endian_' + host_machine.endian() + '.c',
+dep_platform_endian = declare_dependency(
+  sources : files(
+    'endian_common.c',
+    'endian_' + host_machine.endian() + '.c',
+  ),
 )
 # __FLASHROM_LITTLE_ENDIAN__ / __FLASHROM_BIG_ENDIAN__
 add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_ENDIAN__=1', language : 'c')

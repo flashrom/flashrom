@@ -193,6 +193,7 @@ endif
 
 # platform subdir should be built before programmers entries are processed
 subdir('platform')
+deps += dep_platform_endian
 
 if systems_hwaccess.contains(host_machine.system())
   srcs += files('hwaccess_physmap.c')
