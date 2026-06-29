@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if CONFIG_MEDIATEK_I2C_SPI == 1 || CONFIG_PARADE_LSPCON == 1 || CONFIG_REALTEK_MST_I2C_SPI == 1
+#if CONFIG_I2C_HELPER == 1
 
 static int run_require_allow_brick(const char *params)
 {
@@ -56,4 +56,4 @@ void i2c_require_allow_brick_invalid_test_success(void **state)
 	SKIP_TEST(i2c_require_allow_brick_yes_test_success)
 	SKIP_TEST(i2c_require_allow_brick_absent_test_success)
 	SKIP_TEST(i2c_require_allow_brick_invalid_test_success)
-#endif /* CONFIG_MEDIATEK_I2C_SPI || CONFIG_PARADE_LSPCON || CONFIG_REALTEK_MST_I2C_SPI */
+#endif /* CONFIG_I2C_HELPER */

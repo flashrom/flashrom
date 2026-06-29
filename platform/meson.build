@@ -10,6 +10,7 @@ add_project_arguments('-D__FLASHROM_' + host_machine.endian().to_upper() + '_END
 if target_machine.system() == 'linux'
   dep_platform_i2c = declare_dependency(
     sources : files('i2c_linux.c'),
+    compile_args : [ '-DCONFIG_I2C_HELPER=1' ],
   )
 else
   dep_platform_i2c = dependency('', required : false)
