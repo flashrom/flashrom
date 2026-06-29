@@ -15,8 +15,8 @@
 #include "log.h"
 
 struct nicintel_data {
-	uint8_t *nicintel_bar;
-	uint8_t *nicintel_control_bar;
+	uint8_t *bar;
+	uint8_t *control_bar;
 };
 
 static const struct dev_entry nics_intel[] = {
@@ -41,7 +41,7 @@ static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
 {
 	const struct nicintel_data *data = flash->mst->par.data;
 
-	pci_mmio_writeb(val, data->nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+	pci_mmio_writeb(val, data->bar + (addr & NICINTEL_MEMMAP_MASK));
 }
 
 static uint8_t nicintel_chip_readb(const struct flashctx *flash,
@@ -49,7 +49,7 @@ static uint8_t nicintel_chip_readb(const struct flashctx *flash,
 {
 	const struct nicintel_data *data = flash->mst->par.data;
 
-	return pci_mmio_readb(data->nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+	return pci_mmio_readb(data->bar + (addr & NICINTEL_MEMMAP_MASK));
 }
 
 static int nicintel_shutdown(void *par_data)
@@ -108,8 +108,8 @@ static int nicintel_init(const struct programmer_cfg *cfg)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->nicintel_bar = bar;
-	data->nicintel_control_bar = control_bar;
+	data->bar = bar;
+	data->control_bar = control_bar;
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
 	return register_par_master(&par_master_nicintel, BUS_PARALLEL, data);
