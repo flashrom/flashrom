@@ -32,7 +32,9 @@ endif
 if cc.has_header_symbol('string.h', 'strtok_r')
   add_project_arguments('-DHAVE_STRTOK_R=1', language : 'c')
 endif
-srcs += files('string.c')
+dep_platform_string = declare_dependency(
+  sources : files('string.c'),
+)
 
 # Select an appropriate delay implementation for the target OS
 if target_machine.system() == 'dos'
