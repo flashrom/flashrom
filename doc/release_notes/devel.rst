@@ -7,6 +7,13 @@ the next release of flashrom and which are currently only available by source
 code checkout (see :doc:`../dev_guide/building_from_source`). These changes
 may be further revised before the next release.
 
+Fudan FM25W128 flash chip support
+---------------------------------
+
+Added support for the Fudan FM25W128 SPI flash chip, including JEDEC
+identification, erase geometry, OTP and QPI capability metadata, and
+write-protect range decoding for the chip's BP table layout.
+
 Multi-die flash chip support preparation
 -----------------------------------------
 Feature is currently under development. Supporting multi-die flash chips.

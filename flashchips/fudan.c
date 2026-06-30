@@ -12,6 +12,57 @@
 
 	{
 		.vendor		= "Fudan",
+		.name		= "FM25W128",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= FUDAN_ID_NOPREFIX,
+		.model_id	= FUDAN_FM25W128,
+		.total_size	= 16384,
+		.page_size	= 256,
+		/* supports SFDP */
+		/* OTP: 4X256B; read 0x48; write 0x42, erase 0x44 */
+		/* QPI enable 0x38, disable 0xFF */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
+		.tested		= TEST_OK_PROBE,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 512} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 256} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			},
+		},
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {1650, 3600},
+		.reg_bits	=
+		{
+			.srp	= {STATUS1, 7, RW},
+			.srl	= {STATUS2, 0, RW},
+			.bp	= {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}},
+			.tb	= {STATUS1, 5, RW},
+			.sec	= {STATUS1, 6, RW},
+			.cmp	= {STATUS2, 6, RW},
+			.wps	= {STATUS2, 3, RW},
+		},
+		.decode_range	= DECODE_RANGE_SPI25_BP3_TO_1_16,
+	},
+
+	{
+		.vendor		= "Fudan",
 		.name		= "FM25F005",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,

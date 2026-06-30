@@ -332,6 +332,7 @@
 
 #define FUDAN_ID		0x7F7F7F7F7F7F7FA1	/* Shanghai Fudan Microelectronics resides in bank 8 */
 #define FUDAN_ID_NOPREFIX	0xA1	/* Fudan, missing 0x7F prefix */
+#define FUDAN_FM25W128		0x2818
 #define FUDAN_FM25F005		0x3110
 #define FUDAN_FM25F01		0x3111
 #define FUDAN_FM25F02		0x3112	/* Same as FM25F02A */

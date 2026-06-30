@@ -144,6 +144,7 @@ void wp_init_from_status_dummyflasher_test_success(void **state);
 void full_chip_erase_with_wp_dummyflasher_test_success(void **state);
 void partial_chip_erase_with_wp_dummyflasher_test_success(void **state);
 void wp_get_register_values_and_masks(void **state);
+void fudan_fm25w128_wp_decode_test_success(void **state);
 
 /* selfcheck.c */
 void selfcheck_programmer_table(void **state);

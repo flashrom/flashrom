@@ -164,5 +164,6 @@ void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *, size
 void decode_range_spi25_64k_block(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 void decode_range_spi25_bit_cmp(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 void decode_range_spi25_2x_block(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
+void decode_range_spi25_bp3_to_1_16(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 
 #endif /* !__CHIPDRIVERS_H__ */

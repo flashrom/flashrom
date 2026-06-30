@@ -626,6 +626,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(full_chip_erase_with_wp_dummyflasher_test_success),
 		cmocka_unit_test(partial_chip_erase_with_wp_dummyflasher_test_success),
 		cmocka_unit_test(wp_get_register_values_and_masks),
+		cmocka_unit_test(fudan_fm25w128_wp_decode_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("chip_wp.c tests", chip_wp_tests, NULL, NULL);
 

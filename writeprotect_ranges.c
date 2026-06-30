@@ -10,7 +10,8 @@
 #include "helpers.h"
 
 static void decode_range_generic(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len,
-				 bool fixed_block_len, bool apply_cmp_to_bp, int coeff_offset)
+				 bool fixed_block_len, bool apply_cmp_to_bp, bool use_sec,
+				 int coeff_offset, size_t bp_protect_start_bit)
 {
 	const bool cmp = bits->cmp_bit_present && bits->cmp == 1;
 
@@ -32,8 +33,8 @@ static void decode_range_generic(size_t *start, size_t *len, const struct wp_bit
 	if (cmp && apply_cmp_to_bp)
 		bp ^= bp_max;
 
-	if (bp == 0) {
-		/* Special case: all BP bits are 0 => no write protection */
+	if (bp < bp_protect_start_bit) {
+		/* Special case: BP bits are smaller than the start bit index => no write protection */
 		*len = 0;
 	} else if (bp == bp_max) {
 		/* Special case: all BP bits are 1 => full write protection */
@@ -53,7 +54,7 @@ static void decode_range_generic(size_t *start, size_t *len, const struct wp_bit
 		size_t sector_len        = 4  * KiB;
 		size_t default_block_len = 64 * KiB;
 
-		if (bits->sec_bit_present && bits->sec == 1) {
+		if (use_sec && bits->sec_bit_present && bits->sec == 1) {
 			/*
 			 * SEC=1, protect 4K sectors. Flash chips clamp the
 			 * protection length at 32K, probably to avoid overlap
@@ -103,7 +104,8 @@ static void decode_range_generic(size_t *start, size_t *len, const struct wp_bit
 void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len)
 {
 	decode_range_generic(start, len, bits, chip_len,
-			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*coeff_offset=*/1);
+			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*use_sec=*/true,
+			     /*coeff_offset=*/1, /*bp_protect_start_bit=*/1);
 }
 
 /*
@@ -112,7 +114,8 @@ void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *bits, 
 void decode_range_spi25_64k_block(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len)
 {
 	decode_range_generic(start, len, bits, chip_len,
-			     /*fixed_block_len=*/true, /*apply_cmp_to_bp=*/false, /*coeff_offset=*/1);
+			     /*fixed_block_len=*/true, /*apply_cmp_to_bp=*/false, /*use_sec=*/true,
+			     /*coeff_offset=*/1, /*bp_protect_start_bit=*/1);
 }
 
 /*
@@ -122,7 +125,8 @@ void decode_range_spi25_64k_block(size_t *start, size_t *len, const struct wp_bi
 void decode_range_spi25_bit_cmp(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len)
 {
 	decode_range_generic(start, len, bits, chip_len,
-			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/true, /*coeff_offset=*/1);
+			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/true, /*use_sec=*/true,
+			     /*coeff_offset=*/1, /*bp_protect_start_bit=*/1);
 }
 
 /*
@@ -132,5 +136,18 @@ void decode_range_spi25_bit_cmp(size_t *start, size_t *len, const struct wp_bits
 void decode_range_spi25_2x_block(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len)
 {
 	decode_range_generic(start, len, bits, chip_len,
-			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*coeff_offset=*/0);
+			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*use_sec=*/true,
+			     /*coeff_offset=*/0, /*bp_protect_start_bit=*/1);
+}
+
+/*
+ * Protection range calculation for SPI chips where BP values below 3 mean
+ * no protection and BP=3 starts at 1/16 of the chip.
+ */
+void decode_range_spi25_bp3_to_1_16(size_t *start, size_t *len, const struct wp_bits *bits,
+				    size_t chip_len)
+{
+	decode_range_generic(start, len, bits, chip_len,
+			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*use_sec=*/false,
+			     /*coeff_offset=*/3, /*bp_protect_start_bit=*/3);
 }
