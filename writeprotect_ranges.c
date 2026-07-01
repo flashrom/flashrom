@@ -134,3 +134,48 @@ void decode_range_spi25_2x_block(size_t *start, size_t *len, const struct wp_bit
 	decode_range_generic(start, len, bits, chip_len,
 			     /*fixed_block_len=*/false, /*apply_cmp_to_bp=*/false, /*coeff_offset=*/0);
 }
+
+/*
+ * XTX XT25F-B chips encode top/bottom and block/sector protection in
+ * BP4..BP0 rather than exposing separate TB and SEC bits.
+ */
+void decode_range_spi25_xtx(size_t *start, size_t *len, const struct wp_bits *bits, size_t chip_len)
+{
+	const size_t bp0 = bits->bp_bit_count > 0 ? bits->bp[0] : 0;
+	const size_t bp1 = bits->bp_bit_count > 1 ? bits->bp[1] : 0;
+	const size_t bp2 = bits->bp_bit_count > 2 ? bits->bp[2] : 0;
+	const size_t bp3 = bits->bp_bit_count > 3 ? bits->bp[3] : 0;
+	const size_t bp4 = bits->bp_bit_count > 4 ? bits->bp[4] : 0;
+	const size_t bp = bp0 | (bp1 << 1) | (bp2 << 2);
+	const bool cmp = bits->cmp_bit_present && bits->cmp == 1;
+
+	*start = 0;
+	*len = 0;
+
+	if (bp == 0) {
+		*len = 0;
+	} else if ((bp & 0x06) == 0x06) {
+		*len = chip_len;
+	} else if (bp4 == 0) {
+		*len = min(chip_len >> (6 - bp), chip_len);
+		*start = bp3 ? 0 : chip_len - *len;
+	} else {
+		*len = min((size_t)4 * KiB << min(bp - 1, (size_t)3), chip_len);
+		*start = bp3 ? 0 : chip_len - *len;
+	}
+
+	if (cmp) {
+		if (*len == 0) {
+			*len = chip_len;
+		} else if (*len == chip_len) {
+			*start = 0;
+			*len = 0;
+		} else if (*start == 0) {
+			*start = *len;
+			*len = chip_len - *len;
+		} else {
+			*len = *start;
+			*start = 0;
+		}
+	}
+}
