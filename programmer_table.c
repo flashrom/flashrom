@@ -38,10 +38,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_atavia,
 #endif
 
-#if CONFIG_IT8212 == 1
-    &programmer_it8212,
-#endif
-
 #if CONFIG_FT2232_SPI == 1
     &programmer_ft2232_spi,
 #endif

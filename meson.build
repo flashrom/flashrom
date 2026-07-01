@@ -306,13 +306,6 @@ programmer = {
       '-DCONFIG_INTERNAL_DMI=' + (get_option('use_internal_dmi') ? '1' : '0'),
     ]
   },
-  'it8212' : {
-    'systems' : systems_hwaccess,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/it8212.c', 'pcidev.c', 'programmers/par_mmio.c'),
-    'flags'   : [ '-DCONFIG_IT8212=1' ],
-  },
   'jlink_spi' : {
     'deps'    : [ libjaylink ],
     'groups'  : [ group_jlink, group_external ],

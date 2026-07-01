@@ -72,3 +72,8 @@ supports it.
 The ``atahpt`` programmer has been removed. It reflashed the option ROM on
 HighPoint ATA/RAID PCI controllers through raw x86 port I/O. The hardware is
 obsolete and legacy hosts already ship a flashrom that supports it.
+
+The ``it8212`` programmer has been removed. It reflashed the flash on ITE
+IT8212F ATA/RAID PCI controllers through a memory-mapped PCI BAR. The
+hardware is obsolete and legacy hosts already ship a flashrom that supports
+it.

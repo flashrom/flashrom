@@ -338,7 +338,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``nicrealtek``          (for flash ROMs on Realtek and SMC 1211 network cards)
         * ``nicintel``            (for parallel flash ROMs on Intel 10/100Mbit network cards)
         * ``atavia``              (for flash ROMs on VIA VT6421A SATA controllers)
-        * ``it8212``              (for flash ROMs on ITE IT8212F ATA/RAID controller)
         * ``ft2232_spi``          (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family based USB SPI programmer)
         * ``serprog``             (for flash ROMs attached to a programmer speaking serprog, including some Arduino-based devices)
         * ``buspirate_spi``       (for SPI flash ROMs attached to a Bus Pirate)
@@ -879,8 +878,8 @@ Test write verification::
         flashrom -p fault:backend=dummy,...,write_lie_prob=0.2 -w image.bin
 
 
-nic3com, nicrealtek, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, atavia, it8212 programmers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nic3com, nicrealtek, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, atavia programmers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These programmers have an option to specify the PCI address of the card your want to use, which must be specified if
 more than one card supported by the selected programmer is installed in your system. The syntax is::
@@ -1572,11 +1571,6 @@ REQUIREMENTS
 
         * need PCI configuration space read access
         * raw I/O port access
-
-* it8212
-
-        * need PCI configuration space access
-        * raw memory access
 
 * raiden_debug_spi
 
