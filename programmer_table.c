@@ -26,10 +26,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_nicrealtek,
 #endif
 
-#if CONFIG_NICNATSEMI == 1
-    &programmer_nicnatsemi,
-#endif
-
 #if CONFIG_RAIDEN_DEBUG_SPI == 1
     &programmer_raiden_debug_spi,
 #endif

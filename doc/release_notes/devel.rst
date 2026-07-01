@@ -53,3 +53,8 @@ The ``satasii`` programmer has been removed. It reflashed the parallel flash
 on Silicon Image SATA/IDE PCI controllers through a memory-mapped PCI BAR.
 The hardware is obsolete and legacy hosts already ship a flashrom that
 supports it.
+
+The ``nicnatsemi`` programmer has been removed. It reflashed the socketed
+parallel boot ROM on National Semiconductor DP838* PCI network cards through
+raw x86 port I/O. The hardware is obsolete and legacy hosts already ship a
+flashrom that supports it.

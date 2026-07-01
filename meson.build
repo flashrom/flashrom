@@ -406,15 +406,6 @@ programmer = {
     'srcs'    : files('programmers/nicintel_spi.c', 'pcidev.c'),
     'flags'   : [ '-DCONFIG_NICINTEL_SPI=1' ],
   },
-  'nicnatsemi' : {
-    'systems' : systems_hwaccess,
-    'cpu_families' : cpus_port_io,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/nicnatsemi.c', 'pcidev.c'),
-    'flags'   : [ '-DCONFIG_NICNATSEMI=1' ],
-    'default' : false, # not complete nor tested
-  },
   'nicrealtek' : {
     'systems' : systems_hwaccess,
     'cpu_families' : cpus_port_io,
