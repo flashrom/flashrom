@@ -450,14 +450,6 @@ programmer = {
     'flags'   : [ '-DCONFIG_REALTEK_MST_I2C_SPI=1' ],
     'default' : false,
   },
-  'satamv' : {
-    'systems' : systems_hwaccess,
-    'cpu_families' : cpus_port_io,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/satamv.c', 'pcidev.c'),
-    'flags'   : ['-DCONFIG_SATAMV=1'],
-  },
   'serprog' : {
     'systems' : systems_serial,
     'groups'  : [ group_serial, group_external ],

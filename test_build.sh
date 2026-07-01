@@ -11,7 +11,7 @@ meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group
 			internal it8212 jlink_spi linux_mtd linux_spi parade_lspcon		\
 			mediatek_i2c_spi mstarddc_spi nic3com nicintel nicintel_eeprom nicintel_spi	\
 			nicrealtek nv_sma_spi ogp_spi pickit2_spi pony_spi raiden_debug_spi	\
-			realtek_mst_i2c_spi satamv serprog spidriver stlinkv3_spi usbblaster_spi\
+			realtek_mst_i2c_spi serprog spidriver stlinkv3_spi usbblaster_spi\
 			asm106x"
 
 

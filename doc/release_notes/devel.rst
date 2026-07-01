@@ -63,3 +63,8 @@ The ``drkaiser`` programmer has been removed. It reflashed the parallel
 flash on Dr. Kaiser PC-Waechter PCI cards through a memory-mapped PCI BAR.
 The hardware is obsolete and legacy hosts already ship a flashrom that
 supports it.
+
+The ``satamv`` programmer has been removed. It reflashed the parallel flash
+on Marvell 88SX70xx/88SX60xx SATA PCI controllers through raw x86 port I/O.
+The hardware is obsolete and legacy hosts already ship a flashrom that
+supports it.

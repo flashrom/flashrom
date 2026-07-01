@@ -86,10 +86,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_ogp_spi,
 #endif
 
-#if CONFIG_SATAMV == 1
-    &programmer_satamv,
-#endif
-
 #if CONFIG_LINUX_MTD == 1
     &programmer_linux_mtd,
 #endif
