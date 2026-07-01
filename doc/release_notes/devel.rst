@@ -43,3 +43,8 @@ The ``atapromise`` programmer has been removed. It reflashed the option ROM
 on Promise PDC2026x ATA/RAID PCI cards via raw x86 port I/O and was capped at
 32 kB by the tested card wiring. The hardware is obsolete and legacy hosts
 already ship a flashrom that supports it.
+
+The ``gfxnvidia`` programmer has been removed. It reflashed the parallel
+flash on old NVIDIA graphics cards through a memory-mapped PCI BAR. The
+hardware is obsolete and legacy hosts already ship a flashrom that supports
+it.

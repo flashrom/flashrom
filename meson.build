@@ -285,13 +285,6 @@ programmer = {
     'srcs'    : files('programmers/ft2232_spi.c' ),
     'flags'   : [ '-DCONFIG_FT2232_SPI=1' ],
   },
-  'gfxnvidia' : {
-    'systems' : systems_hwaccess,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/gfxnvidia.c', 'pcidev.c', 'programmers/par_mmio.c'),
-    'flags'   : [ '-DCONFIG_GFXNVIDIA=1' ],
-  },
   'internal' : {
     'systems' : systems_hwaccess + ['linux'],
     'cpu_families' : (host_machine.system() == 'linux' ? [host_machine.cpu_family()] : ['x86', 'x86_64']),
