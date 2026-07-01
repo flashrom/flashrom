@@ -261,13 +261,6 @@ programmer = {
     'srcs'    : files('programmers/dirtyjtag_spi.c'),
     'flags'   : [ '-DCONFIG_DIRTYJTAG_SPI=1' ],
   },
-  'drkaiser' : {
-    'systems' : systems_hwaccess,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/drkaiser.c', 'pcidev.c'),
-    'flags'   : [ '-DCONFIG_DRKAISER=1' ],
-  },
   'dummy'     : {
     'srcs'    : files('programmers/dummyflasher.c'),
     'test_srcs' : files('tests/dummyflasher.c'),

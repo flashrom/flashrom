@@ -337,7 +337,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``nic3com``             (for flash ROMs on 3COM network cards)
         * ``nicrealtek``          (for flash ROMs on Realtek and SMC 1211 network cards)
         * ``nicintel``            (for parallel flash ROMs on Intel 10/100Mbit network cards)
-        * ``drkaiser``            (for flash ROMs on Dr. Kaiser PC-Waechter PCI cards)
         * ``satamv``              (for flash ROMs on Marvell SATA controllers)
         * ``atahpt``              (for flash ROMs on Highpoint ATA/RAID controllers)
         * ``atavia``              (for flash ROMs on VIA VT6421A SATA controllers)
@@ -882,8 +881,8 @@ Test write verification::
         flashrom -p fault:backend=dummy,...,write_lie_prob=0.2 -w image.bin
 
 
-nic3com, nicrealtek, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, drkaiser, satamv, atahpt, atavia, it8212 programmers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nic3com, nicrealtek, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, satamv, atahpt, atavia, it8212 programmers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These programmers have an option to specify the PCI address of the card your want to use, which must be specified if
 more than one card supported by the selected programmer is installed in your system. The syntax is::
@@ -1581,7 +1580,7 @@ REQUIREMENTS
         * needs PCI configuration space access
         * raw I/O port access
 
-* drkaiser, it8212
+* it8212
 
         * need PCI configuration space access
         * raw memory access
@@ -1621,7 +1620,7 @@ REQUIREMENTS
 
         * needs no access permissions at all
 
-* internal, nic3com, nicrealtek, drkaiser, satamv, atahpt, atavia, asm106x
+* internal, nic3com, nicrealtek, satamv, atahpt, atavia, asm106x
 
         * have to be run as superuser/root
         * need raw access permission

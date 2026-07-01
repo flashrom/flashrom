@@ -30,10 +30,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_raiden_debug_spi,
 #endif
 
-#if CONFIG_DRKAISER == 1
-    &programmer_drkaiser,
-#endif
-
 #if CONFIG_ASM106X == 1
     &programmer_asm106x,
 #endif
