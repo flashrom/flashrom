@@ -339,7 +339,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``nicnatsemi``          (for flash ROMs on National Semiconductor DP838* network cards)
         * ``nicintel``            (for parallel flash ROMs on Intel 10/100Mbit network cards)
         * ``drkaiser``            (for flash ROMs on Dr. Kaiser PC-Waechter PCI cards)
-        * ``satasii``             (for flash ROMs on Silicon Image SATA/IDE controllers)
         * ``satamv``              (for flash ROMs on Marvell SATA controllers)
         * ``atahpt``              (for flash ROMs on Highpoint ATA/RAID controllers)
         * ``atavia``              (for flash ROMs on VIA VT6421A SATA controllers)
@@ -884,8 +883,8 @@ Test write verification::
         flashrom -p fault:backend=dummy,...,write_lie_prob=0.2 -w image.bin
 
 
-nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, it8212 programmers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, ogp_spi, drkaiser, satamv, atahpt, atavia, it8212 programmers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These programmers have an option to specify the PCI address of the card your want to use, which must be specified if
 more than one card supported by the selected programmer is installed in your system. The syntax is::
@@ -962,13 +961,6 @@ themselves to be identified, the controller relies on correct size values writte
 **Flashrom** follows this scheme but assumes the minimum size of 16 kB (128 kb) if an unprogrammed EEPROM/card is detected.
 Intel specifies following EEPROMs to be compatible:
 Atmel AT25128, AT25256, Micron (ST) M95128, M95256 and OnSemi (Catalyst) CAT25CS128.
-
-satasii programmer
-^^^^^^^^^^^^^^^^^^
-
-Flashrom supports some SiI ATA/SATA controllers to reflash the flash attached to these controller cards,
-but it is also possible to use these cards to reflash other chips which fit in there electrically.
-Please note that the small number of address lines connected to the chip may make accessing large chips impossible.
 
 ft2232_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^
@@ -1599,7 +1591,7 @@ REQUIREMENTS
 
         * needs access to the respective USB device via libusb API version 1.0
 
-* satasii, nicintel, nicintel_eeprom, nicintel_spi
+* nicintel, nicintel_eeprom, nicintel_spi
 
         * need PCI configuration space read access
         * raw memory access
@@ -1630,7 +1622,7 @@ REQUIREMENTS
 
         * needs no access permissions at all
 
-* internal, nic3com, nicrealtek, nicnatsemi, drkaiser, satasii, satamv, atahpt, atavia, asm106x
+* internal, nic3com, nicrealtek, nicnatsemi, drkaiser, satamv, atahpt, atavia, asm106x
 
         * have to be run as superuser/root
         * need raw access permission

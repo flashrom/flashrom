@@ -474,13 +474,6 @@ programmer = {
     'srcs'    : files('programmers/satamv.c', 'pcidev.c'),
     'flags'   : ['-DCONFIG_SATAMV=1'],
   },
-  'satasii' : {
-    'systems' : systems_hwaccess,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/satasii.c', 'pcidev.c'),
-    'flags'   : [ '-DCONFIG_SATASII=1' ],
-  },
   'serprog' : {
     'systems' : systems_serial,
     'groups'  : [ group_serial, group_external ],
