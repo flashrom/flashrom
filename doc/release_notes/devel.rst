@@ -77,3 +77,8 @@ The ``it8212`` programmer has been removed. It reflashed the flash on ITE
 IT8212F ATA/RAID PCI controllers through a memory-mapped PCI BAR. The
 hardware is obsolete and legacy hosts already ship a flashrom that supports
 it.
+
+The ``developerbox_spi`` programmer has been removed. It drove the on-board
+SPI flash of the Socionext SynQuacer DeveloperBox for recovery. The board is
+end-of-life with a negligible install base, so nothing in current use depends
+on it.

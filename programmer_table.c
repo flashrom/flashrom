@@ -54,10 +54,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_dediprog,
 #endif
 
-#if CONFIG_DEVELOPERBOX_SPI == 1
-    &programmer_developerbox,
-#endif
-
 #if CONFIG_PONY_SPI == 1
     &programmer_pony_spi,
 #endif

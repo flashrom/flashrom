@@ -234,12 +234,6 @@ programmer = {
     'test_srcs' : files('tests/dediprog.c'),
     'flags'   : [ '-DCONFIG_DEDIPROG=1' ],
   },
-  'developerbox_spi' : {
-    'deps'    : [ libusb1 ],
-    'groups'  : [ group_usb, group_external ],
-    'srcs'    : files('programmers/developerbox_spi.c', 'usbdev.c'),
-    'flags'   : [ '-DCONFIG_DEVELOPERBOX_SPI=1' ],
-  },
   'digilent_spi' : {
     'deps'    : [ libusb1 ],
     'groups'  : [ group_usb, group_external ],
