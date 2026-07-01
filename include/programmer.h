@@ -50,7 +50,6 @@ extern const size_t programmer_table_size;
 /* programmer drivers */
 extern const struct programmer_entry programmer_asm106x;
 extern const struct programmer_entry programmer_atahpt;
-extern const struct programmer_entry programmer_atapromise;
 extern const struct programmer_entry programmer_atavia;
 extern const struct programmer_entry programmer_buspirate_spi;
 extern const struct programmer_entry programmer_ch341a_spi;

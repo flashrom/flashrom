@@ -344,7 +344,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``satamv``              (for flash ROMs on Marvell SATA controllers)
         * ``atahpt``              (for flash ROMs on Highpoint ATA/RAID controllers)
         * ``atavia``              (for flash ROMs on VIA VT6421A SATA controllers)
-        * ``atapromise``          (for flash ROMs on Promise PDC2026x ATA/RAID controllers)
         * ``it8212``              (for flash ROMs on ITE IT8212F ATA/RAID controller)
         * ``ft2232_spi``          (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family based USB SPI programmer)
         * ``serprog``             (for flash ROMs attached to a programmer speaking serprog, including some Arduino-based devices)
@@ -886,8 +885,8 @@ Test write verification::
         flashrom -p fault:backend=dummy,...,write_lie_prob=0.2 -w image.bin
 
 
-nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, gfxnvidia, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, atapromise, it8212 programmers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, gfxnvidia, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, it8212 programmers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These programmers have an option to specify the PCI address of the card your want to use, which must be specified if
 more than one card supported by the selected programmer is installed in your system. The syntax is::
@@ -941,13 +940,6 @@ Cards found in the wild:
 The revision consists of two characters that are printed below the "VT6421A" string on the chip
 prefixed by 4 numbers that encode the production year and week.
 The country is noted right of the revision.
-
-atapromise programmer
-^^^^^^^^^^^^^^^^^^^^^
-
-This programmer is currently limited to 32 kB, regardless of the actual size of the flash chip. This stems from the
-fact that, on the tested device (a Promise Ultra100), not all of the chip's address lines were actually connected.
-You may use this programmer to flash firmware updates, since these are only 16 kB in size (padding to 32 kB is required).
 
 nic3com programmer
 ^^^^^^^^^^^^^^^^^^
@@ -1619,7 +1611,7 @@ REQUIREMENTS
         * need PCI configuration space read access
         * raw memory access
 
-* satamv, atapromise
+* satamv
 
         * need PCI configuration space read access
         * raw I/O port access
@@ -1645,7 +1637,7 @@ REQUIREMENTS
 
         * needs no access permissions at all
 
-* internal, nic3com, nicrealtek, nicnatsemi, gfxnvidia, drkaiser, satasii, satamv, atahpt, atavia, atapromise, asm106x
+* internal, nic3com, nicrealtek, nicnatsemi, gfxnvidia, drkaiser, satasii, satamv, atahpt, atavia, asm106x
 
         * have to be run as superuser/root
         * need raw access permission

@@ -209,15 +209,6 @@ programmer = {
     'flags'   : [ '-DCONFIG_ATAHPT=1' ],
     'default' : false, # not yet working
   },
-  'atapromise' : {
-    'systems' : systems_hwaccess,
-    'cpu_families' : cpus_port_io,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/atapromise.c', 'pcidev.c'),
-    'flags'   : [ '-DCONFIG_ATAPROMISE=1' ],
-    'default' : false,
-  },
   'atavia' : {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],

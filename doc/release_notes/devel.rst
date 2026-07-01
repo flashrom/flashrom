@@ -38,3 +38,8 @@ parallel port (RayeR cable, Altera ByteBlasterMV, Atmel STK200/300, Macraigor
 Wiggler, Xilinx Parallel Cable III, and SPI Tiny Tools hardware). Parallel
 ports are absent from modern hardware, and the driver required raw x86 I/O port
 access, restricting it to legacy x86 hosts.
+
+The ``atapromise`` programmer has been removed. It reflashed the option ROM
+on Promise PDC2026x ATA/RAID PCI cards via raw x86 port I/O and was capped at
+32 kB by the tested card wiring. The hardware is obsolete and legacy hosts
+already ship a flashrom that supports it.

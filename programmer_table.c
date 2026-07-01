@@ -58,10 +58,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_atavia,
 #endif
 
-#if CONFIG_ATAPROMISE == 1
-    &programmer_atapromise,
-#endif
-
 #if CONFIG_IT8212 == 1
     &programmer_it8212,
 #endif
