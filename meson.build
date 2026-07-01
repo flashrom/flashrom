@@ -200,15 +200,6 @@ programmer = {
     'srcs'    : files('programmers/asm106x.c', 'pcidev.c'),
     'flags'   : [ '-DCONFIG_ASM106X=1' ],
   },
-  'atahpt' : {
-    'systems' : systems_hwaccess,
-    'cpu_families' : cpus_port_io,
-    'deps'    : [ libpci ],
-    'groups'  : [ group_pci, group_internal ],
-    'srcs'    : files('programmers/atahpt.c', 'pcidev.c'),
-    'flags'   : [ '-DCONFIG_ATAHPT=1' ],
-    'default' : false, # not yet working
-  },
   'atavia' : {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],

@@ -34,10 +34,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_asm106x,
 #endif
 
-#if CONFIG_ATAHPT == 1
-    &programmer_atahpt,
-#endif
-
 #if CONFIG_ATAVIA == 1
     &programmer_atavia,
 #endif
