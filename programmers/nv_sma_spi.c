@@ -638,31 +638,8 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 	msg_pinfo("Using interface %d with endpoints: write=0x%02x, read=0x%02x\n",
 				nv_sma_data->interface, nv_sma_data->write_ep, nv_sma_data->read_ep);
 
-	ret = libusb_detach_kernel_driver(nv_sma_data->handle, nv_sma_data->interface);
-	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
-		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
-			libusb_error_name(ret));
-
-	ret = libusb_claim_interface(nv_sma_data->handle, nv_sma_data->interface);
-	if (ret != 0) {
-		msg_perr("Failed to claim interface %d: '%s'\n", nv_sma_data->interface, libusb_error_name(ret));
+	if (usb_dev_claim_and_describe(nv_sma_data->handle, nv_sma_data->interface) != 0)
 		goto error_exit;
-	}
-
-	struct libusb_device *dev;
-	if (!(dev = libusb_get_device(nv_sma_data->handle))) {
-		msg_perr("Failed to get device from device handle.\n");
-		goto error_exit;
-	}
-
-	struct libusb_device_descriptor desc;
-	ret = libusb_get_device_descriptor(dev, &desc);
-	if (ret < 0) {
-		msg_perr("Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
-		goto error_exit;
-	}
-
-	usb_dev_msg_device_revision(&desc);
 
 	/* select CS pin - default to CS0 if not specified */
 	nv_sma_data->cs_bits = NV_SMA_CS0;  /* Default to CS0 bits */

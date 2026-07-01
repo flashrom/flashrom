@@ -316,31 +316,8 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 
-	ret = libusb_detach_kernel_driver(ch347_data->handle, ch347_data->interface);
-	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
-		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
-			libusb_error_name(ret));
-
-	ret = libusb_claim_interface(ch347_data->handle, ch347_data->interface);
-	if (ret != 0) {
-		msg_perr("Failed to claim interface %d: '%s'\n", ch347_data->interface, libusb_error_name(ret));
+	if (usb_dev_claim_and_describe(ch347_data->handle, ch347_data->interface) != 0)
 		goto error_exit;
-	}
-
-	struct libusb_device *dev;
-	if (!(dev = libusb_get_device(ch347_data->handle))) {
-		msg_perr("Failed to get device from device handle.\n");
-		goto error_exit;
-	}
-
-	struct libusb_device_descriptor desc;
-	ret = libusb_get_device_descriptor(dev, &desc);
-	if (ret < 0) {
-		msg_perr("Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
-		goto error_exit;
-	}
-
-	usb_dev_msg_device_revision(&desc);
 
 	/* set CH347 clock division */
 	speed_index = 2; /* default: 15MHz */

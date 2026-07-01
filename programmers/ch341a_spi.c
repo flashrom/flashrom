@@ -439,31 +439,8 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 		goto free_data;
 	}
 
-	ret = libusb_detach_kernel_driver(data->handle, 0);
-	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
-		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
-			libusb_error_name(ret));
-
-	ret = libusb_claim_interface(data->handle, 0);
-	if (ret != 0) {
-		msg_perr("Failed to claim interface 0: '%s'\n", libusb_error_name(ret));
+	if (usb_dev_claim_and_describe(data->handle, 0) != 0)
 		goto close_handle;
-	}
-
-	struct libusb_device *dev;
-	if (!(dev = libusb_get_device(data->handle))) {
-		msg_perr("Failed to get device from device handle.\n");
-		goto close_handle;
-	}
-
-	struct libusb_device_descriptor desc;
-	ret = libusb_get_device_descriptor(dev, &desc);
-	if (ret < 0) {
-		msg_perr("Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
-		goto release_interface;
-	}
-
-	usb_dev_msg_device_revision(&desc);
 
 	/* Allocate and pre-fill transfer structures. */
 	data->transfer_out = libusb_alloc_transfer(0);

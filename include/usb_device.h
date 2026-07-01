@@ -180,4 +180,42 @@ static inline void usb_dev_msg_device_revision(const struct libusb_device_descri
 		 (desc->bcdDevice >> 0) & 0x000F);
 }
 
+/*
+ * Detach any kernel driver, claim the given interface, and log the device
+ * revision. On success the interface is held and must be released by the
+ * caller. On failure the interface is left unclaimed, so the caller only has
+ * to close the handle.
+ */
+static inline int usb_dev_claim_and_describe(struct libusb_device_handle *handle, int interface)
+{
+	int ret = libusb_detach_kernel_driver(handle, interface);
+	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
+		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
+			libusb_error_name(ret));
+
+	ret = libusb_claim_interface(handle, interface);
+	if (ret != 0) {
+		msg_perr("Failed to claim interface %d: '%s'\n", interface, libusb_error_name(ret));
+		return ret;
+	}
+
+	struct libusb_device *dev = libusb_get_device(handle);
+	if (!dev) {
+		msg_perr("Failed to get device from device handle.\n");
+		libusb_release_interface(handle, interface);
+		return -1;
+	}
+
+	struct libusb_device_descriptor desc;
+	ret = libusb_get_device_descriptor(dev, &desc);
+	if (ret < 0) {
+		msg_perr("Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
+		libusb_release_interface(handle, interface);
+		return ret;
+	}
+
+	usb_dev_msg_device_revision(&desc);
+	return 0;
+}
+
 #endif /* USB_DEVICE_H */
