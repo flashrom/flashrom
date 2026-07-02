@@ -94,6 +94,8 @@ void realtek_mst_basic_lifecycle_test_success(void **state);
 void realtek_mst_no_allow_brick_test_success(void **state);
 void ch341a_spi_basic_lifecycle_test_success(void **state);
 void ch341a_spi_probe_lifecycle_test_success(void **state);
+void ch347_spi_basic_lifecycle_test_success(void **state);
+void ch347_spi_probe_lifecycle_test_success(void **state);
 void spidriver_probe_lifecycle_test_success(void **state);
 void nv_sma_spi_basic_lifecycle_test_success(void **state);
 void fault_basic_lifecycle_test_success(void **state);

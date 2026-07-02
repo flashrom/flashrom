@@ -266,6 +266,7 @@ programmer = {
     'deps'    : [ libusb1 ],
     'groups'  : [ group_usb, group_external ],
     'srcs'    : files('programmers/ch347_spi.c'),
+    'test_srcs' : files('tests/ch347_spi.c'),
     'flags'   : [ '-DCONFIG_CH347_SPI=1' ],
   },
   'dediprog' : {
