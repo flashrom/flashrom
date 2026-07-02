@@ -3391,7 +3391,7 @@
 		.name		= "W77Q128JW",
 		.bustype	= BUS_SPI,
 		.manufacture_id = WINBOND_NEX_ID,
-		.model_id	= WINBOND_NEX_W77Q128_W,
+		.model_id	= WINBOND_NEX_W77Q12_W,
 		.total_size	= 16384,
 		.page_size	= 256,
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -3678,10 +3678,10 @@
 
 	{
 		.vendor 	= "Winbond",
-		.name		= "W77Q128NW",
+		.name		= "W77Q12NW",
 		.bustype	= BUS_SPI,
 		.manufacture_id = WINBOND_NEX_ID,
-		.model_id	= WINBOND_NEX_W77Q128_W,
+		.model_id	= WINBOND_NEX_W77Q12_W,
 		.total_size	= 16384,
 		.die_size	= 8192,
 		.page_size	= 256,
@@ -3752,10 +3752,10 @@
 
 	{
 		.vendor 	= "Winbond",
-		.name		= "W77T128NW",
+		.name		= "W77T12NW",
 		.bustype	= BUS_SPI,
 		.manufacture_id = WINBOND_NEX_ID,
-		.model_id	= WINBOND_NEX_W77T128NW,
+		.model_id	= WINBOND_NEX_W77T12NW,
 		.total_size	= 16384,
 		.die_size	= 8192,
 		.page_size	= 256,
