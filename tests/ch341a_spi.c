@@ -127,7 +127,52 @@ void ch341a_spi_probe_lifecycle_test_success(void **state)
 				expected_matched_names, 1);
 }
 
+#if CONFIG_FAULT == 1
+/*
+ * fault-as-API: wrap the real ch341a driver with the fault programmer over the
+ * same USB mock. With the default flip_prob (0) this is a clean pass-through
+ * and proves the driver composes with the fault SPI-master wrapper.
+ */
+void ch341a_spi_fault_wrapped_basic_test_success(void **state)
+{
+	struct ch341a_spi_io_state ch341a_spi_io_state = { 0 };
+	struct io_mock_fallback_open_state fb = { .noc = 0, .paths = { NULL } };
+	const struct io_mock io = {
+		.state = &ch341a_spi_io_state,
+		.libusb_alloc_transfer = &ch341a_libusb_alloc_transfer,
+		.libusb_submit_transfer = &ch341a_libusb_submit_transfer,
+		.libusb_free_transfer = &ch341a_libusb_free_transfer,
+		.libusb_handle_events_timeout = &ch341a_libusb_handle_events_timeout,
+		.fallback_open_state = &fb,
+	};
+	run_basic_lifecycle(state, &io, &programmer_fault, "backend=ch341a_spi,seed=42");
+}
+
+void ch341a_spi_fault_wrapped_probe_test_success(void **state)
+{
+	struct ch341a_spi_io_state ch341a_spi_io_state = { 0 };
+	struct io_mock_fallback_open_state fb = { .noc = 0, .paths = { NULL } };
+	const struct io_mock io = {
+		.state = &ch341a_spi_io_state,
+		.libusb_alloc_transfer = &ch341a_libusb_alloc_transfer,
+		.libusb_submit_transfer = &ch341a_libusb_submit_transfer,
+		.libusb_free_transfer = &ch341a_libusb_free_transfer,
+		.libusb_handle_events_timeout = &ch341a_libusb_handle_events_timeout,
+		.fallback_open_state = &fb,
+	};
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &io, &programmer_fault, "backend=ch341a_spi,seed=42",
+				"W25Q128.V", expected_matched_names, 1);
+}
+
+#else
+	SKIP_TEST(ch341a_spi_fault_wrapped_basic_test_success)
+	SKIP_TEST(ch341a_spi_fault_wrapped_probe_test_success)
+#endif /* CONFIG_FAULT */
+
 #else
 	SKIP_TEST(ch341a_spi_basic_lifecycle_test_success)
 	SKIP_TEST(ch341a_spi_probe_lifecycle_test_success)
+	SKIP_TEST(ch341a_spi_fault_wrapped_basic_test_success)
+	SKIP_TEST(ch341a_spi_fault_wrapped_probe_test_success)
 #endif /* CONFIG_CH341A_SPI */

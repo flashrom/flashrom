@@ -103,7 +103,35 @@ void ch347_spi_probe_lifecycle_test_success(void **state)
 				expected_matched_names, 1);
 }
 
+#if CONFIG_FAULT == 1
+/*
+ * fault-as-API: wrap the real ch347 driver with the fault programmer over the
+ * same USB mock. flip_prob defaults to 0, so this is a clean pass-through and
+ * proves the driver composes with the fault SPI-master wrapper.
+ */
+void ch347_spi_fault_wrapped_basic_test_success(void **state)
+{
+	struct ch347_spi_io_state st = { 0 };
+	const struct io_mock io = CH347_SPI_IO(&st);
+	run_basic_lifecycle(state, &io, &programmer_fault, "backend=ch347_spi,seed=42");
+}
+
+void ch347_spi_fault_wrapped_probe_test_success(void **state)
+{
+	struct ch347_spi_io_state st = { 0 };
+	const struct io_mock io = CH347_SPI_IO(&st);
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &io, &programmer_fault, "backend=ch347_spi,seed=42",
+				"W25Q128.V", expected_matched_names, 1);
+}
+#else
+	SKIP_TEST(ch347_spi_fault_wrapped_basic_test_success)
+	SKIP_TEST(ch347_spi_fault_wrapped_probe_test_success)
+#endif /* CONFIG_FAULT */
+
 #else
 	SKIP_TEST(ch347_spi_basic_lifecycle_test_success)
 	SKIP_TEST(ch347_spi_probe_lifecycle_test_success)
+	SKIP_TEST(ch347_spi_fault_wrapped_basic_test_success)
+	SKIP_TEST(ch347_spi_fault_wrapped_probe_test_success)
 #endif /* CONFIG_CH347_SPI */
