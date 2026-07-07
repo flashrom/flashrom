@@ -11,217 +11,113 @@
 #if CONFIG_DUMMY == 1
 void dummy_basic_lifecycle_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+fwh+spi+prog");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=parallel+lpc+fwh+spi+prog");
 }
 
 void dummy_probe_lifecycle_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	const char *expected_matched_names[1] = {"W25Q128.V"};
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V",
 				expected_matched_names, 1);
 }
 
 void dummy_probe_v2_one_match_for_W25Q128FV(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	const char *expected_matched_names[1] = {"W25Q128.V"};
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=W25Q128FV",
 				NULL, /* any chip name */
 				expected_matched_names, 1);
 }
 
 void dummy_probe_v2_six_matches_for_MX25L6436(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	const char *expected_matched_names[6] = {"MX25L6405",
 						 "MX25L6405D",
 						 "MX25L6406E/MX25L6408E",
 						 "MX25L6436E/MX25L6445E/MX25L6465E",
 						 "MX25L6473E",
 						 "MX25L6473F"};
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=MX25L6436",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=MX25L6436",
 				NULL, /* any chip name */
 				expected_matched_names, 6);
 }
 
 void dummy_probe_v2_sfdp_detection_for_MX25L6436(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	const char *expected_matched_names[1] = {"SFDP-capable chip"};
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=MX25L6436",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=MX25L6436",
 				"SFDP-capable chip",
 				expected_matched_names, 1);
 }
 
 void dummy_probe_v2_no_matches_found(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=MX25L6436",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=MX25L6436",
 				"NONEXISTENT", NULL /* no matched names */, 0);
 }
 
 void dummy_probe_variable_size_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	const char *expected_matched_names[1] = {"Opaque flash chip"};
-	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip",
+	run_probe_v2_lifecycle(state, NULL, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip",
 				expected_matched_names, 1);
 }
 
 void dummy_init_fails_unhandled_param_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	/*
 	 * Programmer init should fail due to `dummy_init` failure caused by
 	 * invalid value of `emulate` param. There is unhandled param left
 	 * at the end of param string.
 	 */
-	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=INVALID,unhandled=value", 1);
+	run_init_error_path(state, NULL, &programmer_dummy, "bus=spi,emulate=INVALID,unhandled=value", 1);
 }
 
 void dummy_init_success_invalid_param_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	/*
 	 * Programmer init should fail despite of the fact that `dummy_init`
 	 * is successful, due to invalid param at the end of param string.
 	 */
-	run_init_error_path(state, &dummy_io, &programmer_dummy,
+	run_init_error_path(state, NULL, &programmer_dummy,
 				"bus=spi,emulate=W25Q128FV,invalid=value", ERROR_FLASHROM_FATAL);
 }
 
 void dummy_init_success_unhandled_param_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
 	/*
 	 * Programmer init should fail despite of the fact that `dummy_init`
 	 * is successful, due to unhandled param at the end of param string.
 	 * Unhandled param `voltage` is not used for dummyflasher.
 	 */
-	run_init_error_path(state, &dummy_io, &programmer_dummy,
+	run_init_error_path(state, NULL, &programmer_dummy,
 				"bus=spi,emulate=W25Q128FV,voltage=3.5V", ERROR_FLASHROM_FATAL);
 }
 
 void dummy_null_prog_param_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, NULL);
+	run_basic_lifecycle(state, NULL, &programmer_dummy, NULL);
 }
 
 void dummy_all_buses_test_success(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=lpc+fwh");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=prog");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+fwh+prog");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi+prog");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+spi");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=lpc+fwh");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=prog");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=parallel+fwh+prog");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi+prog");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=parallel+lpc+spi");
 }
 
 void dummy_freq_param_init(void **state)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=12Hz");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=123KHz");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=345MHz");
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=8000MHz");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi,freq=12Hz");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi,freq=123KHz");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi,freq=345MHz");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=spi,freq=8000MHz");
 	/* Valid values for freq param are within the range [1Hz, 8000Mhz] */
-	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,freq=0Hz", 0x1);
-	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,freq=8001Mhz", 0x1);
+	run_init_error_path(state, NULL, &programmer_dummy, "bus=spi,freq=0Hz", 0x1);
+	run_init_error_path(state, NULL, &programmer_dummy, "bus=spi,freq=8001Mhz", 0x1);
 }
 
 /*
@@ -231,16 +127,6 @@ void dummy_freq_param_init(void **state)
 static void dummy_test_init_and_probe(struct flashrom_flashctx *flashctx,
 					struct flashrom_programmer *flashprog)
 {
-	struct io_mock_fallback_open_state dummy_fallback_open_state = {
-		.noc = 0,
-		.paths = { NULL },
-	};
-	const struct io_mock dummy_io = {
-		.fallback_open_state = &dummy_fallback_open_state,
-	};
-
-	io_mock_register(&dummy_io);
-
 	const char *param = "bus=spi,emulate=W25Q128FV";
 	const unsigned long chip_size = 16384 * KiB; // emulated chip size
 	const char **all_matched_names = NULL;
