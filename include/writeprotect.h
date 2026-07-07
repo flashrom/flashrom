@@ -14,7 +14,7 @@
 
 #include "libflashrom.h"
 
-#define MAX_BP_BITS 4
+#define MAX_BP_BITS 5
 
 /* Chip protection range: start address and length. */
 struct wp_range {

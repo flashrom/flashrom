@@ -247,6 +247,7 @@ enum decode_range_func {
 	DECODE_RANGE_SPI25_64K_BLOCK = 2,
 	DECODE_RANGE_SPI25_BIT_CMP = 3,
 	DECODE_RANGE_SPI25_2X_BLOCK = 4,
+	DECODE_RANGE_SPI25_XTX = 5,
 };
 typedef void (decode_range_func_t)(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 

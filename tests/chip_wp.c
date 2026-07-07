@@ -101,6 +101,27 @@ static const struct flashchip chip_W25Q128_V = {
 	.decode_range	= DECODE_RANGE_SPI25,
 };
 
+static const struct flashchip chip_XT25F16B = {
+	.vendor		= "XTX Technology Limited",
+	.name		= "XT25F16B",
+	.total_size	= 2 * 1024,
+	.page_size	= 256,
+	.tested		= TEST_UNTESTED,
+	.read		= SPI_CHIP_READ,
+	.write		= SPI_CHIP_WRITE256,
+	.unlock		= SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
+	.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR2,
+	.reg_bits	=
+	{
+		.srp	= {STATUS1, 7, RW},
+		.srl	= {STATUS2, 0, RW},
+		.bp	= {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW},
+			   {STATUS1, 5, RW}, {STATUS1, 6, RW}},
+		.cmp	= {STATUS2, 6, RW},
+	},
+	.decode_range	= DECODE_RANGE_SPI25_XTX,
+};
+
 /* Trying to set an unsupported WP range fails */
 void invalid_wp_range_dummyflasher_test_success(void **state)
 {
@@ -387,6 +408,46 @@ void wp_get_register_values_and_masks(void **state)
 	assert_int_equal(0xfc, write_masks[STATUS1]);
 	assert_int_equal(0x41, write_masks[STATUS2]);
 	assert_int_equal(0x04, write_masks[STATUS3]);
+
+	teardown(NULL);
+
+	flashrom_wp_cfg_release(wp_cfg);
+}
+
+void xtx_wp_range_decode_dummyflasher_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	const size_t chip_len = chip_XT25F16B.total_size * KiB;
+	struct flashrom_flashctx flash = { 0 };
+	struct flashchip mock_chip = chip_XT25F16B;
+	struct flashrom_wp_cfg *wp_cfg;
+	size_t start, len;
+
+	setup_chip(&flash, NULL, &mock_chip, "bus=spi,emulate=W25Q128FV,spi_status=0x4004");
+
+	assert_int_equal(0, flashrom_wp_cfg_new(&wp_cfg));
+	assert_int_equal(0, flashrom_wp_read_cfg(wp_cfg, &flash));
+	flashrom_wp_get_range(&start, &len, wp_cfg);
+
+	/* CMP=1 with BP=001 complements the top 1/32 range. */
+	assert_int_equal(0, start);
+	assert_int_equal(chip_len - 64 * KiB, len);
+
+	flashrom_wp_set_mode(wp_cfg, FLASHROM_WP_MODE_HARDWARE);
+	flashrom_wp_set_range(wp_cfg, chip_len - 64 * KiB, 64 * KiB);
+
+	uint8_t reg_values[MAX_REGISTERS];
+	uint8_t bit_masks[MAX_REGISTERS];
+	uint8_t write_masks[MAX_REGISTERS];
+	assert_int_equal(0, wp_cfg_to_reg_values(reg_values, bit_masks, write_masks, &flash, wp_cfg));
+
+	assert_int_equal(0x84, reg_values[STATUS1]);
+	assert_int_equal(0x00, reg_values[STATUS2]);
+	assert_int_equal(0xfc, bit_masks[STATUS1]);
+	assert_int_equal(0x41, bit_masks[STATUS2]);
+	assert_int_equal(0xfc, write_masks[STATUS1]);
+	assert_int_equal(0x41, write_masks[STATUS2]);
 
 	teardown(NULL);
 
