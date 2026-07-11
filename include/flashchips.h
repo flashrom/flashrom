@@ -202,6 +202,8 @@
 
 /* Boya/BoHong Microelectronics Inc. */
 #define BOYA_BOHONG_ID		0x68
+#define BOYA_BOHONG_B_25D20 	0x4012
+#define BOYA_BOHONG_B_25D40 	0x4013
 #define BOYA_BOHONG_B__25D80A	0x4014
 #define BOYA_BOHONG_B_25D16A	0x4015
 #define BOYA_BOHONG_B_25Q64AS	0x4017
