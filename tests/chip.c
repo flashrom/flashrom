@@ -257,14 +257,6 @@ void erase_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -272,7 +264,7 @@ void erase_chip_test_success(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -285,14 +277,6 @@ void erase_chip_with_progress(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -300,7 +284,7 @@ void erase_chip_with_progress(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
@@ -316,14 +300,6 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -332,7 +308,7 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	 */
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -345,14 +321,6 @@ void erase_chip_dual_die_c2(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_dieselect_injector = select_die;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_dual_die_c2;
@@ -363,7 +331,7 @@ void erase_chip_dual_die_c2(void **state)
 	 */
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -385,14 +353,6 @@ void read_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -400,7 +360,7 @@ void read_chip_test_success(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -421,14 +381,6 @@ void read_chip_with_progress(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -436,7 +388,7 @@ void read_chip_with_progress(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
@@ -460,14 +412,6 @@ void read_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -476,7 +420,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 	 */
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -497,14 +441,6 @@ void write_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -512,7 +448,7 @@ void write_chip_test_success(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	/*
 	 * Providing filename "-" means content is taken from standard input.
@@ -546,14 +482,6 @@ void write_chip_with_progress(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector[0] = block_erase_chip;
@@ -561,7 +489,7 @@ void write_chip_with_progress(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
@@ -585,14 +513,6 @@ void write_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -601,7 +521,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	 */
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -623,14 +543,6 @@ void write_chip_feature_no_erase(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 
 	/*
@@ -641,7 +553,7 @@ void write_chip_feature_no_erase(void **state)
 	struct flashchip mock_chip = chip_no_erase;
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -664,14 +576,6 @@ void write_chip_feature_no_erase_with_progress(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 
 	/*
@@ -682,7 +586,7 @@ void write_chip_feature_no_erase_with_progress(void **state)
 	struct flashchip mock_chip = chip_no_erase;
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -709,14 +613,6 @@ void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
 	const uint32_t mock_chip_size = mock_chip.total_size * KiB;
@@ -739,7 +635,7 @@ void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 	assert_non_null(newcontents);
 	memset(newcontents, MOCK_CHIP_SUBREGION_CONTENTS, mock_chip_size);
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 	/* Expect to verify only the non-aligned write operation within the region. */
 	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_AFTER_WRITE, true);
 	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, false);
@@ -802,13 +698,8 @@ void verify_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
 	const struct io_mock verify_chip_io = {
 		.iom_fread = verify_chip_fread,
-		.fallback_open_state = &data,
 	};
 
 	g_test_write_injector = write_chip;
@@ -840,13 +731,8 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
 	const struct io_mock verify_chip_io = {
 		.iom_fread = verify_chip_fread,
-		.fallback_open_state = &data,
 	};
 
 	struct flashrom_flashctx flashctx = { 0 };
@@ -888,14 +774,6 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 
 static void setup_bad_chip(struct flashrom_flashctx *flashctx)
 {
-	static struct io_mock_fallback_open_state data = {
-		.noc	= 0,
-		.paths	= { NULL },
-	};
-	const struct io_mock chip_io = {
-		.fallback_open_state = &data,
-	};
-
 	/* This test injectors are not expected to be called, because the
 	 * chip has known bad test status and chip_safety_check should fail
 	 * before any operation has started. */
@@ -906,7 +784,7 @@ static void setup_bad_chip(struct flashrom_flashctx *flashctx)
 	struct flashchip mock_chip = chip_bad;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(flashctx, &mock_chip, param, &chip_io);
+	setup_chip(flashctx, &mock_chip, param, NULL);
 }
 
 void erase_chip_bad_status_test(void **state)
