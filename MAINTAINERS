@@ -91,7 +91,6 @@ F:	include/erasure_layout*
 
 FLASHCHIPS
 M:	Anastasia Klimchuk <aklm@chromium.org>
-M:	Nikolai Artemiev <nartemiev@google.com>
 M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
 F:	flashchips*
@@ -124,7 +123,6 @@ F:	rpmc.c
 F:	include/rpmc.h
 
 WRITEPROTECT
-M:	Nikolai Artemiev <nartemiev@google.com>
 M:	Sergii Dmytruk <sergii.dmytruk@3mdeb.com>
 S:	Supported
 F:	writeprotect*
@@ -182,11 +180,6 @@ F:	programmers/mediatek_i2c_spi.c
 F:	programmers/parade_lspcon.c
 F:	programmers/realtek_mst_i2c_spi.c
 
-LINUX MTD
-M:	Nikolai Artemiev <nartemiev@google.com>
-S:	Supported
-F:	programmers/linux_mtd.c
-
 National Instruments USB-845x
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
@@ -197,11 +190,6 @@ M:	Willie Thai <wthai@nvidia.com>
 M:	Gilbert Chen <gilbertc@nvidia.com>
 S:	Maintained
 F:	programmers/nv_sma_spi.c
-
-RAIDEN DEBUG SPI
-M:	Nikolai Artemiev <nartemiev@google.com>
-S:	Maintained
-F:	programmers/raiden_debug_spi.c
 
 STLINK-V3
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
