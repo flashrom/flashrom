@@ -180,6 +180,11 @@ F:	programmers/mediatek_i2c_spi.c
 F:	programmers/parade_lspcon.c
 F:	programmers/realtek_mst_i2c_spi.c
 
+LINUX MTD
+M:	Abdelkader Boudih <coreboot@seuros.com>
+S:	Maintained
+F:	programmers/linux_mtd.c
+
 National Instruments USB-845x
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
