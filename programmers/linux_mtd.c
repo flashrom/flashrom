@@ -53,8 +53,8 @@ static int read_sysfs_string(const char *sysfs_path, const char *filename, char 
 	}
 
 	clearerr(fp);
-	bytes_read = fread(buf, 1, (size_t)len, fp);
-	if (!feof(fp) && ferror(fp)) {
+	bytes_read = fread(buf, 1, (size_t)len - 1, fp);
+	if (ferror(fp)) {
 		msg_perr("Error occurred when reading %s\n", path);
 		fclose(fp);
 		return 1;
