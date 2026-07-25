@@ -1256,10 +1256,20 @@ linux_mtd programmer
 
 You may specify the MTD device to use with the::
 
-        flashrom -p linux_mtd:dev=/dev/mtdX
+        flashrom -p linux_mtd:dev=N
 
-syntax where ``/dev/mtdX`` is the Linux device node for your MTD device. If left unspecified the first MTD device found
-(e.g. /dev/mtd0) will be used by default.
+syntax where ``N`` is the number of the Linux device node (``/dev/mtdN``) for your MTD device. If left unspecified
+the first MTD device found (e.g. /dev/mtd0) will be used by default.
+
+Some controllers refuse to read firmware-protected ranges (e.g. Intel PCH protected range registers) and fail the
+whole read. With the optional ``ignore_read_errors=yes`` parameter unreadable blocks are replaced by the erased
+value (usually ``0xff``) and a warning is printed, allowing the accessible remainder of the flash to be dumped::
+
+        flashrom -p linux_mtd:dev=N,ignore_read_errors=yes -r dump.bin
+
+Note that this suppresses every read error reported by the kernel, not only refusals caused by firmware-protected
+ranges. Any block that cannot be read, for whatever reason, is replaced by the erased value, so the resulting dump
+may differ from the actual flash contents.
 
 Please note that the linux_mtd driver only works on Linux.
 

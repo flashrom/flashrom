@@ -30,6 +30,7 @@ struct linux_mtd_data {
 	FILE *dev_fp;
 	bool device_is_writeable;
 	bool no_erase;
+	bool ignore_read_errors;
 	/* Size info is presented in bytes in sysfs. */
 	unsigned long int total_size;
 	unsigned long int numeraseregions;
@@ -179,6 +180,7 @@ static int linux_mtd_read(struct flashctx *flash, uint8_t *buf,
 {
 	struct linux_mtd_data *data = flash->mst->opaque.data;
 	unsigned int eb_size = flash->chip->block_erasers[0].eraseblocks[0].size;
+	unsigned int skipped = 0;
 	unsigned int i;
 
 	if (fseek(data->dev_fp, start, SEEK_SET) != 0) {
@@ -196,14 +198,36 @@ static int linux_mtd_read(struct flashctx *flash, uint8_t *buf,
 		step = min(step, len - i);
 
 		if (fread(buf + i, step, 1, data->dev_fp) != 1) {
-			msg_perr("Cannot read 0x%06x bytes at 0x%06x: %s\n",
+			if (!data->ignore_read_errors) {
+				msg_perr("Cannot read 0x%06x bytes at 0x%06x: %s\n",
+						step, start + i, strerror(errno));
+				return 1;
+			}
+			/*
+			 * Controllers may refuse reads of protected ranges,
+			 * e.g. intel-spi with firmware-set protected range
+			 * registers. Substitute the erased value so the rest
+			 * of the flash can still be dumped.
+			 */
+			msg_pdbg("Filling unreadable 0x%06x bytes at 0x%06x: %s\n",
 					step, start + i, strerror(errno));
-			return 1;
+			memset(buf + i, ERASED_VALUE(flash), step);
+			skipped += step;
+			clearerr(data->dev_fp);
+			if (fseek(data->dev_fp, start + i + step, SEEK_SET) != 0) {
+				msg_perr("Cannot seek past unreadable region to 0x%06x: %s\n",
+						start + i + step, strerror(errno));
+				return 1;
+			}
 		}
 
 		i += step;
 		update_progress(flash, FLASHROM_PROGRESS_READ, step);
 	}
+
+	if (skipped)
+		msg_pwarn("%u unreadable bytes substituted with 0x%02x, the dump is incomplete.\n",
+				skipped, ERASED_VALUE(flash));
 
 	return 0;
 }
@@ -519,6 +543,19 @@ static int linux_mtd_init(const struct programmer_cfg *cfg)
 	if (!data) {
 		msg_perr("Unable to allocate memory for linux_mtd_data\n");
 		return 1;
+	}
+
+	param_str = extract_programmer_param_str(cfg, "ignore_read_errors");
+	if (param_str) {
+		if (!strcmp(param_str, "yes")) {
+			data->ignore_read_errors = true;
+		} else if (strcmp(param_str, "no")) {
+			msg_perr("ignore_read_errors can be \"yes\" or \"no\"\n");
+			free(param_str);
+			free(data);
+			return 1;
+		}
+		free(param_str);
 	}
 
 	/* Get MTD info and store it in `data` */
