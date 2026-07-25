@@ -102,16 +102,9 @@ static int read_sysfs_int(const char *sysfs_path, const char *filename, unsigned
 	return 0;
 }
 
-static int popcnt(unsigned int u)
+static bool is_power_of_2(unsigned long int v)
 {
-	int count = 0;
-
-	while (u) {
-		u &= u - 1;
-		count++;
-	}
-
-	return count;
+	return v && !(v & (v - 1));
 }
 
 /* returns 0 to indicate success, non-zero to indicate error */
@@ -138,7 +131,7 @@ static int get_mtd_info(const char *sysfs_path, struct linux_mtd_data *data)
 	/* Total size */
 	if (read_sysfs_int(sysfs_path, "size", &data->total_size))
 		return 1;
-	if (popcnt(data->total_size) != 1) {
+	if (!is_power_of_2(data->total_size)) {
 		msg_perr("MTD size is not a power of 2\n");
 		return 1;
 	}
@@ -146,7 +139,7 @@ static int get_mtd_info(const char *sysfs_path, struct linux_mtd_data *data)
 	/* Erase size */
 	if (read_sysfs_int(sysfs_path, "erasesize", &data->erasesize))
 		return 1;
-	if (popcnt(data->erasesize) != 1) {
+	if (!is_power_of_2(data->erasesize)) {
 		msg_perr("MTD erase size is not a power of 2\n");
 		return 1;
 	}
@@ -267,13 +260,6 @@ static int linux_mtd_erase(struct flashctx *flash,
 	if (data->no_erase) {
 		msg_perr("%s: device does not support erasing. Please file a "
 				"bug report at flashrom@flashrom.org\n", __func__);
-		return 1;
-	}
-
-	if (data->numeraseregions != 0) {
-		/* TODO: Support non-uniform eraseblock size using
-		   use MEMGETREGIONCOUNT/MEMGETREGIONINFO ioctls */
-		msg_perr("%s: numeraseregions must be 0\n", __func__);
 		return 1;
 	}
 
@@ -449,11 +435,10 @@ static const struct opaque_master linux_mtd_opaque_master = {
 static int linux_mtd_setup(int dev_num, struct linux_mtd_data *data)
 {
 	char sysfs_path[32];
-	int ret = 1;
 
 	/* Start by checking /sys/class/mtd/mtdN/type which should be "nor" for NOR flash */
-	if (snprintf(sysfs_path, sizeof(sysfs_path), "%s/mtd%d/", LINUX_MTD_SYSFS_ROOT, dev_num) < 0)
-		goto linux_mtd_setup_exit;
+	if (snprintf(sysfs_path, sizeof(sysfs_path), "%s/mtd%d", LINUX_MTD_SYSFS_ROOT, dev_num) < 0)
+		return 1;
 
 	char buf[4] = { 0 };
 	if (read_sysfs_string(sysfs_path, "type", buf, sizeof(buf)))
@@ -461,7 +446,7 @@ static int linux_mtd_setup(int dev_num, struct linux_mtd_data *data)
 
 	if (strcmp(buf, "nor")) {
 		msg_perr("MTD device %d type is not \"nor\"\n", dev_num);
-		goto linux_mtd_setup_exit;
+		return 1;
 	}
 
 	/* sysfs shows the correct device type, see if corresponding device node exists */
@@ -471,29 +456,24 @@ static int linux_mtd_setup(int dev_num, struct linux_mtd_data *data)
 	errno = 0;
 	if (stat(dev_path, &s) < 0) {
 		msg_pdbg("Cannot stat \"%s\": %s\n", dev_path, strerror(errno));
-		goto linux_mtd_setup_exit;
+		return 1;
 	}
 
 	/* so far so good, get more info from other files in this dir */
-	if (snprintf(sysfs_path, sizeof(sysfs_path), "%s/mtd%d/", LINUX_MTD_SYSFS_ROOT, dev_num) < 0)
-		goto linux_mtd_setup_exit;
 	if (get_mtd_info(sysfs_path, data))
-		goto linux_mtd_setup_exit;
+		return 1;
 
 	/* open file stream and go! */
 	if ((data->dev_fp = fopen(dev_path, "r+")) == NULL) {
 		msg_perr("Cannot open file stream for %s\n", dev_path);
-		goto linux_mtd_setup_exit;
+		return 1;
 	}
-	ret = setvbuf(data->dev_fp, NULL, _IONBF, 0);
-	if (ret)
-		msg_pwarn("Failed to set MTD device to unbuffered: %d\n", ret);
+	if (setvbuf(data->dev_fp, NULL, _IONBF, 0))
+		msg_pwarn("Failed to set MTD device to unbuffered\n");
 
 	msg_pinfo("Opened %s successfully\n", dev_path);
 
-	ret = 0;
-linux_mtd_setup_exit:
-	return ret;
+	return 0;
 }
 
 static int linux_mtd_init(const struct programmer_cfg *cfg)
