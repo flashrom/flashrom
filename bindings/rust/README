@@ -8,9 +8,6 @@ from the header file by the rust `bindgen` utility. It can be used for 'unsafe'
 raw access to the libflashrom API. libflashrom is a library built on
 libflashrom-sys, exporting a convential rust API.
 
-See the /util/flashrom_tester/flashrom/src/flashromlib.rs file for an example of
-usage.
-
 Build Instructions
 ------------------
 

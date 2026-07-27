@@ -225,12 +225,6 @@ M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	test_build.sh
 
-FLASHROM TESTER
-M:	Hsuan Ting Chen <roccochen@google.com>
-R:	Evan Benn <evanbenn@gmail.com>
-S:	Supported
-F:	util/flashrom_tester/
-
 FLASHROM DOCKER
 M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
