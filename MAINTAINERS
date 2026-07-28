@@ -90,6 +90,7 @@ F:	erasure_layout*
 F:	include/erasure_layout*
 
 FLASHCHIPS
+M:	Abdelkader Boudih <coreboot@seuros.com>
 M:	Anastasia Klimchuk <aklm@chromium.org>
 M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
