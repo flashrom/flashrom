@@ -313,7 +313,7 @@ programmer = {
     'default' : false,
   },
   'ft2232_spi' : {
-    'deps'    : [ libftdi1 ],
+    'deps'    : [ libftdi1, libusb1 ],
     'groups'  : [ group_ftdi, group_external ],
     'srcs'    : files('programmers/ft2232_spi.c' ),
     'flags'   : [ '-DCONFIG_FT2232_SPI=1' ],

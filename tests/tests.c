@@ -567,6 +567,10 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(fault_probe_and_read_test_success),
 		cmocka_unit_test(fault_all_fault_params_test_success),
 		cmocka_unit_test(fault_deterministic_seed_test_success),
+		cmocka_unit_test(ft2232_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(ft2232_spi_init_fails_usbpath_no_match),
+		cmocka_unit_test(ft2232_spi_lifecycle_test_usbpath_success),
+		cmocka_unit_test(ft2232_spi_init_fails_invalid_usbpath),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 

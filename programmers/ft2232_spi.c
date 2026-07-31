@@ -6,12 +6,14 @@
  * SPDX-FileCopyrightText: 2009, 2010 Carl-Daniel Hailfinger
  */
 
+#include "helpers.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <strings.h>
 #include "platform/string.h"
 #include <stdlib.h>
 #include <ctype.h>
+#include <libusb.h>
 #include "programmer.h"
 #include "spi.h"
 #include <ftdi.h>
@@ -80,6 +82,8 @@ static const struct dev_entry devs_ft2232spi[] = {
 
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
+
+#define USB_MAX_PORT_DEPTH 7
 
 /*
  * The variables `cs_bits` and `pindir` store the values for the
@@ -167,6 +171,30 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 		size -= r;
 	}
 	return 0;
+}
+
+static int ftdi_usb_open_usbpath(struct ftdi_context *ftdic, int ft2232_vid, int ft2232_type, uint8_t *usbpath, int usbpath_len) {
+	struct ftdi_device_list *devlist, *dev;
+	int ports_len;
+	int f = -1;
+	uint8_t ports[USB_MAX_PORT_DEPTH];
+
+	if (ftdi_usb_find_all(ftdic, &devlist, ft2232_vid, ft2232_type) < 0) {
+		return f;
+	}
+	dev = devlist;
+	while (dev) {
+		if (libusb_get_bus_number(dev->dev) == usbpath[0]) {
+			ports_len = libusb_get_port_numbers(dev->dev, ports, USB_MAX_PORT_DEPTH);
+			if (ports_len > 0 && ports_len == usbpath_len - 1 && !memcmp(ports, usbpath + 1, ports_len)) {
+				f = ftdi_usb_open_dev(ftdic, dev->dev);
+				break;
+			}
+		}
+		dev = dev->next;
+	}
+	ftdi_list_free(&devlist);
+	return f;
 }
 
 static int ft2232_shutdown(void *data)
@@ -584,19 +612,54 @@ format_error:
 		 (ft2232_interface == INTERFACE_B) ? "B" :
 		 (ft2232_interface == INTERFACE_C) ? "C" : "D");
 
-	if (ftdi_init(&ftdic) < 0) {
-		msg_perr("ftdi_init failed.\n");
-		return -3;
-	}
-
-	if (ftdi_set_interface(&ftdic, ft2232_interface) < 0) {
-		msg_perr("Unable to select channel (%s).\n", ftdi_get_error_string(&ftdic));
+	arg = extract_programmer_param_str(cfg, "usbpath");
+	uint8_t usbpath[USB_MAX_PORT_DEPTH];
+	int usbpath_len = 0;
+	if (arg) {
+		usbpath_len = parse_usbpath(arg, usbpath, USB_MAX_PORT_DEPTH);
+		if (usbpath_len < 0) {
+			msg_perr("Error: Invalid usbpath specified: \"usbpath=%s\".\n"
+				"Valid format is bus-port(.port, .port, ...) where:\n"
+				"Bus is an integer between 0 and 255\n"
+				"Port(s) are integers between 1 and 255\n"
+				"Maximum depth of usbpath including bus number is 7\n",
+				arg);
+			free(arg);
+			return -2;
+		}
+		free(arg);
 	}
 
 	arg = extract_programmer_param_str(cfg, "serial");
 	arg2 = extract_programmer_param_str(cfg, "description");
 
-	f = ftdi_usb_open_desc(&ftdic, ft2232_vid, ft2232_type, arg2, arg);
+	if (usbpath_len && (arg || arg2)) {
+		msg_pwarn("Warning: unused parameter%s: %s%s%s%s%s.\nUSB port path will take precedence over serial/description\n",
+				  arg && arg2 ? "s" : "",
+				  arg ? "serial=" : "", arg ? arg : "",
+				  arg && arg2 ? ", " : "",
+				  arg2 ? "description=" : "", arg2 ? arg2 : "");
+	}
+
+	if (ftdi_init(&ftdic) < 0) {
+		msg_perr("ftdi_init failed.\n");
+		free(arg);
+		free(arg2);
+		return -3;
+	}
+
+	if (ftdi_set_interface(&ftdic, ft2232_interface) < 0) {
+		msg_perr("Unable to select channel (%s).\n", ftdi_get_error_string(&ftdic));
+		free(arg);
+		free(arg2);
+		return -4;
+	}
+
+	if (usbpath_len) {
+		f = ftdi_usb_open_usbpath(&ftdic, ft2232_vid, ft2232_type, usbpath, usbpath_len);
+	} else {
+		f = ftdi_usb_open_desc(&ftdic, ft2232_vid, ft2232_type, arg2, arg);
+	}
 
 	free(arg);
 	free(arg2);

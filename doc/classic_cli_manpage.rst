@@ -1005,12 +1005,24 @@ syntax where ``model`` can be ``2232H``, ``4232H``, ``232H``, ``jtagkey``, ``bus
 ``interface`` can be ``A``, ``B``, ``C``, or ``D``. The default model is ``4232H``, the default interface is ``A`` and
 GPIO is not used by default.
 
-If there is more than one ft2232_spi-compatible device connected, you can select which one should be used by specifying
-its serial number with the::
+If there is more than one ft2232_spi-compatible device connected, you can select which one should be used either by specifying
+its USB port path or serial number/description.
 
-        flashrom -p ft2232_spi:serial=number
+USB port path syntax::
 
-syntax where ``number`` is the serial number of the device (which can be found for example in the output of lsusb -v).
+        flashrom -p ft2232_spi:usbpath=bus-port(.port.port... etc)
+
+Where ``bus`` is a number between 0 and 255 and ``port(s)`` are numbers between 0 and 255.
+Bus and port numbers can be found for example in the output of lsusb -t.
+The maximum depth of USB port path including bus number is 7.
+USB port path will take precedence over any specified serial/description.
+
+Serial/Description syntax::
+
+        flashrom -p ft2232_spi:serial=number,description=product
+
+Where ``number`` is the serial number of the device and ``product`` is the product description of the device (both can be found for example in the output of lsusb -v).
+Either serial or description or both may be provided.
 
 All models supported by the **ft2232_spi** driver can configure the SPI clock rate by setting a divisor. The expressible
 divisors are all **even** numbers between 2 and 2^17 (=131072) resulting in SPI clock frequencies of 6 MHz down to about

@@ -112,6 +112,10 @@ void fault_probe_lifecycle_test_success(void **state);
 void fault_probe_and_read_test_success(void **state);
 void fault_all_fault_params_test_success(void **state);
 void fault_deterministic_seed_test_success(void **state);
+void ft2232_spi_basic_lifecycle_test_success(void **state);
+void ft2232_spi_lifecycle_test_usbpath_success(void **state);
+void ft2232_spi_init_fails_usbpath_no_match(void **state);
+void ft2232_spi_init_fails_invalid_usbpath(void **state);
 
 /* layout.c */
 void included_regions_dont_overlap_test_success(void **state);

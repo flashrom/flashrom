@@ -92,6 +92,8 @@ void __wrap_libusb_free_device_list(libusb_device **list, int unref_devices)
 uint8_t __wrap_libusb_get_bus_number(libusb_device *dev)
 {
 	LOG_ME;
+	if (get_io() && get_io()->libusb_get_bus_number)
+		return get_io()->libusb_get_bus_number(get_io()->state, dev);
 	return 0;
 }
 
@@ -99,6 +101,14 @@ uint8_t __wrap_libusb_get_device_address(libusb_device *dev)
 {
 	LOG_ME;
 	return USB_DEVICE_ADDRESS;
+}
+
+int __wrap_libusb_get_port_numbers(libusb_device *dev, uint8_t *port_numbers, int port_numbers_len)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_get_port_numbers)
+		return get_io()->libusb_get_port_numbers(get_io()->state, dev, port_numbers, port_numbers_len);
+	return 0;
 }
 
 int __wrap_libusb_get_device_descriptor(libusb_device *dev, struct libusb_device_descriptor *desc)

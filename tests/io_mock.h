@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#include "ftdi_unittests.h"
 #include "usb_unittests.h"
 
 /* Address value needs fit into uint8_t. */
@@ -83,6 +84,8 @@ struct io_mock {
 	int (*libusb_handle_events_timeout)(void *state, libusb_context *ctx, struct timeval *tv);
 	int (*libusb_bulk_transfer)(void *state, libusb_device_handle *devh, unsigned char endpoint,
 							unsigned char *data, int length, int *actual_length, unsigned int timeout);
+	int (*libusb_get_bus_number)(void *state, libusb_device *dev);
+	int (*libusb_get_port_numbers)(void *state, libusb_device *dev, uint8_t *port_numbers, int port_numbers_len);
 
 	/* POSIX File I/O */
 	int (*iom_open)(void *state, const char *pathname, int flags, mode_t mode);
@@ -99,6 +102,9 @@ struct io_mock {
 	int (*iom_fprintf)(void *state, FILE *fp, const char *fmt, va_list args);
 	int (*iom_fclose)(void *state, FILE *fp);
 	FILE *(*iom_fdopen)(void *state, int fd, const char *mode);
+
+	/* FTDI I/O */
+	int (*ftdi_usb_find_all)(void *state, struct ftdi_context *ftdi, struct ftdi_device_list **devlist, int vendor, int product);
 
 	/*
 	 * An alternative to custom open mock. A test can either register its
