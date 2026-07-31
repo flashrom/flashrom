@@ -1444,8 +1444,6 @@ static int decode_programmer_param(const struct programmer_cfg *cfg, uint8_t *re
         int ret = 0;
 
 	char *target_str = extract_programmer_param_str(cfg, "target");
-        printf("FISK: %s\n", target_str);
-
 	if (target_str) {
 		char *endptr;
 		int index = strtol(target_str, &endptr, 0);
