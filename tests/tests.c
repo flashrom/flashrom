@@ -455,6 +455,8 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(reverse_bytes_test_success),
 		cmocka_unit_test(parse_voltage_success),
 		cmocka_unit_test(parse_voltage_invalid),
+		cmocka_unit_test(parse_usbpath_success),
+		cmocka_unit_test(parse_usbpath_invalid),
 	};
 	ret |= cmocka_run_group_tests_name("helpers.c tests", helpers_tests, NULL, NULL);
 

@@ -11,7 +11,9 @@
 #include "helpers.h"
 #include "platform/string.h"
 
+#include <limits.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void address_to_bits_test_success(void **state)
@@ -106,4 +108,63 @@ void parse_voltage_invalid(void **state)
 		assert_int_equal(-1, parse_voltage(voltage));
 		free(voltage);
 	}
+}
+
+void parse_usbpath_success(void **state)
+{
+	const uint8_t max_ports = 7;
+	uint8_t usbpath[max_ports];
+	int num_ports = parse_usbpath("0-1.2.3", usbpath, max_ports);
+	assert_int_equal(4, num_ports);
+	for (uint8_t i = 0; i < num_ports; i++) {
+		assert_true(usbpath[i] == i);
+	}
+
+	num_ports = parse_usbpath("11-22.33.44.55.66.77", usbpath, max_ports);
+	assert_int_equal(7, num_ports);
+	for (uint8_t i = 0; i < num_ports; i++) {
+		assert_true(usbpath[i] == 11*(i+1));
+	}
+
+	num_ports = parse_usbpath("111-222", usbpath, max_ports);
+	assert_int_equal(2, num_ports);
+	for (uint8_t i = 0; i < num_ports; i++) {
+		assert_true(usbpath[i] == 111*(i+1));
+	}
+}
+
+void parse_usbpath_invalid(void **state)
+{
+	uint8_t max_ports = 7;
+	uint8_t usbpath[max_ports];
+
+	const char *invalid_usbpath[] = {
+		"one-2.3.4",
+		"1--2.3.4",
+		"1.2.3.4",
+		"1-2..3.4",
+		"1234-2.3.4",
+		"1-two.3.4",
+		"0-0.3.4",
+		"1-256.3.4",
+		"1-2-3-4",
+		"1-2.",
+		"1-2.3.4.5.6.7.8",
+		"1-",
+	};
+
+	const int count = sizeof(invalid_usbpath) / sizeof((invalid_usbpath)[0]);
+
+	for (int i = 0; i < count; i++) {
+		char *badpath = strdup(invalid_usbpath[i]);
+		assert_int_equal(-1, parse_usbpath(badpath, usbpath, max_ports));
+		free(badpath);
+	}
+
+	// test strtoul overflow for bus, port
+	char overflow_usbpath[32];
+	snprintf(overflow_usbpath, sizeof(overflow_usbpath), "%lu0-2.3.4", ULONG_MAX);
+	assert_int_equal(-1, parse_usbpath(overflow_usbpath, usbpath, max_ports));
+	snprintf(overflow_usbpath, sizeof(overflow_usbpath), "1-%lu0.3.4", ULONG_MAX);
+	assert_int_equal(-1, parse_usbpath(overflow_usbpath, usbpath, max_ports));
 }

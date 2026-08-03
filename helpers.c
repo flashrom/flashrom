@@ -10,6 +10,7 @@
 
 #include "log.h"
 #include <ctype.h>
+#include <errno.h>
 #include <stdlib.h>
 #include "platform/string.h"
 
@@ -127,3 +128,58 @@ int parse_voltage(char *voltage)
 	return millivolt;
 }
 
+/* Parse a usbpath= parameter value. Accepts input in the format:
+ * bus-port.port.port... up to a total depth of max_ports including bus.
+ * Bus must be an integer between 0 and 255.
+ * Port numbers must be integers between 1 and 255.
+ * Populates usbpath starting with bus, port1, port2, etc and returns total depth.
+ * Might be useful for various USB devices. Returns -1 on error. */
+int parse_usbpath(const char* arg, uint8_t* usbpath, int max_ports)
+{
+	unsigned long val;
+	int count = 0;
+	char *p, *end;
+
+	if (!isdigit((unsigned char)*arg))
+		return -1;
+
+	errno = 0;
+	val = strtoul(arg, &end, 10);
+	if (errno || *end != '-' || 255 < val)
+		return -1;
+
+	usbpath[count++] = (uint8_t)val;
+	end = end + 1;
+
+	while (*end && count < max_ports) {
+		p = end;
+		if (!isdigit((unsigned char)*p))
+			return -1;
+
+		val = strtoul(p, &end, 10);
+		if (errno || val < 1 || 255 < val)
+			return -1;
+
+		usbpath[count++] = (uint8_t)val;
+
+		// if there's more stuff, it had better be '.' delimited
+		if (*end && *end != '.') {
+			return -1;
+		} else if (*end) {
+			// skip the '.'
+			end = end + 1;
+			// can't end on a trailing '.'
+			if (!*end)
+				return -1;
+		}
+	}
+	// still stuff left to parse but we ran out of space
+	if (*end)
+		return -1;
+
+	// must have at least bus + one port
+	if (count < 2)
+		return -1;
+
+	return count;
+}

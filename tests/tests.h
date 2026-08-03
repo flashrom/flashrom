@@ -21,6 +21,8 @@ void reverse_byte_test_success(void **state);
 void reverse_bytes_test_success(void **state);
 void parse_voltage_success(void **state);
 void parse_voltage_invalid(void **state);
+void parse_usbpath_success(void** state);
+void parse_usbpath_invalid(void** state);
 
 /* i2c_helper.c */
 void i2c_require_allow_brick_yes_test_success(void **state);
