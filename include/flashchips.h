@@ -131,6 +131,7 @@
 #define ATMEL_AT25DL161		0x4603	/* EDI 0x0100 */
 #define ATMEL_AT25DQ161		0x8600	/* EDI 0x0100 */
 #define ATMEL_AT25DQ321		0x8700	/* EDI 0x0100 */
+#define ATMEL_AT25EU0041A	0x1401
 #define ATMEL_AT25F512		0x60	/* Needs AT25F_RDID. ID from PCN and actual HW. Seems to be a relabeled AT25F1024. */
 #define ATMEL_AT25F512A		0x65	/* Needs AT25F_RDID */
 #define ATMEL_AT25F512B		0x6500
