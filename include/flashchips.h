@@ -671,6 +671,7 @@
 #define PMC_PM49FL004		0x6E
 
 #define PUYA_ID			0x85
+#define PUYA_P25Q40HB		0x2013
 #define PUYA_P25Q16HB		0x2015
 #define PUYA_P25Q06H		0x4010
 #define PUYA_P25Q11H		0x4011
