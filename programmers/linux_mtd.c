@@ -313,6 +313,17 @@ static int linux_mtd_shutdown(void *data)
 	return 0;
 }
 
+/* Whether a lock ioctl failed because the MTD driver has no locking ops. */
+static bool wp_ioctl_unsupported(int err, const char *ioctl_name)
+{
+	if (err != EOPNOTSUPP && err != ENOTTY)
+		return false;
+
+	msg_pdbg("linux_mtd: %s unsupported by the MTD driver, "
+		 "reporting no write protection support.\n", ioctl_name);
+	return true;
+}
+
 static enum flashrom_wp_result linux_mtd_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
 {
 	struct linux_mtd_data *data = flash->mst->opaque.data;
@@ -354,6 +365,8 @@ static enum flashrom_wp_result linux_mtd_wp_read_cfg(struct flashrom_wp_cfg *cfg
 				start_found = true;
 			}
 			cfg->range.len += data->erasesize;
+		} else if (wp_ioctl_unsupported(errno, "MEMISLOCKED")) {
+			return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
 		} else {
 			msg_perr("%s: ioctl: %s\n", __func__, strerror(errno));
 			return FLASHROM_WP_ERR_READ_FAILED;
@@ -394,6 +407,8 @@ static enum flashrom_wp_result linux_mtd_wp_write_cfg(struct flashctx *flash, co
 	 */
 	int ret = ioctl(fileno(data->dev_fp), MEMUNLOCK, &entire_chip);
 	if (ret < 0) {
+		if (wp_ioctl_unsupported(errno, "MEMUNLOCK"))
+			return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
 		msg_perr("%s: Failed to disable write-protection, MEMUNLOCK ioctl "
 			 "retuned %d, error: %s\n", __func__, ret, strerror(errno));
 		return FLASHROM_WP_ERR_WRITE_FAILED;
@@ -402,6 +417,8 @@ static enum flashrom_wp_result linux_mtd_wp_write_cfg(struct flashctx *flash, co
 	if (cfg->range.len > 0) {
 		ret = ioctl(fileno(data->dev_fp), MEMLOCK, &desired_range);
 		if (ret < 0) {
+			if (wp_ioctl_unsupported(errno, "MEMLOCK"))
+				return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
 			msg_perr("%s: Failed to enable write-protection, "
 				 "MEMLOCK ioctl retuned %d, error: %s\n",
 				 __func__, ret, strerror(errno));
