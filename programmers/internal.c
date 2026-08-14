@@ -160,6 +160,10 @@ static int internal_init(const struct programmer_cfg *cfg)
 	internal_buses_supported = BUS_NONSPI;
 
 	if (try_mtd(cfg) == 0) {
+		msg_pinfo("Using the Linux MTD interface, the host controller is claimed by a "
+			  "kernel driver.\nChipset specific features (descriptor regions, "
+			  "protected ranges, write protection) are\nnot available on this path. "
+			  "Unbind the driver to use them.\n");
 		ret = 0;
 		goto internal_init_exit;
 	}

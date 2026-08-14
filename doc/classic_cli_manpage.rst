@@ -563,6 +563,20 @@ internal programmer
         You should enable the board enable code in any case now, as it has been written because it is known that writing/erasing
         without the board enable is going to fail. In any case (success or failure), please report to the **flashrom** mailing list, see below.
 
+**Linux MTD**
+        On Intel platforms the kernel's ``spi-intel`` driver claims the PCH flash controller and exposes the flash
+        as an MTD device. The internal programmer uses that device when it is present instead of talking to the
+        chipset itself, and reports doing so.
+
+        This path is more restricted than chipset access. Regions taken from the flash descriptor, protected range
+        handling and chip write protection are unavailable, and ranges the controller refuses to read fail the whole
+        operation unless ``linux_mtd:ignore_read_errors=yes`` is used. To get the chipset path instead, unbind the
+        driver from the controller, which is at ``00:1f.5`` on current chipsets::
+
+                echo 0000:00:1f.5 > /sys/bus/pci/drivers/intel-spi/unbind
+
+        Note that doing so gives up the protections the kernel driver enforces.
+
 **Coreboot**
         On systems running coreboot, **flashrom** checks whether the desired image matches your mainboard.
         This needs some special board ID to be present in the image.

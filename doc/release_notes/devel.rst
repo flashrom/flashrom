@@ -264,3 +264,4 @@ Misc updates
 * 94507: raiden: Remove accidental debug print
 * linux_mtd: Fix out-of-bounds write in read_sysfs_string()
 * linux_mtd: Simplify setup and drop dead code
+* internal: Report when the Linux MTD path is used instead of the chipset
