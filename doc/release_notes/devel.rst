@@ -47,6 +47,31 @@ connections. Deduplicates read results to minimise memory usage. If a file
 is given and a strict majority is found, saves the majority content to it.
 Useful for diagnosing flaky SPI wiring or unreliable programmers.
 
+Bugs fixed
+==========
+
+Internal programmer no longer exits when ECAM is unavailable
+------------------------------------------------------------
+
+On Intel PCH100+ systems the flash enable code opens a second libpci
+accessor with ``PCI_ACCESS_ECAM``. Mapping the ECAM region requires access
+to a physical range the kernel commonly reserves for a driver (PNP0C02),
+which ``CONFIG_IO_STRICT_DEVMEM`` denies. libpci reports this through its
+error handler, which by contract does not return and by default terminates
+the process, so flashrom died with::
+
+  pcilib: Cannot map ecam region: Operation not permitted.
+
+before probing anything, with no command line option to work around it.
+Every kernel built with ``CONFIG_IO_STRICT_DEVMEM=y`` was affected, which
+is the default in most distributions.
+
+An ECAM initialisation failure is now caught and the 0xcf8/0xcfc port I/O
+access is used instead. ECAM is still tried first, so machines that need
+it keep using it.
+
+See https://ticket.coreboot.org/issues/643
+
 Programmers updates
 ===================
 

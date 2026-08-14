@@ -27,6 +27,10 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <errno.h>
+#if CONFIG_USE_LIBPCI_ECAM == 1
+#include <setjmp.h>
+#include <stdarg.h>
+#endif
 
 #define NOT_DONE_YET 1
 
@@ -921,6 +925,68 @@ static int enable_flash_pch100_shutdown(void *const pci_acc)
 	return 0;
 }
 
+#if CONFIG_USE_LIBPCI_ECAM == 1
+static jmp_buf ecam_init_escape;
+static char ecam_init_error[256];
+
+/* libpci's default error handler exits the process, escape instead. */
+static PCI_NONRET void ecam_init_failed(char *msg, ...)
+{
+	va_list args;
+
+	va_start(args, msg);
+	vsnprintf(ecam_init_error, sizeof(ecam_init_error), msg, args);
+	va_end(args);
+
+	longjmp(ecam_init_escape, 1);
+}
+
+/* On failure the accessor is cleaned up and must not be reused. */
+static bool try_init_ecam(struct pci_access *const pci_acc)
+{
+	void (*const default_error)(char *msg, ...) PCI_NONRET = pci_acc->error;
+
+	pci_acc->method = PCI_ACCESS_ECAM;
+	pci_acc->error = ecam_init_failed;
+
+	if (setjmp(ecam_init_escape)) {
+		msg_pdbg("libpci PCI_ACCESS_ECAM unavailable: %s\n", ecam_init_error);
+		pci_cleanup(pci_acc);
+		return false;
+	}
+
+	pci_init(pci_acc);
+	pci_acc->error = default_error;
+	msg_pdbg("Using libpci PCI_ACCESS_ECAM\n");
+	return true;
+}
+#endif
+
+static struct pci_access *pci_init_spi_access(void)
+{
+	struct pci_access *pci_acc = pci_alloc();
+	if (!pci_acc) {
+		msg_perr("Can't allocate PCI accessor.\n");
+		return NULL;
+	}
+
+#if CONFIG_USE_LIBPCI_ECAM == 1
+	if (try_init_ecam(pci_acc))
+		return pci_acc;
+
+	pci_acc = pci_alloc();
+	if (!pci_acc) {
+		msg_perr("Can't allocate PCI accessor.\n");
+		return NULL;
+	}
+#endif
+
+	pci_acc->method = PCI_ACCESS_I386_TYPE1;
+	msg_pdbg("Using libpci PCI_ACCESS_I386_TYPE1\n");
+	pci_init(pci_acc);
+	return pci_acc;
+}
+
 static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 		struct pci_dev *const dev, const char *const name,
 		const int slot, const int func, const enum ich_chipset pch_generation)
@@ -934,20 +1000,11 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 	 * this method globally since it would bring along other con-
 	 * straints (e.g. on PCI domains, extended PCIe config space).
 	 */
-	struct pci_access *const pci_acc = pci_alloc();
+	struct pci_access *const pci_acc = pci_init_spi_access();
 	struct pci_access *const saved_pacc = pacc;
-	if (!pci_acc) {
-		msg_perr("Can't allocate PCI accessor.\n");
+	if (!pci_acc)
 		return ret;
-	}
-#if CONFIG_USE_LIBPCI_ECAM == 1
-	pci_acc->method = PCI_ACCESS_ECAM;
-	msg_pdbg("Using libpci PCI_ACCESS_ECAM\n");
-#else
-	pci_acc->method = PCI_ACCESS_I386_TYPE1;
-	msg_pdbg("Using libpci PCI_ACCESS_I386_TYPE1\n");
-#endif
-	pci_init(pci_acc);
+
 	register_shutdown(enable_flash_pch100_shutdown, pci_acc);
 
 	struct pci_dev *const spi_dev = pci_get_dev(pci_acc, dev->domain, dev->bus, slot, func);
