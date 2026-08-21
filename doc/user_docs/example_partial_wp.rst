@@ -176,6 +176,8 @@ You can set the range and change WP status independently as well if needed (just
 Make sure that hardware protection is off (state of :code:`W#`/:code:`W/` pin of the chip) or you won't be able
 to change WP configuration.
 
+**Note:** For the :code:`linux_mtd` programmer, the WP range is bound to the WP status. You need to set both at the same time.
+
 On success, the output of the above command will include such lines::
 
    Enabled hardware protection
@@ -189,3 +191,5 @@ Verifying hardware protection
 
 Once you're happy with the configuration and changed state of WP pin, you can try disabling WP
 using :code:`flashrom --wp-disable` to make sure that it fails now.
+
+**Note:** For :code:`linux_mtd`, use :code:`flashrom --wp-disable --wp-range=0,0`.
