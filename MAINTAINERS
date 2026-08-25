@@ -197,6 +197,11 @@ M:	Gilbert Chen <gilbertc@nvidia.com>
 S:	Maintained
 F:	programmers/nv_sma_spi.c
 
+REALTEK
+M:	Petr Cvek <petrcvekcz@gmail.com>
+S:	Maintained
+F:	programmers/nicrealtek.c
+
 STLINK-V3
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
