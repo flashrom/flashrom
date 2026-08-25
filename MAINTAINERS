@@ -154,6 +154,11 @@ M:	Martin Roth <gaumless@tutanota.com>
 S:	Maintained
 F:	programmers/sb600spi.c
 
+ATAVIA
+M:	Petr Cvek <petrcvekcz@gmail.com>
+S:	Maintained
+F:	programmers/atavia.c
+
 BUS PIRATE
 M:	David Reguera <regueragarciadavid@gmail.com>
 S:	Maintained
