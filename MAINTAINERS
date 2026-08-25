@@ -149,6 +149,11 @@ F:	COPYING.rst
 # PROGRAMMERS
 ################################################################################
 
+3COM
+M:	Petr Cvek <petrcvekcz@gmail.com>
+S:	Maintained
+F:	programmers/nic3com.c
+
 AMD SB600SPI
 M:	Martin Roth <gaumless@tutanota.com>
 S:	Maintained
