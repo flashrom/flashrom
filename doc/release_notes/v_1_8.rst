@@ -12,12 +12,12 @@ Download
 flashrom v1.8.0 can be downloaded in the following ways:
 
 Anonymous checkout from the git repository at https://review.coreboot.org/flashrom.git
-(tag TODO)
+(tag v1.8.0)
 
-A tarball is available for download at TODO
-(signature TODO)
+A tarball is available for download at https://download.flashrom.org/releases/flashrom-v1.8.0.tar.xz
+(signature https://download.flashrom.org/releases/flashrom-v1.8.0.tar.xz.asc)
 
-fingerprint: TODO
+fingerprint: 6E6E F9A0 BA47 8006 E277 6E4C C037 BB41 3134 D111
 
 New feature
 ===========
