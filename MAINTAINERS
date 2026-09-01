@@ -84,7 +84,7 @@ F:	*/meson*
 F:	util/ich_descriptors_tool/meson*
 
 ERASE/WRITE ALGORITHM
-M:	Aarya Chaumal <aarya.chaumal@gmail.com>
+M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	erasure_layout*
 F:	include/erasure_layout*
