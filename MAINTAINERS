@@ -154,11 +154,6 @@ M:	Petr Cvek <petrcvekcz@gmail.com>
 S:	Maintained
 F:	programmers/nic3com.c
 
-AMD SB600SPI
-M:	Martin Roth <gaumless@tutanota.com>
-S:	Maintained
-F:	programmers/sb600spi.c
-
 ATAVIA
 M:	Petr Cvek <petrcvekcz@gmail.com>
 S:	Maintained
