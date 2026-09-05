@@ -16,6 +16,7 @@
 #include "programmer.h"
 #include "libflashrom.h"
 #include "helpers.h"
+#include "helpers_fileio.h"
 #include "log.h"
 #include "cli_output.h"
 #include "read_extended.h"

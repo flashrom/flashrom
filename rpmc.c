@@ -14,6 +14,7 @@
 #include <openssl/rand.h>
 #include "platform/string.h"
 #include "spi.h"
+#include "helpers_fileio.h"
 #include "log.h"
 
 // OP1 commands

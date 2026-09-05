@@ -21,6 +21,7 @@
 #include "writeprotect.h"
 #include "platform/udelay.h"
 #include "helpers.h"
+#include "helpers_fileio.h"
 #include "log.h"
 
 enum emu_chip {

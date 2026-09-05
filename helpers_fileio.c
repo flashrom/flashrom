@@ -6,10 +6,12 @@
  * SPDX-FileCopyrightText: 2013 Stefan Tauner
  */
 
+#include "helpers_fileio.h"
+
 #include "platform/string.h"
-#include "flash.h"
 #include "log.h"
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>

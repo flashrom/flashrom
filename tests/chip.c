@@ -25,6 +25,7 @@
 #include "tests.h"
 #include "chipdrivers.h"
 #include "flash.h"
+#include "helpers_fileio.h"
 #include "io_mock.h"
 #include "libflashrom.h"
 #include "programmer.h"
