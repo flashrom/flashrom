@@ -365,7 +365,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``ch347_api``           (for SPI flash ROMs attached to WHC CH347)
         * ``digilent_spi``        (for SPI flash ROMs attached to iCEblink40 development boards)
         * ``jlink_spi``           (for SPI flash ROMs attached to SEGGER J-Link and compatible devices)
-        * ``ni845x_spi``          (for SPI flash ROMs attached to National Instruments USB-8451 or USB-8452)
         * ``stlinkv3_spi``        (for SPI flash ROMs attached to STMicroelectronics STLINK V3 devices)
         * ``realtek_mst_i2c_spi`` (for SPI flash ROMs attached to Realtek DisplayPort hubs accessible through I2C)
         * ``parade_lspcon``       (for SPI flash ROMs attached to Parade Technologies LSPCONs (PS175))
@@ -1370,44 +1369,6 @@ Syntax is::
         flashrom -p ch347_spi:spispeed=value
 
 where ``value`` can be ``60M``, ``30M``, ``15M``, ``7.5M``, ``3.75M``, ``1.875M``, ``937.5K``, ``468.75K``.
-
-
-ni845x_spi programmer
-^^^^^^^^^^^^^^^^^^^^^
-
-An optional ``voltage`` parameter could be used to specify the IO voltage. This parameter is available for the NI USB-8452 device.
-The default unit is Volt if no unit is specified. You can use ``mV``, ``milliVolt``, ``V`` or ``Volt`` as unit specifier.
-Syntax is::
-
-        flashrom -p ni845x_spi:voltage=value
-
-where ``value`` can be ``1.2V``, ``1.5V``, ``1.8V``, ``2.5V``, ``3.3V`` or the equivalent in mV.
-
-In the case if none of the programmer's supported IO voltage is within the supported voltage range of the detected flash
-chip the **flashrom** will abort the operation (to prevent damaging the flash chip).
-You can override this behaviour by passing ``yes`` to the ``ignore_io_voltage_limits`` parameter
-(for e.g. if you are using an external voltage translator circuit). Syntax is::
-
-        flashrom -p ni845x_spi:ignore_io_voltage_limits=yes
-
-You can use the ``serial`` parameter to explicitly specify which connected NI USB-845x device should be used. You should
-use your device's 7 digit hexadecimal serial number. Usage example to select the device with 1230A12 serial number::
-
-        flashrom -p ni845x_spi:serial=1230A12
-
-An optional ``spispeed`` parameter specifies the frequency of the SPI bus. Syntax is::
-
-        flashrom -p ni845x_spi:spispeed=frequency
-
-where ``frequency`` should a number corresponding to the desired frequency in kHz.
-The maximum ``frequency`` is 12 MHz (12000 kHz) for the USB-8451 and 50 MHz (50000 kHz) for the USB-8452.
-The default is a frequency of 1 MHz (1000 kHz).
-
-An optional ``cs`` parameter specifies which target chip select line should be used. Syntax is::
-
-        flashrom -p ni845x_spi:csnumber=value
-
-where ``value`` should be between ``0`` and ``7``. By default the CS0 is used.
 
 
 digilent_spi programmer

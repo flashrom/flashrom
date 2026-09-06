@@ -164,30 +164,6 @@ if (get_option('rpmc').auto() or get_option('rpmc').enabled()) and libcrypto.fou
     deps += libcrypto
 endif
 
-if host_machine.system() == 'windows'
-  # Specifying an include_path that doesn't exist is an error,
-  # but we only use this if the library is found in the same directory.
-  ni845x_search_path = get_option('ni845x_search_path')
-  if fs.is_dir(ni845x_search_path)
-    ni845x_include_path = [ni845x_search_path]
-  else
-    ni845x_include_path = []
-  endif
-
-  libni845x = declare_dependency(
-    dependencies : [
-      cc.find_library(
-        'ni845x',
-        dirs : get_option('ni845x_search_path'),
-        required : get_option('programmer').contains('ni845x_spi')
-      ),
-    ],
-    include_directories : ni845x_include_path,
-  )
-else
-  libni845x = dependency('', required : false)
-endif
-
 # platform subdir should be built before programmers entries are processed
 subdir('platform')
 deps += dep_platform_endian
@@ -416,14 +392,6 @@ programmer = {
     'srcs'    : files('programmers/mstarddc_spi.c', 'i2c_helper_linux.c'),
     'flags'   : [ '-DCONFIG_MSTARDDC_SPI=1' ],
     'default' : false
-  },
-  'ni845x_spi' : {
-    'systems' : [ 'windows' ],
-    'cpu_families' : [ 'x86' ], # The required ni845x library is 32-bit only
-    'deps'    : [ libni845x ],
-    'srcs'    : files('programmers/ni845x_spi.c'),
-    'flags'   : [ '-DCONFIG_NI845X_SPI=1' ],
-    'default' : false,
   },
   'nic3com' : {
     'systems' : systems_hwaccess,

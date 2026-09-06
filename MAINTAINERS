@@ -191,11 +191,6 @@ M:	Abdelkader Boudih <coreboot@seuros.com>
 S:	Maintained
 F:	programmers/linux_mtd.c
 
-National Instruments USB-845x
-M:	Miklos Marton <martonmiklosqdev@gmail.com>
-S:	Maintained
-F:	programmers/ni845x_spi.c
-
 NVIDIA SMA SPI
 M:	Willie Thai <wthai@nvidia.com>
 M:	Gilbert Chen <gilbertc@nvidia.com>

@@ -164,10 +164,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_jlink_spi,
 #endif
 
-#if CONFIG_NI845X_SPI == 1
-    &programmer_ni845x_spi,
-#endif
-
 #if CONFIG_STLINKV3_SPI == 1
     &programmer_stlinkv3_spi,
 #endif
