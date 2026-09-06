@@ -18,7 +18,7 @@
 #include "hwaccess_physmap.h"
 #include "log.h"
 
-#if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
+#if !defined(__LIBPAYLOAD__)
 /* No file access needed/possible to get mmap access permissions or access MSR. */
 #include <unistd.h>
 #include <sys/stat.h>
@@ -26,88 +26,7 @@
 #include <fcntl.h>
 #endif
 
-#ifdef __DJGPP__
-#include <dpmi.h>
-#include <malloc.h>
-#include <sys/nearptr.h>
-
-#define ONE_MEGABYTE (1024 * 1024)
-#define MEM_DEV "dpmi"
-
-static void *realmem_map_aligned;
-
-static void *map_first_meg(uintptr_t phys_addr, size_t len)
-{
-	void *realmem_map;
-	size_t pagesize;
-
-	if (realmem_map_aligned)
-		return realmem_map_aligned + phys_addr;
-
-	/* valloc() from DJGPP 2.05 does not work properly */
-	pagesize = getpagesize();
-
-	realmem_map = malloc(ONE_MEGABYTE + pagesize);
-
-	if (!realmem_map)
-		return ERROR_PTR;
-
-	realmem_map_aligned = (void *)(((size_t) realmem_map +
-		(pagesize - 1)) & ~(pagesize - 1));
-
-	if (__djgpp_map_physical_memory(realmem_map_aligned, ONE_MEGABYTE, 0)) {
-		free(realmem_map);
-		realmem_map_aligned = NULL;
-		return ERROR_PTR;
-	}
-
-	return realmem_map_aligned + phys_addr;
-}
-
-static void *sys_physmap(uintptr_t phys_addr, size_t len)
-{
-	int ret;
-	__dpmi_meminfo mi;
-
-	/* Enable 4GB limit on DS descriptor. */
-	if (!__djgpp_nearptr_enable())
-		return ERROR_PTR;
-
-	if ((phys_addr + len - 1) < ONE_MEGABYTE) {
-		/* We need to use another method to map first 1MB. */
-		return map_first_meg(phys_addr, len);
-	}
-
-	mi.address = phys_addr;
-	mi.size = len;
-	ret = __dpmi_physical_address_mapping(&mi);
-
-	if (ret != 0)
-		return ERROR_PTR;
-
-	return (void *) mi.address + __djgpp_conventional_base;
-}
-
-#define sys_physmap_rw_uncached	sys_physmap
-#define sys_physmap_ro_cached	sys_physmap
-
-static void sys_physunmap_unaligned(void *virt_addr, size_t len)
-{
-	__dpmi_meminfo mi;
-
-	/* There is no known way to unmap the first 1 MB. The DPMI server will
-	 * do this for us on exit.
-	 */
-	if ((virt_addr >= realmem_map_aligned) &&
-	    ((virt_addr + len) <= (realmem_map_aligned + ONE_MEGABYTE))) {
-		return;
-	}
-
-	mi.address = (unsigned long) virt_addr;
-	__dpmi_free_physical_address_mapping(&mi);
-}
-
-#elif defined(__LIBPAYLOAD__)
+#if defined(__LIBPAYLOAD__)
 #include <arch/virtual.h>
 
 #define MEM_DEV ""

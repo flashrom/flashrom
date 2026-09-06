@@ -18,7 +18,6 @@
  * For the IN[B/W/L] and OUT[B/W/L] functions set IO_PORT_FUNCTION to one of:
  *   - USE_LIBC_TARGET_LAST
  *   - USE_LIBC_TARGET_FIRST
- *   - USE_DOS
  *   - USE_ASM
  *
  * The platform specific code for getting I/O permissions consists of two
@@ -37,7 +36,6 @@
 #define USE_LIBC_TARGET_LAST	1
 #define USE_LIBC_TARGET_FIRST	2
 #define USE_ASM			3
-#define USE_DOS			4
 
 /* IO_PORT_PERMISSION */
 #define USE_IOPL		5
@@ -117,12 +115,6 @@
 #define IO_PORT_FUNCTION USE_LIBC_TARGET_LAST
 #endif
 
-#if defined(__DJGPP__)
-#include <pc.h>
-
-#define IO_PORT_PERMISSION USE_DUMMY
-#define IO_PORT_FUNCTION USE_DOS
-#endif
 
 #if defined(__LIBPAYLOAD__)
 #include <arch/io.h>
@@ -336,42 +328,6 @@ uint16_t INW(uint16_t port)
 uint32_t INL(uint16_t port)
 {
 	return inl(port);
-}
-#endif
-
-/*
- * USE_DOS
- * DOS provides the functions under a differnt name.
- */
-#if IO_PORT_FUNCTION == USE_DOS
-void OUTB(uint8_t value, uint16_t port)
-{
-	outportb(port, value);
-}
-
-void OUTW(uint16_t value, uint16_t port)
-{
-	outportw(port, value);
-}
-
-void OUTL(uint32_t value, uint16_t port)
-{
-	outportl(port, value);
-}
-
-uint8_t INB(uint16_t port)
-{
-	return inportb(port);
-}
-
-uint16_t INW(uint16_t port)
-{
-	return inportw(port);
-}
-
-uint32_t INL(uint16_t port)
-{
-	return inportl(port);
 }
 #endif
 
