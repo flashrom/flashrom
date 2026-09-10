@@ -25,7 +25,6 @@
 #include "tests.h"
 #include "chipdrivers.h"
 #include "flash.h"
-#include "helpers_fileio.h"
 #include "io_mock.h"
 #include "libflashrom.h"
 #include "programmer.h"
@@ -363,14 +362,12 @@ void read_chip_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
 	printf("Read chip operation started.\n");
 	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
-	assert_int_equal(0, write_buf_to_file(buf, size, filename));
 	printf("Read chip operation done.\n");
 
 	teardown(&flashctx);
@@ -394,14 +391,12 @@ void read_chip_with_progress(void **state)
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
-	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
 	printf("Read chip operation started.\n");
 	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
-	assert_int_equal(0, write_buf_to_file(buf, size, filename));
 	printf("Read chip operation done.\n");
 
 	teardown(&flashctx);
@@ -423,14 +418,12 @@ void read_chip_with_dummyflasher_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
 	printf("Read chip operation started.\n");
 	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
-	assert_int_equal(0, write_buf_to_file(buf, size, filename));
 	printf("Read chip operation done.\n");
 
 	teardown(&flashctx);
@@ -451,26 +444,11 @@ void write_chip_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	/*
-	 * Providing filename "-" means content is taken from standard input.
-	 * This doesn't change much because all file operations are mocked.
-	 * However filename "-" makes a difference for
-	 * flashrom.c#read_buf_from_file and allows to avoid mocking
-	 * image_stat.st_size.
-	 *
-	 * Now this does mean test covers successful path only, but this test
-	 * is designed to cover only successful write operation anyway.
-	 *
-	 * To cover error path of image_stat.st_size != flash size, filename
-	 * needs to be provided and image_stat.st_size needs to be mocked.
-	 */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
@@ -495,13 +473,11 @@ void write_chip_with_progress(void **state)
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
@@ -524,14 +500,11 @@ void write_chip_with_dummyflasher_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	/* See comment in write_chip_test_success */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
@@ -556,14 +529,11 @@ void write_chip_feature_no_erase(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	/* See comment in write_chip_test_success */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
 	printf("Write chip operation done.\n");
@@ -589,8 +559,6 @@ void write_chip_feature_no_erase_with_progress(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	/* See comment in write_chip_test_success */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
@@ -599,7 +567,6 @@ void write_chip_feature_no_erase_with_progress(void **state)
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
 	printf("Write chip operation done.\n");
@@ -684,24 +651,9 @@ void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 	free(newcontents);
 }
 
-static size_t verify_chip_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
-{
-	/*
-	 * Verify operation compares contents of the file vs contents on the chip.
-	 * To emulate successful verification we emulate file contents to be the
-	 * same as what is on the chip.
-	 */
-	memset(buf, MOCK_CHIP_CONTENT, len);
-	return len;
-}
-
 void verify_chip_test_success(void **state)
 {
 	(void) state; /* unused */
-
-	const struct io_mock verify_chip_io = {
-		.iom_fread = verify_chip_fread,
-	};
 
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
@@ -710,16 +662,20 @@ void verify_chip_test_success(void **state)
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &mock_chip, param, &verify_chip_io);
+	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	/* See comment in write_chip_test_success */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
+	/*
+	 * Verify operation compares contents of the buffer vs contents on the chip.
+	 * To emulate successful verification we emulate buffer contents to be the
+	 * same as what is on the chip.
+	 */
+	memset(newcontents, MOCK_CHIP_CONTENT, size);
+
 	printf("Verify chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
 	printf("Verify chip operation done.\n");
 
@@ -732,10 +688,6 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	const struct io_mock verify_chip_io = {
-		.iom_fread = verify_chip_fread,
-	};
-
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -744,13 +696,18 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	 */
 	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
-	setup_chip(&flashctx, &mock_chip, param_dup, &verify_chip_io);
+	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	/* See comment in write_chip_test_success */
-	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
+
+	/*
+	 * Verify operation compares contents of the buffer vs contents on the chip.
+	 * To emulate successful verification we emulate buffer contents to be the
+	 * same as what is on the chip.
+	 */
+	memset(newcontents, MOCK_CHIP_CONTENT, size);
 
 	/*
 	 * Dummyflasher controls chip state and fully emulates reads and writes,
@@ -760,7 +717,6 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	 */
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
