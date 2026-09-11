@@ -22,13 +22,11 @@ And the following dependencies:
 * libusb1 [#b2]_
 * libftdi1 [#b2]_
 * libjaylink [#b2]_
-* NI-845x driver & library package [#b3]_
-* libcrypto [#b4]_
+* libcrypto [#b3]_
 
 .. [#b1] | optional, for building unit testing
 .. [#b2] | optional, depending on the selected programmer
-.. [#b3] | optional, proprietary and Windows only. (See Windows build instructions)
-.. [#b4] | optional, to enable RPMC commands
+.. [#b3] | optional, to enable RPMC commands
 
 If you are cross compiling, install the dependencies for your target.
 
@@ -107,9 +105,6 @@ Windows
   Install `MSYS2 <https://www.msys2.org/>`_ and ensure it is `fully updated <https://www.msys2.org/docs/updating/>`_.
 
   * ``libpci`` is not available through the package manager and pci based programmer are not supported on Windows.
-  * ``ni845x_spi`` is only available with the proprietary library from National Instruments. Download and install the driver
-    from `ni.com <https://www.ni.com/en-us/support/downloads/drivers/download.ni-845x-driver-software.html>`_ and build flashrom
-    for **32-bit**. Add ``-Dprogrammer=ni845x_spi`` to your meson configuration.
 
   In the MSYS2 UCRT64 shell run::
 

@@ -20,3 +20,13 @@ by USB bus & port path.
 Example::
 
   flashrom -p ft2232_spi:type=4232H,usbpath=1-1.4.2 -r -c W25Q80BV/W25Q80DV -r dump.bin
+
+ni845x_spi programmer is deleted
+--------------------------------
+
+The driver was gated to 32-bit Windows and linked against a proprietary
+National Instruments library that ships for no other platform, so the
+hardware has never been usable anywhere else.
+
+It has been disabled by default all the time and was not built or
+tested by CI scripts.
