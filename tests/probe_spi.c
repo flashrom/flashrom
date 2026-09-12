@@ -152,6 +152,18 @@ static void print_probing_results(const struct probe_io_state probe_io_state)
 		probe_io_state.counter);
 }
 
+#define MOCK_LINUX_SPI(io_state_ptr) struct io_mock_fallback_open_state linux_spi_fallback_open_state = { \
+		.noc = 0,						\
+		.paths = { "/dev/null", NULL },				\
+		.flags = { O_RDWR },					\
+	};								\
+	const struct io_mock linux_spi_io = {				\
+		.state		= (io_state_ptr),			\
+		.iom_fgets	= linux_spi_fgets,			\
+		.iom_ioctl	= probe_handler,			\
+		.fallback_open_state = &linux_spi_fallback_open_state,	\
+	}
+
 void probe_jedec_rdid3_fixed_chipname(void **state)
 {
 	struct probe_io_state probe_io_state = {
@@ -162,17 +174,7 @@ void probe_jedec_rdid3_fixed_chipname(void **state)
 		.model_id_left_byte	= 0x40, /* WINBOND_NEX_W25Q128_V left byte */
 		.model_id_right_byte	= 0x18, /* WINBOND_NEX_W25Q128_V right byte */
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	const char *expected_matched_names[1] = {"W25Q128.V"};
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
@@ -195,17 +197,7 @@ void probe_jedec_rdid3_try_all_flashchips(void **state)
 		.model_id_left_byte	= 0x40, /* WINBOND_NEX_W25Q128_V left byte */
 		.model_id_right_byte	= 0x18, /* WINBOND_NEX_W25Q128_V right byte */
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	const char *expected_matched_names[1] = {"W25Q128.V"};
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
@@ -234,17 +226,7 @@ void probe_jedec_rdid3_no_matches_found(void **state)
 		.model_id_left_byte	= 0xFF,
 		.model_id_right_byte	= 0xFF,
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
 				NULL, /* no fixed name, go through all flashchips */
@@ -274,17 +256,7 @@ void probe_jedec_res1_fixed_chipname(void **state)
 		.model_id_left_byte	= 0xff, /* Not used for M25P05 */
 		.model_id_right_byte	= 0xff, /* Not used for M25P05 */
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	const char *expected_matched_names[1] = {"M25P05"};
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
@@ -310,17 +282,7 @@ void probe_jedec_res1_try_all_flashchips(void **state)
 		.model_id_left_byte	= 0xff, /* Not used for M25P05 */
 		.model_id_right_byte	= 0xff, /* Not used for M25P05 */
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	const char *expected_matched_names[1] = {"M25P05"};
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
@@ -349,17 +311,7 @@ void probe_jedec_res1_no_matches_found(void **state)
 		.model_id_left_byte	= 0xff,
 		.model_id_right_byte	= 0xff,
 	};
-	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR },
-	};
-	const struct io_mock linux_spi_io = {
-		.state		= &probe_io_state,
-		.iom_fgets	= linux_spi_fgets,
-		.iom_ioctl	= probe_handler,
-		.fallback_open_state = &linux_spi_fallback_open_state,
-	};
+	MOCK_LINUX_SPI(&probe_io_state);
 
 	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
 				NULL, /* no fixed name, go through all flashchips */
