@@ -78,6 +78,7 @@ struct probe_io_state {
 	unsigned int readcount;
 	unsigned int writecount;
 	unsigned char vendor_id;
+	unsigned char vendor_id_ext;
 	unsigned char model_id_left_byte;
 	unsigned char model_id_right_byte;
 	unsigned int opcode_counter;
@@ -124,10 +125,15 @@ static int probe_handler(void *state, int fd, unsigned long request, va_list arg
 			&& writecount == probe_state->writecount) {
 			/* Emulate successful probing, which means we need to populate read array
 			 * with chip vendor ID and model ID. */
-			readarr[0] = probe_state->vendor_id;
-			readarr[1] = probe_state->model_id_left_byte;
+			unsigned int ind = 0;
+			/* vendor ID is first, one or two bytes long */
+			readarr[ind++] = probe_state->vendor_id;
+			if (readcount > 3)
+				readarr[ind++] = probe_state->vendor_id_ext;
+			/* model ID goes after vendor ID, also one or two bytes long */
+			readarr[ind++] = probe_state->model_id_left_byte;
 			if (readcount > 2)
-				readarr[2] = probe_state->model_id_right_byte;
+				readarr[ind++] = probe_state->model_id_right_byte;
 
 			probe_state->opcode_counter++;
 		}
@@ -329,6 +335,87 @@ void probe_jedec_res1_no_matches_found(void **state)
 		       && (probe_io_state.counter <= flashchips_size));
 }
 
+void probe_jedec_rdid4_fixed_chipname(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= JEDEC_RDID,
+		.readcount		= 4, /* 4 bytes for RDID4 */
+		.writecount		= JEDEC_RDID_OUTSIZE,
+		.vendor_id		= 0x7F, /* AMIC_ID left byte */
+		.vendor_id_ext		= 0x37, /* AMIC_ID right byte */
+		.model_id_left_byte	= 0x20, /* AMIC_A25L40PU left byte */
+		.model_id_right_byte	= 0x13, /* AMIC_A25L40PU right byte */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[1] = {"A25L40PU"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				"A25L40PU", expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	/* Since fixed chip name was given, probing should happen only once, for that name. */
+	assert_int_equal(1, probe_io_state.opcode_counter);
+	assert_int_equal(1, probe_io_state.counter);
+}
+
+void probe_jedec_rdid4_try_all_flashchips(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= JEDEC_RDID,
+		.readcount		= 4, /* 4 bytes for RDID4 */
+		.writecount		= JEDEC_RDID_OUTSIZE,
+		.vendor_id		= 0x7F, /* AMIC_ID left byte */
+		.vendor_id_ext		= 0x37, /* AMIC_ID right byte */
+		.model_id_left_byte	= 0x20, /* AMIC_A25L40PU left byte */
+		.model_id_right_byte	= 0x13, /* AMIC_A25L40PU right byte */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[2] = {"A25L40PT", "A25L40PU"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				expected_matched_names, 2);
+
+	print_probing_results(probe_io_state);
+
+	assert_int_equal(PROBE_COUNT_JEDEC_RDID_4, probe_io_state.opcode_counter);
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
+		       && (probe_io_state.counter <= flashchips_size));
+}
+
+void probe_jedec_rdid4_no_matches_found(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= JEDEC_RDID,
+		.readcount		= 4, /* 4 bytes for RDID4 */
+		.writecount		= JEDEC_RDID_OUTSIZE,
+		/* The values below represent non-existent model, we expect no matches found. */
+		.vendor_id		= 0x00,
+		.vendor_id_ext		= 0x00,
+		.model_id_left_byte	= 0xFF,
+		.model_id_right_byte	= 0xFF,
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				NULL /* no matched names expected */, 0);
+
+	print_probing_results(probe_io_state);
+
+	/* No matches, but we needed to go through everything to discover that. */
+	assert_int_equal(PROBE_COUNT_JEDEC_RDID_4, probe_io_state.opcode_counter);
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
+			&& (probe_io_state.counter <= flashchips_size));
+}
+
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
 	SKIP_TEST(probe_jedec_rdid3_try_all_flashchips)
@@ -336,4 +423,7 @@ void probe_jedec_res1_no_matches_found(void **state)
 	SKIP_TEST(probe_jedec_res1_fixed_chipname)
 	SKIP_TEST(probe_jedec_res1_try_all_flashchips)
 	SKIP_TEST(probe_jedec_res1_no_matches_found)
+	SKIP_TEST(probe_jedec_rdid4_fixed_chipname)
+	SKIP_TEST(probe_jedec_rdid4_try_all_flashchips)
+	SKIP_TEST(probe_jedec_rdid4_no_matches_found)
 #endif /* CONFIG_LINUX_SPI */
