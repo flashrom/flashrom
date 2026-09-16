@@ -18,8 +18,9 @@ Instructions below assume you went through Development guide, and set up environ
 To begin with, make sure you have full logs from all the operations that you have run successfully and want to
 mark as tested. **Providing full logs which indicate successful run is required to mark chip as tested.**
 
-Information about tested status of the chip is stored in ``flashchips.c``, specifically in the ``.tested`` member
-of ``struct flashchip``.
+Information about tested status of the chip is stored in its definition.
+All flashchip definitions are in ``/flashchips`` directory. You need to find and look into the file which corresponds
+to the manufacturer of your chip. Test status is in the ``.tested`` member of ``struct flashchip``.
 
 Relevant definitions and available options are in ``include/flash.h``, specifically see the definition of:
 
@@ -29,7 +30,7 @@ Relevant definitions and available options are in ``include/flash.h``, specifica
 
 Choose the correct value depending on the operations that you have tested successfully. And then:
 
-#. Open ``flashchips.c`` and find the definition of your chip.
+#. Open ``/flashchips`` directory and find the definition of your chip.
 #. Check the tested status of the chip. If you tested *not* on the latest HEAD (perhaps on the latest released version,
    or on flashrom built a month ago, etc), it is possible that tested status has been updated already. If the status
    has not been updated,
@@ -37,10 +38,9 @@ Choose the correct value depending on the operations that you have tested succes
    tested at once: maybe you tested only probe and read, then mark just that.
 #. Make sure flashrom builds successfully, and all the unit tests pass.
 #. For commit title, use the string ``flashchips: Mark <chip name> as tested for <operations>``.
-#. Provide the logs in commit message, you can use flashrom paste service at `paste.flashrom.org <https://paste.flashrom.org>`_
-   or any other paste service. As a plan B, you can post message on the :ref:`mailing list`, attach the logs to the post,
-   and then add the link to the post to the commit message.
+#. Provide the logs in commit message, you can use flashrom paste service at `paste.flashrom.org <https://paste.flashrom.org>`_,
+   if it doesn't work you can use any other paste service. As a plan B, you can add logs as a Gerrit comment after you push your patch.
 #. Follow :doc:`/dev_guide/development_guide` and send your patch for review.
 #. Go through review process until your patch gets approved (see Development guide for more details on this).
 
-To see the examples of such patches, have a look at commit history of ``flashchips.c``.
+To see the examples of such patches, have a look at commit history of ``/flashchips`` directory.
