@@ -261,6 +261,9 @@ int rget_io_perms(void)
 #elif defined(__NetBSD__)
 	msg_perr("On NetBSD reboot into single user mode or make sure\n"
 		 "that your kernel configuration has the option INSECURE enabled.\n");
+#elif defined(__FreeBSD__)
+	msg_perr("Set kern_securelevel_enable=\"NO\" in /etc/rc.conf and\n"
+		 "reboot, or reboot into single user mode.\n");
 #else
 	msg_perr("Make sure you are running flashrom with root privileges.\n");
 #endif
