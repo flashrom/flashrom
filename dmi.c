@@ -50,8 +50,8 @@ static struct {
  *	- 1: in all likelihood a laptop
  *	- 2: chassis-type is not specific enough
  * A full list of chassis types can be found in the System Management BIOS
- * (SMBIOS) Reference Specification 2.7.0 section 7.4.1 "Chassis Types" at
- * http://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.0.pdf
+ * (SMBIOS) Reference Specification 3.7.0 section 7.4.1 "Chassis Types" at
+ * https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf
  * The types below are the most common ones.
  */
 static const struct {
@@ -74,6 +74,12 @@ static const struct {
 	{0x17, 0, "Rack Mount Chassis"},
 	{0x18, 0, "Sealed-case PC"}, /* used by Supermicro (X8SIE) */
 	{0x19, 0, "Multi-system"}, /* used by Supermicro (X7DWT) */
+	{0x1f, 1, "Convertible"},
+	{0x20, 1, "Detachable"},
+	{0x21, 0, "IoT Gateway"},
+	{0x22, 0, "Embedded PC"},
+	{0x23, 0, "Mini PC"},
+	{0x24, 0, "Stick PC"},
 };
 
 #if CONFIG_INTERNAL_DMI == 1
