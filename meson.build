@@ -265,7 +265,7 @@ programmer = {
   },
   'internal' : {
     'systems' : systems_hwaccess + ['linux'],
-    'cpu_families' : (host_machine.system() == 'linux' ? [host_machine.cpu_family()] : ['x86', 'x86_64']),
+    'cpu_families' : (host_machine.system() in ['linux', 'freebsd'] ? [host_machine.cpu_family()] : ['x86', 'x86_64']),
     'deps'    : [ libpci ],
     'groups'  : [ group_internal ],
     'srcs'    : (host_machine.cpu_family() in ['x86', 'x86_64'] ? files(
