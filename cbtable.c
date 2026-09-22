@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2002 Steven James <pyro@linuxlabs.com>
  * SPDX-FileCopyrightText: 2002 Linux Networx (Written by Eric Biederman <ebiederman@lnxi.com> for Linux Networx)

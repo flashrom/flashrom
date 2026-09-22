@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-or-later
  * SPDX-FileCopyrightText: 2008 Claus Gindhart <claus.gindhart@kontron.com>
  * SPDX-FileCopyrightText: 2009 Sean Nelson <audiohacked@gmail.com>

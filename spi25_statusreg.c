@@ -1,12 +1,11 @@
 /*
- * This file is part of the flashrom project.
- * It handles everything related to status registers of the JEDEC family 25.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2007, 2008, 2009, 2010 Carl-Daniel Hailfinger
  * SPDX-FileCopyrightText: 2008 coresystems GmbH
  * SPDX-FileCopyrightText: 2008 Ronald Hoogenboom <ronald@zonnet.nl>
  * SPDX-FileCopyrightText: 2012 Stefan Tauner
+ *
+ * Handles everything related to status registers of the JEDEC family 25.
  */
 
 #include <stdlib.h>

@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2009 Carl-Daniel Hailfinger
  * SPDX-FileCopyrightText: 2022 secunet Security Networks AG (Written by Thomas Heijligen <thomas.heijligen@secunet.com)

@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0-only
  * SPDX-FileCopyrightText: 2014, Google Inc. All rights reserved.
  */

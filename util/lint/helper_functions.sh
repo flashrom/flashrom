@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-#
 # SPDX-License-Identifier: GPL-2.0-only
 
 # This file is sourced by the linters so that each one doesn't have to

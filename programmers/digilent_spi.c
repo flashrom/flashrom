@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-or-later
  * SPDX-FileCopyrightText: 2018 Lubomir Rintel <lkundrak@v3.sk>
  * SPDX-FileComment: Based on ft2232_spi.c

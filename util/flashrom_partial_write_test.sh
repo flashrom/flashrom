@@ -1,5 +1,4 @@
 #!/bin/sh
-#
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2010 Google Inc. Written by David Hendricks for Google Inc.
 

@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2005-2008 coresystems GmbH (Written by Stefan Reinauer <stepan@coresystems.de> for coresystems GmbH)
  * SPDX-FileCopyrightText: 2011-2013 Stefan Tauner

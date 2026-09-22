@@ -1,10 +1,9 @@
 /*
- * This file is part of the flashrom project.
- * It comes originally from the musl libc project.
- *
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: 2023 Rich Felker and the musl authors
  * SPDX-FileCopyrightText: Thomas Heijligen <thomas.heijligen@secunet.com>
+ *
+ * Originally from the musl libc project.
  */
 
 #include "platform/getopt.h"

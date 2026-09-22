@@ -1,12 +1,11 @@
 #!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2009 The Android Open Source Project
+# SPDX-FileCopyrightText: 2017 Stefan Tauner
 #
 # Change-ID amending from Gerrit Code Review 2.14.2
 #
 # Part of Gerrit Code Review (https://www.gerritcodereview.com/)
-#
-# SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: 2009 The Android Open Source Project
-# SPDX-FileCopyrightText: 2017 Stefan Tauner
 
 unset GREP_OPTIONS
 

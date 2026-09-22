@@ -1,9 +1,9 @@
 /*
- * This file is part of the coreboot project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2002 Linux Networx (Written by Eric Biederman <ebiederman@lnxi.com> for Linux Networx)
  * SPDX-FileCopyrightText: 2005-2007 coresystems GmbH
+ *
+ * This file is part of the coreboot project.
  */
 
 #ifndef COREBOOT_TABLES_H

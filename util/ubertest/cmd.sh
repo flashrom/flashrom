@@ -1,11 +1,9 @@
 #!/bin/sh
-#
-# This file is part of the flashrom project. It is derived from
-# board_status.sh in coreboot.
-#
 # SPDX-License-Identifier: GPL-2.0-only
 # SPDX-FileCopyrightText: 2016 Google Inc.
 # SPDX-FileCopyrightText: 2014 Sage Electronic Engineering, LLC.
+#
+# Derived from board_status.sh in coreboot.
 
 USE_CUSTOM_HOOKS=0
 if [ -n "$CUSTOM_HOOKS_FILENAME" ]; then

@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2024 Matti Finder (written by Matti Finder <matti.finder@gmail.com>)
  */

@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2025 Dmitry Zhadinets <dzhadinets@gmail.com>
  * SPDX-FileCopyrightText: 2025 Google LLC

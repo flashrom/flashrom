@@ -1,6 +1,4 @@
 /*
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-or-later
  * SPDX-FileCopyrightText: 2008 Wang Qingpei <Qingpei.Wang@amd.com>
  * SPDX-FileCopyrightText: 2008 Joe Bao <Zheng.Bao@amd.com>

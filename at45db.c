@@ -1,11 +1,10 @@
 /*
- * Support for Atmel AT45DB series DataFlash chips.
- * This file is part of the flashrom project.
- *
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2012 Aidan Thornton
  * SPDX-FileCopyrightText: 2013 Stefan Tauner
  * SPDX-FileCopyrightText: 2025 Marco Müller
+ *
+ * Support for Atmel AT45DB series DataFlash chips.
  */
 
 #include "platform/string.h"
