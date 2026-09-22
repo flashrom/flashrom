@@ -209,25 +209,20 @@ void msr_cleanup(void)
 
 #include <sys/ioctl.h>
 
-typedef struct {
-	int msr;
-	uint64_t data;
-} cpu_msr_args_t;
-#define CPU_RDMSR _IOWR('c', 1, cpu_msr_args_t)
-#define CPU_WRMSR _IOWR('c', 2, cpu_msr_args_t)
+#include <sys/cpuctl.h>
 
 static int fd_msr = -1;
 
 msr_t msr_read(int addr)
 {
-	cpu_msr_args_t args;
+	cpuctl_msr_args_t args;
 
 	msr_t msr = { 0xffffffff, 0xffffffff };
 
 	args.msr = addr;
 
-	if (ioctl(fd_msr, CPU_RDMSR, &args) < 0) {
-		msg_perr("Error while executing CPU_RDMSR ioctl: %s\n", strerror(errno));
+	if (ioctl(fd_msr, CPUCTL_RDMSR, &args) < 0) {
+		msg_perr("Error while executing CPUCTL_RDMSR ioctl: %s\n", strerror(errno));
 		close(fd_msr);
 		exit(1);
 	}
@@ -240,13 +235,13 @@ msr_t msr_read(int addr)
 
 int msr_write(int addr, msr_t msr)
 {
-	cpu_msr_args_t args;
+	cpuctl_msr_args_t args;
 
 	args.msr = addr;
 	args.data = (((uint64_t)msr.hi) << 32) | msr.lo;
 
-	if (ioctl(fd_msr, CPU_WRMSR, &args) < 0) {
-		msg_perr("Error while executing CPU_WRMSR ioctl: %s\n", strerror(errno));
+	if (ioctl(fd_msr, CPUCTL_WRMSR, &args) < 0) {
+		msg_perr("Error while executing CPUCTL_WRMSR ioctl: %s\n", strerror(errno));
 		close(fd_msr);
 		exit(1);
 	}
@@ -257,7 +252,7 @@ int msr_write(int addr, msr_t msr)
 int msr_setup(int cpu)
 {
 	char msrfilename[64] = { 0 };
-	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu%d", cpu);
+	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpuctl%d", cpu);
 
 	if (fd_msr != -1) {
 		msg_pinfo("MSR was already initialized\n");
@@ -268,7 +263,7 @@ int msr_setup(int cpu)
 
 	if (fd_msr < 0) {
 		msg_perr("Error while opening %s: %s\n", msrfilename, strerror(errno));
-		msg_pinfo("Did you install ports/sysutils/devcpu?\n");
+		msg_pinfo("Try 'kldload cpuctl' or add cpuctl_load=\"YES\" to /boot/loader.conf.\n");
 		return -1;
 	}
 
