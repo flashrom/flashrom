@@ -18,6 +18,18 @@ output is a terminal. Set the ``NO_COLOR`` environment variable to a non-empty
 value to disable it. The log file written by ``-o`` is never colored. Color
 output is not implemented on Windows.
 
+Platform updates
+================
+
+FreeBSD
+-------
+
+The internal programmer now finds the SMBIOS tables on UEFI systems by asking
+the loader for the entry point, so board matching and laptop detection work
+there. MSR access uses ``cpuctl(4)`` from the base system instead of the
+retired ``devcpu`` port. The ``internal`` programmer is offered on non-x86
+FreeBSD hosts, matching Linux.
+
 Programmers updates
 ===================
 

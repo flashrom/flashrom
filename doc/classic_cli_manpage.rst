@@ -1633,6 +1633,10 @@ On OpenBSD, you can obtain raw access permission by setting::
 
 in **/etc/rc.securelevel** and rebooting, or rebooting into single user mode.
 
+On FreeBSD, raw memory and I/O port access are refused once ``kern.securelevel``
+is above 0. Set ``kern_securelevel_enable="NO"`` in **/etc/rc.conf** and reboot,
+or reboot into single user mode. MSR access requires the ``cpuctl`` kernel module.
+
 
 BUGS
 ----

@@ -35,6 +35,10 @@ flashrom doesn't work on my board, what can I do?
 * If you run flashrom on Linux and see messages about ``/dev/mem``, see next section.
 * If you run flashrom on OpenBSD, you might need to obtain raw access permission by setting
   ``securelevel = -1`` in ``/etc/rc.securelevel`` and rebooting, or rebooting into single user mode.
+* If you run flashrom on FreeBSD, ``/dev/io`` and write access to ``/dev/mem`` are refused once
+  ``kern.securelevel`` is above 0. Set ``kern_securelevel_enable="NO"`` in ``/etc/rc.conf`` and
+  reboot, or reboot into single user mode. MSR access, needed for a few boards, requires the
+  ``cpuctl`` kernel module (``kldload cpuctl``).
 
 What can I do about /dev/mem errors?
 ====================================
