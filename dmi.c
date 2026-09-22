@@ -281,6 +281,41 @@ static int dmi_decode_entry_point(const uint8_t *buf, size_t len, int *is_laptop
 	return 1;
 }
 
+#if defined(__FreeBSD__)
+#include <errno.h>
+#include <kenv.h>
+
+/* Decode the entry point recorded by the loader. Returns 0 on success. */
+static int dmi_fill_from_loader(int *is_laptop)
+{
+	char value[32] = { 0 };
+
+	if (kenv(KENV_GET, "hint.smbios.0.mem", value, sizeof(value) - 1) < 0) {
+		msg_pdbg("The loader did not record an SMBIOS entry point (%s).\n", strerror(errno));
+		return 1;
+	}
+
+	char *end;
+	errno = 0;
+	const unsigned long long addr = strtoull(value, &end, 0);
+	if (errno != 0 || end == value || *end != '\0' || addr > UINTPTR_MAX) {
+		msg_pwarn("Ignoring bogus hint.smbios.0.mem=\"%s\".\n", value);
+		return 1;
+	}
+	msg_pdbg("SMBIOS entry point at 0x%llx according to the loader.\n", addr);
+
+	uint8_t *ep = physmap_ro("SMBIOS entry point", (uintptr_t)addr, SMBIOS_EP_MAX_LEN);
+	if (ep == ERROR_PTR)
+		return 1;
+
+	const int ret = dmi_decode_entry_point(ep, SMBIOS_EP_MAX_LEN, is_laptop);
+	physunmap(ep, SMBIOS_EP_MAX_LEN);
+	if (ret)
+		msg_pwarn("The SMBIOS entry point recorded by the loader is invalid.\n");
+	return ret;
+}
+#endif
+
 /* Scan the legacy BIOS range for an anchor string. Returns 0 on success. */
 static int dmi_fill_from_legacy_range(int *is_laptop)
 {
@@ -311,6 +346,10 @@ static int dmi_fill(int *is_laptop)
 	 * - EFI's configuration table contains a pointer to the SMBIOS table.
 	 *   EFI's SMBIOS GUID is: {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d}
 	 * - Scanning physical memory address range 0x000F0000h to 0x000FFFFF for the anchor-string(s). */
+#if defined(__FreeBSD__)
+	if (dmi_fill_from_loader(is_laptop) == 0)
+		return 0;
+#endif
 	return dmi_fill_from_legacy_range(is_laptop);
 }
 
