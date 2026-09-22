@@ -993,12 +993,57 @@ static const struct opaque_master opaque_master_dummyflasher = {
 	.wp_get_ranges	= dummy_wp_get_available_ranges,
 };
 
+/* Parse `param`, a hex string of SPI opcodes with optional "0x" prefix, into list/list_size. */
+static int parse_spi_cmd_list(const struct programmer_cfg *cfg, const char *param, const char *name,
+			      unsigned char *list, unsigned int *list_size)
+{
+	unsigned int i;
+	char *tmp;
+
+	tmp = extract_programmer_param_str(cfg, param);
+	if (!tmp)
+		return 0;
+
+	i = strlen(tmp);
+	if (!strncmp(tmp, "0x", 2)) {
+		i -= 2;
+		memmove(tmp, tmp + 2, i + 1);
+	}
+	if ((i > 512) || (i % 2)) {
+		msg_perr("Invalid SPI command %s length\n", name);
+		free(tmp);
+		return 1;
+	}
+	*list_size = i / 2;
+	for (i = 0; i < *list_size * 2; i++) {
+		if (!isxdigit((unsigned char)tmp[i])) {
+			msg_perr("Invalid char \"%c\" in SPI command %s\n", tmp[i], name);
+			free(tmp);
+			return 1;
+		}
+	}
+	for (i = 0; i < *list_size; i++) {
+		unsigned int tmp2;
+		/* SCNx8 is apparently not supported by MSVC (and thus
+		 * MinGW), so work around it with an extra variable
+		 */
+		sscanf(tmp + i * 2, "%2x", &tmp2);
+		list[i] = (uint8_t)tmp2;
+	}
+	msg_pdbg("SPI %s is ", name);
+	for (i = 0; i < *list_size; i++)
+		msg_pdbg("%02x ", list[i]);
+	msg_pdbg(", size %u\n", *list_size);
+	free(tmp);
+
+	return 0;
+}
+
 static int init_data(const struct programmer_cfg *cfg,
 		struct emu_data *data, enum chipbustype *dummy_buses_supported)
 {
 	char *bustext = NULL;
 	char *tmp = NULL;
-	unsigned int i;
 	char *endptr;
 	char *status = NULL;
 	int size = -1;  /* size for VARIABLE_SIZE chip device */
@@ -1046,77 +1091,12 @@ static int init_data(const struct programmer_cfg *cfg,
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str(cfg, "spi_blacklist");
-	if (tmp) {
-		i = strlen(tmp);
-		if (!strncmp(tmp, "0x", 2)) {
-			i -= 2;
-			memmove(tmp, tmp + 2, i + 1);
-		}
-		if ((i > 512) || (i % 2)) {
-			msg_perr("Invalid SPI command blacklist length\n");
-			free(tmp);
-			return 1;
-		}
-		data->spi_blacklist_size = i / 2;
-		for (i = 0; i < data->spi_blacklist_size * 2; i++) {
-			if (!isxdigit((unsigned char)tmp[i])) {
-				msg_perr("Invalid char \"%c\" in SPI command "
-					 "blacklist\n", tmp[i]);
-				free(tmp);
-				return 1;
-			}
-		}
-		for (i = 0; i < data->spi_blacklist_size; i++) {
-			unsigned int tmp2;
-			/* SCNx8 is apparently not supported by MSVC (and thus
-			 * MinGW), so work around it with an extra variable
-			 */
-			sscanf(tmp + i * 2, "%2x", &tmp2);
-			data->spi_blacklist[i] = (uint8_t)tmp2;
-		}
-		msg_pdbg("SPI blacklist is ");
-		for (i = 0; i < data->spi_blacklist_size; i++)
-			msg_pdbg("%02x ", data->spi_blacklist[i]);
-		msg_pdbg(", size %u\n", data->spi_blacklist_size);
-	}
-	free(tmp);
-
-	tmp = extract_programmer_param_str(cfg, "spi_ignorelist");
-	if (tmp) {
-		i = strlen(tmp);
-		if (!strncmp(tmp, "0x", 2)) {
-			i -= 2;
-			memmove(tmp, tmp + 2, i + 1);
-		}
-		if ((i > 512) || (i % 2)) {
-			msg_perr("Invalid SPI command ignorelist length\n");
-			free(tmp);
-			return 1;
-		}
-		data->spi_ignorelist_size = i / 2;
-		for (i = 0; i < data->spi_ignorelist_size * 2; i++) {
-			if (!isxdigit((unsigned char)tmp[i])) {
-				msg_perr("Invalid char \"%c\" in SPI command "
-					 "ignorelist\n", tmp[i]);
-				free(tmp);
-				return 1;
-			}
-		}
-		for (i = 0; i < data->spi_ignorelist_size; i++) {
-			unsigned int tmp2;
-			/* SCNx8 is apparently not supported by MSVC (and thus
-			 * MinGW), so work around it with an extra variable
-			 */
-			sscanf(tmp + i * 2, "%2x", &tmp2);
-			data->spi_ignorelist[i] = (uint8_t)tmp2;
-		}
-		msg_pdbg("SPI ignorelist is ");
-		for (i = 0; i < data->spi_ignorelist_size; i++)
-			msg_pdbg("%02x ", data->spi_ignorelist[i]);
-		msg_pdbg(", size %u\n", data->spi_ignorelist_size);
-	}
-	free(tmp);
+	if (parse_spi_cmd_list(cfg, "spi_blacklist", "blacklist",
+			       data->spi_blacklist, &data->spi_blacklist_size))
+		return 1;
+	if (parse_spi_cmd_list(cfg, "spi_ignorelist", "ignorelist",
+			       data->spi_ignorelist, &data->spi_ignorelist_size))
+		return 1;
 
 	/* frequency to emulate in Hz (default), KHz, or MHz */
 	tmp = extract_programmer_param_str(cfg, "freq");
