@@ -13,13 +13,12 @@
 #include "hwaccess_physmap.h"
 #include "log.h"
 #include <ctype.h>
+#include <inttypes.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-
-/* Enable SMBIOS decoding. Currently legacy DMI decoding is enough. */
-#define SM_SUPPORT 0
 
 /* Strings longer than 4096 in DMI are just insane. */
 #define DMI_MAX_ANSWER_LEN 4096
@@ -149,7 +148,12 @@ static int dmi_chassis_type(uint8_t code)
 	return is_laptop;
 }
 
-static void dmi_table(uint32_t base, uint16_t len, uint16_t num, int *is_laptop)
+/*
+ * Walk the structure table at physical address base. SMBIOS 3 entry points do
+ * not carry a structure count, callers pass UINT_MAX for num in that case and
+ * the end-of-table structure (type 127) or the length limit stops the walk.
+ */
+static void dmi_table(uintptr_t base, size_t len, unsigned int num, int *is_laptop)
 {
 	unsigned int i = 0, j = 0;
 
@@ -179,6 +183,9 @@ static void dmi_table(uint32_t base, uint16_t len, uint16_t num, int *is_laptop)
 			msg_perr("DMI table is broken (bogus header)!\n");
 			break;
 		}
+
+		if (data[0] == 127) /* End-of-table */
+			break;
 
 		if(data[0] == 3) {
 			if (data + 5 < limit)
@@ -215,25 +222,46 @@ out:
 	physunmap(dmi_table_mem, len);
 }
 
-#if SM_SUPPORT
-static int smbios_decode(uint8_t *buf, size_t len, int *is_laptop)
+/* Longest entry point structure: the SMBIOS 2.1 one is 0x1f bytes, the SMBIOS 3.0 one 0x18. */
+#define SMBIOS_EP_MAX_LEN 0x20
+
+/* SMBIOS 2.1 entry point ("_SM_"), SMBIOS spec section 5.2.1. Returns 0 on success. */
+static int smbios_decode(const uint8_t *buf, size_t len, int *is_laptop)
 {
-	/* TODO: other checks mentioned in the conformance guidelines? */
 	if (len < 0x1f || buf[0x05] < 0x1f || buf[0x05] > len ||
 	    !dmi_checksum(buf, buf[0x05]) ||
 	    (memcmp(buf + 0x10, "_DMI_", 5) != 0) ||
 	    !dmi_checksum(buf + 0x10, 0x0F))
-			return 0;
+			return 1;
 
 	dmi_table(mmio_readl(buf + 0x18), mmio_readw(buf + 0x16), mmio_readw(buf + 0x1C), is_laptop);
 
-	return 1;
+	return 0;
 }
-#endif
 
-static int legacy_decode(uint8_t *buf, int *is_laptop)
+/* SMBIOS 3.0 entry point ("_SM3_"), SMBIOS spec section 5.2.2. Returns 0 on success. */
+static int smbios3_decode(const uint8_t *buf, size_t len, int *is_laptop)
 {
-	if (!dmi_checksum(buf, 0x0F))
+	if (len < 0x18 || buf[0x06] < 0x18 || buf[0x06] > len || !dmi_checksum(buf, buf[0x06]))
+		return 1;
+
+	const uint64_t table = (uint64_t)mmio_readl(buf + 0x14) << 32 | mmio_readl(buf + 0x10);
+	const uint32_t table_len = mmio_readl(buf + 0x0C);
+
+	if (table > UINTPTR_MAX) {
+		msg_pwarn("SMBIOS table at 0x%" PRIx64 " is out of reach on this platform.\n", table);
+		return 1;
+	}
+
+	dmi_table((uintptr_t)table, table_len, UINT_MAX, is_laptop);
+
+	return 0;
+}
+
+/* Legacy "_DMI_" anchor, also the second half of a 2.1 entry point. Returns 0 on success. */
+static int legacy_decode(const uint8_t *buf, size_t len, int *is_laptop)
+{
+	if (len < 0x0F || !dmi_checksum(buf, 0x0F))
 		return 1;
 
 	dmi_table(mmio_readl(buf + 0x08), mmio_readw(buf + 0x06), mmio_readw(buf + 0x0C), is_laptop);
@@ -241,38 +269,49 @@ static int legacy_decode(uint8_t *buf, int *is_laptop)
 	return 0;
 }
 
-static int dmi_fill(int *is_laptop)
+/* Decode whichever entry point anchor starts at buf. Returns 0 on success. */
+static int dmi_decode_entry_point(const uint8_t *buf, size_t len, int *is_laptop)
+{
+	if (len >= 5 && memcmp(buf, "_SM3_", 5) == 0)
+		return smbios3_decode(buf, len, is_laptop);
+	if (len >= 4 && memcmp(buf, "_SM_", 4) == 0)
+		return smbios_decode(buf, len, is_laptop);
+	if (len >= 5 && memcmp(buf, "_DMI_", 5) == 0)
+		return legacy_decode(buf, len, is_laptop);
+	return 1;
+}
+
+/* Scan the legacy BIOS range for an anchor string. Returns 0 on success. */
+static int dmi_fill_from_legacy_range(int *is_laptop)
 {
 	size_t fp;
 	uint8_t *dmi_mem;
 	int ret = 1;
 
-	msg_pdbg("Using Internal DMI decoder.\n");
-	/* There are two ways specified to gain access to the SMBIOS table:
-	 * - EFI's configuration table contains a pointer to the SMBIOS table. On linux it can be obtained from
-	 *   sysfs. EFI's SMBIOS GUID is: {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d}
-	 * - Scanning physical memory address range 0x000F0000h to 0x000FFFFF for the anchor-string(s). */
 	dmi_mem = physmap_ro("DMI", 0xF0000, 0x10000);
 	if (dmi_mem == ERROR_PTR)
 		return ret;
 
 	for (fp = 0; fp <= 0xFFF0; fp += 16) {
-#if SM_SUPPORT
-		if (memcmp(dmi_mem + fp, "_SM_", 4) == 0) {
-			if (smbios_decode(dmi_mem + fp, 0x10000 - fp, is_laptop))
-				goto out;
-		} else
-#endif
-		if (memcmp(dmi_mem + fp, "_DMI_", 5) == 0)
-			if (legacy_decode(dmi_mem + fp, is_laptop) == 0) {
-				ret = 0;
-				goto out;
-			}
+		if (dmi_decode_entry_point(dmi_mem + fp, 0x10000 - fp, is_laptop) == 0) {
+			ret = 0;
+			break;
+		}
 	}
-	msg_pinfo("No DMI table found.\n");
-out:
+	if (ret)
+		msg_pinfo("No DMI table found.\n");
 	physunmap(dmi_mem, 0x10000);
 	return ret;
+}
+
+static int dmi_fill(int *is_laptop)
+{
+	msg_pdbg("Using Internal DMI decoder.\n");
+	/* There are two ways specified to gain access to the SMBIOS table:
+	 * - EFI's configuration table contains a pointer to the SMBIOS table.
+	 *   EFI's SMBIOS GUID is: {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d}
+	 * - Scanning physical memory address range 0x000F0000h to 0x000FFFFF for the anchor-string(s). */
+	return dmi_fill_from_legacy_range(is_laptop);
 }
 
 #else /* CONFIG_INTERNAL_DMI */
