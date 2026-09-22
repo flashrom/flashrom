@@ -377,6 +377,36 @@ static int erase_flash_data(struct emu_data *data, uint32_t start, uint32_t len)
 	return 0;
 }
 
+/* Emulate one erase opcode. A zero `size` means the emulated chip lacks it. */
+static int emulate_erase(struct emu_data *data, const char *name, unsigned int size,
+			 unsigned int writecnt, unsigned int readcnt,
+			 unsigned int outsize, unsigned int insize, const unsigned char *writearr)
+{
+	unsigned int offs = 0;
+
+	if (!size)
+		return 0;
+	if (writecnt != outsize) {
+		msg_perr("%s outsize invalid!\n", name);
+		return 1;
+	}
+	if (readcnt != insize) {
+		msg_perr("%s insize invalid!\n", name);
+		return 1;
+	}
+	if (outsize > 1) {
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (offs & (size - 1))
+			msg_pdbg("Unaligned %s: 0x%x\n", name, offs);
+		offs &= ~(size - 1);
+	}
+	if (erase_flash_data(data, offs, size)) {
+		msg_perr("Failed to erase flash!\n");
+		return 1;
+	}
+	return 0;
+}
+
 static int emulate_spi_chip_response(unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,
@@ -713,100 +743,29 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			data->emu_status[0] &= ~SPI_SR_AAI;
 		break;
 	case JEDEC_SE:
-		if (!data->emu_jedec_se_size)
-			break;
-		if (writecnt != JEDEC_SE_OUTSIZE) {
-			msg_perr("SECTOR ERASE 0x20 outsize invalid!\n");
+		if (emulate_erase(data, "SECTOR ERASE 0x20", data->emu_jedec_se_size,
+				  writecnt, readcnt, JEDEC_SE_OUTSIZE, JEDEC_SE_INSIZE, writearr))
 			return 1;
-		}
-		if (readcnt != JEDEC_SE_INSIZE) {
-			msg_perr("SECTOR ERASE 0x20 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_se_size - 1))
-			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_se_size - 1);
-		if (erase_flash_data(data, offs, data->emu_jedec_se_size)) {
-			msg_perr("Failed to erase flash!\n");
-			return 1;
-		}
 		break;
 	case JEDEC_BE_52:
-		if (!data->emu_jedec_be_52_size)
-			break;
-		if (writecnt != JEDEC_BE_52_OUTSIZE) {
-			msg_perr("BLOCK ERASE 0x52 outsize invalid!\n");
+		if (emulate_erase(data, "BLOCK ERASE 0x52", data->emu_jedec_be_52_size,
+				  writecnt, readcnt, JEDEC_BE_52_OUTSIZE, JEDEC_BE_52_INSIZE, writearr))
 			return 1;
-		}
-		if (readcnt != JEDEC_BE_52_INSIZE) {
-			msg_perr("BLOCK ERASE 0x52 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_be_52_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_be_52_size - 1);
-		if (erase_flash_data(data, offs, data->emu_jedec_be_52_size)) {
-			msg_perr("Failed to erase flash!\n");
-			return 1;
-		}
 		break;
 	case JEDEC_BE_D8:
-		if (!data->emu_jedec_be_d8_size)
-			break;
-		if (writecnt != JEDEC_BE_D8_OUTSIZE) {
-			msg_perr("BLOCK ERASE 0xd8 outsize invalid!\n");
+		if (emulate_erase(data, "BLOCK ERASE 0xd8", data->emu_jedec_be_d8_size,
+				  writecnt, readcnt, JEDEC_BE_D8_OUTSIZE, JEDEC_BE_D8_INSIZE, writearr))
 			return 1;
-		}
-		if (readcnt != JEDEC_BE_D8_INSIZE) {
-			msg_perr("BLOCK ERASE 0xd8 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_be_d8_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_be_d8_size - 1);
-		if (erase_flash_data(data, offs, data->emu_jedec_be_d8_size)) {
-			msg_perr("Failed to erase flash!\n");
-			return 1;
-		}
 		break;
 	case JEDEC_CE_60:
-		if (!data->emu_jedec_ce_60_size)
-			break;
-		if (writecnt != JEDEC_CE_60_OUTSIZE) {
-			msg_perr("CHIP ERASE 0x60 outsize invalid!\n");
+		if (emulate_erase(data, "CHIP ERASE 0x60", data->emu_jedec_ce_60_size,
+				  writecnt, readcnt, JEDEC_CE_60_OUTSIZE, JEDEC_CE_60_INSIZE, writearr))
 			return 1;
-		}
-		if (readcnt != JEDEC_CE_60_INSIZE) {
-			msg_perr("CHIP ERASE 0x60 insize invalid!\n");
-			return 1;
-		}
-		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
-		/* emu_jedec_ce_60_size is emu_chip_size. */
-		if (erase_flash_data(data, 0, data->emu_jedec_ce_60_size)) {
-			msg_perr("Failed to erase flash!\n");
-			return 1;
-		}
 		break;
 	case JEDEC_CE_C7:
-		if (!data->emu_jedec_ce_c7_size)
-			break;
-		if (writecnt != JEDEC_CE_C7_OUTSIZE) {
-			msg_perr("CHIP ERASE 0xc7 outsize invalid!\n");
+		if (emulate_erase(data, "CHIP ERASE 0xc7", data->emu_jedec_ce_c7_size,
+				  writecnt, readcnt, JEDEC_CE_C7_OUTSIZE, JEDEC_CE_C7_INSIZE, writearr))
 			return 1;
-		}
-		if (readcnt != JEDEC_CE_C7_INSIZE) {
-			msg_perr("CHIP ERASE 0xc7 insize invalid!\n");
-			return 1;
-		}
-		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
-		/* emu_jedec_ce_c7_size is emu_chip_size. */
-		if (erase_flash_data(data, 0, data->emu_jedec_ce_c7_size)) {
-			msg_perr("Failed to erase flash!\n");
-			return 1;
-		}
 		break;
 	case JEDEC_SFDP:
 		if (data->emu_chip != EMULATE_MACRONIX_MX25L6436)
