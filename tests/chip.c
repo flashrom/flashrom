@@ -727,7 +727,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	free(newcontents);
 }
 
-static void setup_bad_chip(struct flashrom_flashctx *flashctx)
+static void setup_bad_chip(struct flashrom_flashctx *flashctx, struct flashchip *mock_chip)
 {
 	/* This test injectors are not expected to be called, because the
 	 * chip has known bad test status and chip_safety_check should fail
@@ -736,10 +736,9 @@ static void setup_bad_chip(struct flashrom_flashctx *flashctx)
 	g_test_read_injector = NULL;
 	g_test_erase_injector[0] = NULL;
 
-	struct flashchip mock_chip = chip_bad;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(flashctx, &mock_chip, param, NULL);
+	setup_chip(flashctx, mock_chip, param, NULL);
 }
 
 void erase_chip_bad_status_test(void **state)
@@ -747,7 +746,8 @@ void erase_chip_bad_status_test(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_flashctx flashctx = {0};
-	setup_bad_chip(&flashctx);
+	struct flashchip mock_chip = chip_bad;
+	setup_bad_chip(&flashctx, &mock_chip);
 
 	printf("flashrom_flash_erase called: ");
 	assert_int_equal(ERROR_FLASHROM_PREPARE_FLASH_ACCESS, flashrom_flash_erase(&flashctx));
@@ -761,7 +761,8 @@ void read_chip_bad_status_test(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_flashctx flashctx = {0};
-	setup_bad_chip(&flashctx);
+	struct flashchip mock_chip = chip_bad;
+	setup_bad_chip(&flashctx, &mock_chip);
 
 	unsigned long size = chip_bad.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
@@ -782,7 +783,8 @@ void write_chip_bad_status_test(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_flashctx flashctx = {0};
-	setup_bad_chip(&flashctx);
+	struct flashchip mock_chip = chip_bad;
+	setup_bad_chip(&flashctx, &mock_chip);
 
 	unsigned long size = chip_bad.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
