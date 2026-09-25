@@ -18,10 +18,8 @@
 #include <errno.h>
 #include "ich_descriptors.h"
 #include "helpers.h"
-/* Some DJGPP builds define __unix__ although they don't support mmap().
- * Cygwin defines __unix__ and supports mmap(), but it does not work well.
- */
-#if !defined(__MSDOS__) && !IS_WINDOWS && (defined(unix) || defined(__unix__) || defined(__unix)) || (defined(__MACH__) && defined(__APPLE__))
+/* Cygwin defines __unix__ and supports mmap(), but it does not work well. */
+#if !IS_WINDOWS && (defined(unix) || defined(__unix__) || defined(__unix)) || (defined(__MACH__) && defined(__APPLE__))
 #define HAVE_MMAP 1
 #include <sys/mman.h>
 #endif

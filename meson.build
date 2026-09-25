@@ -129,7 +129,7 @@ else
   custom_baud_c = 'custom_baud.c'
 endif
 
-systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'dos' ]
+systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd' ]
 systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin', 'windows' ]
 
 cpus_port_io = [ 'x86', 'x86_64' ]
