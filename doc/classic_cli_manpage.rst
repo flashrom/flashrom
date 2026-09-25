@@ -1545,6 +1545,15 @@ If you encounter any problems, please contact us and supply backuplog.txt, write
 See section **BUGS** for contact info.
 
 
+ENVIRONMENT
+-----------
+
+**NO_COLOR**
+        Error messages are printed in red and warnings in yellow when the output is a terminal and **TERM** is not
+        ``dumb``. Setting **NO_COLOR** to a non-empty value disables this. The log file written by **-o** is never
+        colored. Color output is not implemented on Windows.
+
+
 EXIT STATUS
 -----------
 

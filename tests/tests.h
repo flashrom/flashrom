@@ -176,4 +176,7 @@ void write_function_algo_test_success(void **state);
 /* udelay.c */
 void udelay_test_short(void **state);
 
+/* cli_output.c */
+void cli_output_color_wanted_test(void **state);
+
 #endif /* TESTS_H */

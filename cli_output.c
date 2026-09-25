@@ -10,7 +10,12 @@
 #include "log.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <errno.h>
+#if !IS_WINDOWS
+#include <unistd.h>
+#endif
 
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;
@@ -24,6 +29,63 @@ enum line_state {
 static enum line_state line_state = NEWLINE;
 
 static FILE *logfile = NULL;
+
+#define ANSI_RESET	"\033[0m"
+
+/* Only levels that go to stderr are colored. */
+static const char *const level_color[] = {
+	[FLASHROM_MSG_ERROR]	= "\033[31m",	/* red */
+	[FLASHROM_MSG_WARN]	= "\033[33m",	/* yellow */
+};
+
+bool cli_output_color_wanted(bool is_tty, const char *no_color, const char *term)
+{
+	/* https://no-color.org: any non-empty value disables color by default. */
+	if (no_color && no_color[0] != '\0')
+		return false;
+	if (term && !strcmp(term, "dumb"))
+		return false;
+	return is_tty;
+}
+
+static bool color_enabled(void)
+{
+#if IS_WINDOWS
+	/* Not implemented or tested on Windows. */
+	return false;
+#else
+	static int enabled = -1;
+
+	if (enabled < 0)
+		enabled = cli_output_color_wanted(isatty(fileno(stderr)),
+						  getenv("NO_COLOR"), getenv("TERM"));
+	return enabled;
+#endif
+}
+
+/* Emit the reset before a trailing newline so every line starts clean. */
+static int print_colored(FILE *stream, const char *color, const char *fmt, va_list ap)
+{
+	va_list ap_len;
+	va_copy(ap_len, ap);
+	const int len = vsnprintf(NULL, 0, fmt, ap_len);
+	va_end(ap_len);
+	if (len < 0)
+		return len;
+
+	char *buf = malloc(len + 1);
+	if (!buf)
+		return vfprintf(stream, fmt, ap);
+	vsnprintf(buf, len + 1, fmt, ap);
+
+	const int body = (len > 0 && buf[len - 1] == '\n') ? len - 1 : len;
+	if (body > 0)
+		fprintf(stream, "%s%.*s%s%s", color, body, buf, ANSI_RESET, buf + body);
+	else
+		fputs(buf, stream);
+	free(buf);
+	return len;
+}
 
 int close_logfile(void)
 {
@@ -157,7 +219,14 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 		output_type = stderr;
 
 	if (level <= verbose_screen) {
-		ret = vfprintf(output_type, fmt, ap);
+		/* Messages are often printed in fragments, so every fragment gets its own
+		 * color and reset. The logfile never gets escape sequences. */
+		const char *color = (size_t)level < ARRAY_SIZE(level_color) ? level_color[level] : NULL;
+
+		if (color && color_enabled())
+			ret = print_colored(output_type, color, fmt, ap);
+		else
+			ret = vfprintf(output_type, fmt, ap);
 		update_line_state(fmt);
 		/* msg_*spew often happens inside chip accessors in possibly
 		 * time-critical operations. Don't slow them down by flushing. */

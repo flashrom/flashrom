@@ -7,6 +7,7 @@
 #define __CLI_OUTPUT_H__
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include "flash.h"
 
 extern enum flashrom_log_level verbose_screen;
@@ -14,6 +15,7 @@ extern enum flashrom_log_level verbose_logfile;
 int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
+bool cli_output_color_wanted(bool is_tty, const char *no_color, const char *term);
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
 void flashrom_progress_cb(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data);
 

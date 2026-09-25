@@ -617,6 +617,11 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("udelay.c tests", delay_tests, NULL, NULL);
 
+	const struct CMUnitTest cli_output_tests[] = {
+		cmocka_unit_test(cli_output_color_wanted_test),
+	};
+	ret |= cmocka_run_group_tests_name("cli_output.c tests", cli_output_tests, NULL, NULL);
+
 	size_t n_erase_tests;
 	struct CMUnitTest *erase_func_algo_tests = get_erase_func_algo_tests(&n_erase_tests);
 	ret |= _cmocka_run_group_tests("erase_func_algo.c tests", erase_func_algo_tests, n_erase_tests, NULL, NULL);

@@ -22,6 +22,7 @@ test_srcs = files(
   'io_real.c',
   'erase_func_algo.c',
   'udelay.c',
+  'cli_output.c',
 )
 
 if not programmer.get('dummy').get('active')

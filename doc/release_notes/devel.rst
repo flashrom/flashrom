@@ -7,6 +7,17 @@ the next release of flashrom and which are currently only available by source
 code checkout (see :doc:`../dev_guide/building_from_source`). These changes
 may be further revised before the next release.
 
+CLI updates
+===========
+
+Colored errors and warnings
+---------------------------
+
+The classic CLI prints error messages in red and warnings in yellow when the
+output is a terminal. Set the ``NO_COLOR`` environment variable to a non-empty
+value to disable it. The log file written by ``-o`` is never colored. Color
+output is not implemented on Windows.
+
 Programmers updates
 ===================
 
