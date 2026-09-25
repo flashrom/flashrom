@@ -178,33 +178,6 @@ OpenIndiana (Illumos, Solaris, SunOS)
 
      pkg install build-essential meson ninja cmocka libusb-1
 
-DJGPP-DOS
-"""""""""
-
-* Get `DJGPP <https://www.delorie.com/djgpp/>`_
-* A great build script can be found `here <https://github.com/andrewwutw/build-djgpp>`_
-* Download the `pciutils <https://mj.ucw.cz/sw/pciutils/>`_ sources
-
-| Run the following commands in the the pciutils directory to build libpci for DOS.
-| Replace ``<DOS_INSTALL_ROOT>`` with your cross-compile install root.
-
-::
-
-    make install-lib \
-        ZLIB=no \
-        DNS=no \
-        HOST=i386-djgpp-djgpp \
-        CROSS_COMPILE=i586-pc-msdosdjgpp- \
-        STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" \
-        PREFIX=<DOS_INSTALL_ROOT>
-
-Point pkg-config to the ``<DOS_INSTALL_ROOT>`` ::
-
-    export PKG_CONFIG_SYSROOT=<DOS_INSTALL_ROOT>
-
-* To compile flashrom use the ``meson_cross/i586_djgpp_dos.txt`` cross-file
-* You will need `CWSDPMI.EXE <https://sandmann.dotster.com/cwsdpmi/>`_ to run flashrom
-
 libpayload
 """"""""""
 

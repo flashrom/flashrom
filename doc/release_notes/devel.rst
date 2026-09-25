@@ -82,3 +82,13 @@ The ``developerbox_spi`` programmer has been removed. It drove the on-board
 SPI flash of the Socionext SynQuacer DeveloperBox for recovery. The board is
 end-of-life with a negligible install base, so nothing in current use depends
 on it.
+
+Platform support
+================
+
+DOS support is removed
+----------------------
+
+flashrom no longer builds for DOS. The DJGPP target needed its own
+DPMI physical memory mapping, port I/O wrappers and delay loop, none of
+which was shared with any other platform or covered by CI.

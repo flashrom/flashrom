@@ -26,7 +26,7 @@ network/graphics/storage controller cards, and various other programmer devices.
 
 * Speed. flashrom is often much faster than most vendor flash tools.
 
-* Portability. Supports DOS, Linux, FreeBSD (including Debian/kFreeBSD), NetBSD, OpenBSD,
+* Portability. Supports Linux, FreeBSD (including Debian/kFreeBSD), NetBSD, OpenBSD,
   DragonFlyBSD, anything Solaris-like, Mac OS X, and other Unix-like OSes as well as GNU Hurd.
   Partial Windows support is available (no internal programmer support at the moment, hence
   no "BIOS flashing").
