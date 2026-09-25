@@ -49,9 +49,7 @@ dep_platform_string = declare_dependency(
 )
 
 # Select an appropriate delay implementation for the target OS
-if target_machine.system() == 'dos'
-  udelay_c = 'udelay_dos.c'
-elif target_machine.system() == 'windows'
+if target_machine.system() == 'windows'
   udelay_c = 'udelay_windows.c'
 elif target_machine.system() == 'libpayload'
   udelay_c = 'udelay_libpayload.c'
