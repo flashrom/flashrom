@@ -23,7 +23,6 @@ enum id_type {
 	RDID4,
 	REMS,
 	RES2,
-	RES3,
 	NUM_ID_TYPES,
 };
 
@@ -243,26 +242,6 @@ int probe_spi_res2(struct flashctx *flash)
 
 	id1 = id_cache[RES2].bytes[0];
 	id2 = id_cache[RES2].bytes[1];
-	msg_cdbg("%s: id1 0x%"PRIx32", id2 0x%"PRIx32"\n", __func__, id1, id2);
-
-	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
-		return 0;
-
-	return 1;
-}
-
-int probe_spi_res3(struct flashctx *flash)
-{
-	uint32_t id1, id2;
-
-	if (!id_cache[RES3].is_cached) {
-		if (spi_res(flash, id_cache[RES3].bytes, 3))
-			return 0;
-		id_cache[RES3].is_cached = true;
-	}
-
-	id1 = (id_cache[RES3].bytes[0] << 8) | id_cache[RES3].bytes[1];
-	id2 = id_cache[RES3].bytes[3];
 	msg_cdbg("%s: id1 0x%"PRIx32", id2 0x%"PRIx32"\n", __func__, id1, id2);
 
 	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)

@@ -221,21 +221,6 @@ void probe_spi_res2_test_success(void **state)
 	assert_int_equal(0, probe_spi_res2(&flashctx));
 }
 
-void probe_spi_res3_test_success(void **state)
-{
-	(void) state; /* unused */
-
-	/* setup initial test state. */
-	struct flashctx flashctx = { .chip = &mock_chip };
-	expect_memory(__wrap_spi_send_command, flash,
-			&flashctx, sizeof(flashctx));
-
-	will_return(__wrap_spi_send_command, JEDEC_RES_OUTSIZE);
-	will_return(__wrap_spi_send_command, JEDEC_RES);
-	will_return(__wrap_spi_send_command, JEDEC_RES_INSIZE + 2);
-	assert_int_equal(0, probe_spi_res3(&flashctx));
-}
-
 void probe_spi_at25f_test_success(void **state)
 {
 	(void) state; /* unused */

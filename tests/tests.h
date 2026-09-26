@@ -47,7 +47,6 @@ void probe_spi_rdid4_test_success(void **state);
 void probe_spi_rems_test_success(void **state);
 void probe_spi_res1_test_success(void **state);
 void probe_spi_res2_test_success(void **state);
-void probe_spi_res3_test_success(void **state);
 void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 

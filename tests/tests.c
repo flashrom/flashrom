@@ -498,7 +498,6 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(probe_spi_rems_test_success),
 		cmocka_unit_test(probe_spi_res1_test_success),
 		cmocka_unit_test(probe_spi_res2_test_success),
-		cmocka_unit_test(probe_spi_res3_test_success),
 		cmocka_unit_test(probe_spi_at25f_test_success),
 		cmocka_unit_test(probe_spi_st95_test_success), /* spi95.c */
 	};
