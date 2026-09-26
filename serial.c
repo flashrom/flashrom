@@ -166,6 +166,20 @@ int serialport_config(serialport_fdtype fd, int baud)
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
+	dcb.fBinary = true;
+	dcb.fParity = false;
+	dcb.fOutxCtsFlow = false;
+	dcb.fOutxDsrFlow = false;
+	dcb.fDsrSensitivity = false;
+	dcb.fOutX = false;
+	dcb.fInX = false;
+	dcb.fErrorChar = false;
+	dcb.fNull = false;
+	dcb.fAbortOnError = false;
+	if (dcb.fDtrControl == DTR_CONTROL_HANDSHAKE)
+		dcb.fDtrControl = DTR_CONTROL_ENABLE;
+	if (dcb.fRtsControl == RTS_CONTROL_HANDSHAKE)
+		dcb.fRtsControl = RTS_CONTROL_ENABLE;
 	if (!SetCommState(fd, &dcb)) {
 		msg_perr_strerror("Could not change serial port configuration: ");
 		return 1;
