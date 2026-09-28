@@ -256,10 +256,10 @@ int rget_io_perms(void)
 		 "Issue a 'dmesg | grep flashrom' for further information\n");
 	}
 #elif defined(__OpenBSD__)
-	msg_perr("On OpenBSD set securelevel=-1 in /etc/rc.securelevel and\n"
+	msg_perr("Set securelevel=-1 in /etc/rc.securelevel and\n"
 		 "reboot, or reboot into single user mode.\n");
 #elif defined(__NetBSD__)
-	msg_perr("On NetBSD reboot into single user mode or make sure\n"
+	msg_perr("Reboot into single user mode or make sure\n"
 		 "that your kernel configuration has the option INSECURE enabled.\n");
 #elif defined(__FreeBSD__)
 	msg_perr("Set kern_securelevel_enable=\"NO\" in /etc/rc.conf and\n"
