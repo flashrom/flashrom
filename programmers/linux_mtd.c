@@ -410,7 +410,7 @@ static enum flashrom_wp_result linux_mtd_wp_write_cfg(struct flashctx *flash, co
 		if (wp_ioctl_unsupported(errno, "MEMUNLOCK"))
 			return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
 		msg_perr("%s: Failed to disable write-protection, MEMUNLOCK ioctl "
-			 "retuned %d, error: %s\n", __func__, ret, strerror(errno));
+			 "returned %d, error: %s\n", __func__, ret, strerror(errno));
 		return FLASHROM_WP_ERR_WRITE_FAILED;
 	}
 
@@ -420,7 +420,7 @@ static enum flashrom_wp_result linux_mtd_wp_write_cfg(struct flashctx *flash, co
 			if (wp_ioctl_unsupported(errno, "MEMLOCK"))
 				return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
 			msg_perr("%s: Failed to enable write-protection, "
-				 "MEMLOCK ioctl retuned %d, error: %s\n",
+				 "MEMLOCK ioctl returned %d, error: %s\n",
 				 __func__, ret, strerror(errno));
 			return FLASHROM_WP_ERR_WRITE_FAILED;
 		}
