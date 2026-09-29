@@ -34,7 +34,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "platform/udelay.h"
-#include "serial.h"
+#include "platform/serial.h"
 #include "log.h"
 
 enum pony_type {

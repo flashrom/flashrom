@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: 2022 Peter Stuge <peter@stuge.se>
  */
 
-#include "custom_baud.h"
+#include "platform/custom_baud.h"
 
 #include <termios.h>
 #include <sys/ioctl.h>

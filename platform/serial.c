@@ -4,7 +4,7 @@
  * SPDX-FileCopyrightText: 2009,2010 Carl-Daniel Hailfinger
  */
 
-#include "serial.h"
+#include "platform/serial.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@
 #endif
 #include "flash.h"
 #include "programmer.h"
-#include "custom_baud.h"
+#include "platform/custom_baud.h"
 #include "platform/udelay.h"
 #include "log.h"
 
@@ -38,10 +38,10 @@ serialport_fdtype serialport_fd = SERIALPORT_INV_FD;
  * with numerical user input.
  *
  * On Linux there is a non-standard way to use arbitrary baud rates that we use if there is no
- * matching standard rate, see custom_baud.c
+ * matching standard rate, see platform/custom_baud.c
  *
  * On Darwin there is also a non-standard ioctl() to set arbitrary baud rates
- * and any above 230400, see custom_baud_darwin.c and
+ * and any above 230400, see platform/custom_baud_darwin.c and
  * https://opensource.apple.com/source/IOSerialFamily/IOSerialFamily-91/tests/IOSerialTestLib.c.auto.html
  *
  * On Windows there exist similar macros (starting with CBR_ instead of B) but they are only defined for

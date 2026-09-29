@@ -28,7 +28,7 @@
 #include "programmer.h"
 #include "chipdrivers.h"
 #include "platform/udelay.h"
-#include "serial.h"
+#include "platform/serial.h"
 #include "log.h"
 
 /* According to Serial Flasher Protocol Specification - version 1 */

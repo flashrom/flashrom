@@ -34,6 +34,19 @@ if cc.check_header('pciutils/pci.h')
   add_project_arguments('-DHAVE_PCIUTILS_PCI_H=1', language : 'c')
 endif
 
+# Serial
+# Only some platforms are able to use baud rates other than the standard ones
+if host_machine.system() == 'linux'
+  custom_baud_c = 'custom_baud_linux.c'
+elif host_machine.system() == 'darwin'
+  custom_baud_c = 'custom_baud_darwin.c'
+else
+  custom_baud_c = 'custom_baud.c'
+endif
+dep_platform_serial = declare_dependency(
+  sources : files('serial.c', custom_baud_c),
+)
+
 # String
 if cc.has_header_symbol('string.h', 'strndup')
   add_project_arguments('-DHAVE_STRNDUP=1', language : 'c')

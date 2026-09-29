@@ -13,7 +13,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "platform/udelay.h"
-#include "serial.h"
+#include "platform/serial.h"
 #include "helpers.h"
 #include "log.h"
 

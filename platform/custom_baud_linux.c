@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: 2017 Urja Rannikko <urjaman@gmail.com>
  */
 
-#include "custom_baud.h"
+#include "platform/custom_baud.h"
 
 #include <sys/ioctl.h>
 #include <fcntl.h>

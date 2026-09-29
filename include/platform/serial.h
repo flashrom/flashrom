@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __PLATFORM_SERIAL_H__
+#define __PLATFORM_SERIAL_H__
 
 #if IS_WINDOWS
 #include <windows.h>
@@ -51,4 +51,4 @@ enum SERIALPORT_PIN {
 void serialport_set_pin(enum SERIALPORT_PIN pin, int val);
 int serialport_get_pin(enum SERIALPORT_PIN pin);
 
-#endif /* __SERIAL_H__ */
+#endif /* __PLATFORM_SERIAL_H__ */

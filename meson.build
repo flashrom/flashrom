@@ -121,14 +121,6 @@ else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
 
-if host_machine.system() == 'linux'
-  custom_baud_c = 'custom_baud_linux.c'
-elif host_machine.system() == 'darwin'
-  custom_baud_c = 'custom_baud_darwin.c'
-else
-  custom_baud_c = 'custom_baud.c'
-endif
-
 systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd' ]
 systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin', 'windows' ]
 
@@ -209,8 +201,9 @@ programmer = {
   },
   'buspirate_spi' : {
     'systems' : systems_serial,
+    'deps'    : [ dep_platform_serial ],
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('programmers/buspirate_spi.c', 'serial.c', custom_baud_c),
+    'srcs'    : files('programmers/buspirate_spi.c'),
     'flags'   : [ '-DCONFIG_BUSPIRATE_SPI=1' ],
   },
   'ch341a_spi' : {
@@ -408,8 +401,9 @@ programmer = {
   },
   'pony_spi' : {
     'systems' : systems_serial,
+    'deps'    : [ dep_platform_serial ],
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('programmers/pony_spi.c', 'serial.c', custom_baud_c),
+    'srcs'    : files('programmers/pony_spi.c'),
     'flags'   : [ '-DCONFIG_PONY_SPI=1' ],
   },
   'raiden_debug_spi' : {
@@ -430,14 +424,16 @@ programmer = {
   },
   'serprog' : {
     'systems' : systems_serial,
+    'deps'    : [ dep_platform_serial ],
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('programmers/serprog.c', 'serial.c', custom_baud_c),
+    'srcs'    : files('programmers/serprog.c'),
     'flags'   : [ '-DCONFIG_SERPROG=1' ],
   },
   'spidriver' : {
     'systems' : systems_serial,
+    'deps'    : [ dep_platform_serial ],
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('programmers/spidriver.c', 'serial.c', custom_baud_c),
+    'srcs'    : files('programmers/spidriver.c'),
     'test_srcs' : files('tests/spidriver.c'),
     'flags'   : [ '-DCONFIG_SPIDRIVER=1' ],
   },
