@@ -254,7 +254,7 @@ int probe_spi_at45db(struct flashctx *flash)
 		return 0;
 	}
 
-	msg_cdbg2("%s: total size %i kB, page size %i B\n", __func__, chip->total_size * KiB, chip->page_size);
+	msg_cdbg2("%s: total size %i kB, page size %i B\n", __func__, chip->total_size, chip->page_size);
 
 	return 1;
 }
