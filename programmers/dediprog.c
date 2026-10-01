@@ -45,18 +45,18 @@ enum dediprog_devtype {
 enum dediprog_leds {
 	LED_INVALID		= -1,
 	LED_NONE		= 0,
-	LED_PASS		= 1 << 0,
-	LED_BUSY		= 1 << 1,
-	LED_ERROR		= 1 << 2,
+	LED_PASS		= BIT(0),
+	LED_BUSY		= BIT(1),
+	LED_ERROR		= BIT(2),
 	LED_ALL			= 7,
 };
 
 /* IO bits for CMD_SET_IO_LED message */
 enum dediprog_ios {
-	IO1			= 1 << 0,
-	IO2			= 1 << 1,
-	IO3			= 1 << 2,
-	IO4			= 1 << 3,
+	IO1			= BIT(0),
+	IO2			= BIT(1),
+	IO3			= BIT(2),
+	IO4			= BIT(3),
 };
 
 enum dediprog_cmds {

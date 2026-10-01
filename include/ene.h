@@ -13,8 +13,8 @@
 #define ENE_XBI_EFCMD			0xfeac
 #define ENE_XBI_EFCFG			0xfead
 
-#define ENE_XBI_EFCFG_CMD_WE		(1 << 3)
-#define ENE_XBI_EFCFG_BUSY		(1 << 1)
+#define ENE_XBI_EFCFG_CMD_WE		BIT(3)
+#define ENE_XBI_EFCFG_BUSY		BIT(1)
 
 #define ENE_XBI_EFCMD_HVPL_LATCH	0x02
 #define ENE_XBI_EFCMD_READ		0x03

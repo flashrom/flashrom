@@ -249,7 +249,7 @@ static uint8_t w836xx_deviceid_hwmon(uint16_t sio_port)
 	uint8_t hwm_deviceid;
 
 	sio_write(sio_port, 0x07, 0x0b); /* Select LDN 0xb (HWM). */
-	if ((sio_read(sio_port, 0x30) & (1 << 0)) != (1 << 0)) {
+	if ((sio_read(sio_port, 0x30) & BIT(0)) != BIT(0)) {
 		msg_pinfo("W836xx hardware monitor disabled or does not exist.\n");
 		return 0;
 	}
@@ -695,17 +695,17 @@ static int it8707f_write_enable(uint8_t port)
 
 	/* Set bit 3 (GLB_REG_WE) of reg 0x23: Makes reg 0x24-0x2A rw */
 	tmp = sio_read(port, 0x23);
-	tmp |= (1 << 3);
+	tmp |= BIT(3);
 	sio_write(port, 0x23, tmp);
 
 	/* Set bit 2 (FLASH_WE) and bit 3 (FLASH_IF_EN) of reg 0x24 */
 	tmp = sio_read(port, 0x24);
-	tmp |= (1 << 2) | (1 << 3);
+	tmp |= BIT(2) | BIT(3);
 	sio_write(port, 0x24, tmp);
 
 	/* Clear bit 3 (GLB_REG_WE) of reg 0x23: Makes reg 0x24-0x2A ro */
 	tmp = sio_read(port, 0x23);
-	tmp &= ~(1 << 3);
+	tmp &= ~BIT(3);
 	sio_write(port, 0x23, tmp);
 
 	exit_conf_mode_ite(port);
@@ -1045,7 +1045,7 @@ static int board_ecs_geforce6100sm_m(struct board_cfg *cfg)
 	}
 
 	tmp = pci_read_byte(dev, 0xE0);
-	tmp &= ~(1 << 3);
+	tmp &= ~BIT(3);
 	pci_write_byte(dev, 0xE0, tmp);
 
 	return 0;
@@ -1348,7 +1348,7 @@ static int amd_sbxxx_gpio9_raise(struct board_cfg *cfg)
 	reg &= ~((uint32_t)1<<(8+5));
 	/* raise:
 	   GPIO9 output register is at bit 5 in 0xA8 */
-	reg |= (1<<5);
+	reg |= BIT(5);
 	pci_write_long(dev, 0xA8, reg);
 
 	return 0;
@@ -1593,7 +1593,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		/* ICH/ICH0 multiplexes 27/28 on the line set. */
 		if ((gpio == 28) &&
 		    ((dev->device_id == 0x2410) || (dev->device_id == 0x2420)))
-			tmp |= 1 << 27;
+			tmp |= BIT(27);
 		else
 			tmp |= 1 << gpio;
 		OUTL(tmp, base);
@@ -2010,11 +2010,11 @@ static int sis_gpio0_raise_and_w836xx_memw(struct board_cfg *cfg)
 
 	base = pci_read_word(dev, 0x74);
 	temp = INW(base + 0x68);
-	temp &= ~(1 << 0);		/* Make pin output? */
+	temp &= ~BIT(0);		/* Make pin output? */
 	OUTW(temp, base + 0x68);
 
 	temp = INW(base + 0x64);
-	temp |= (1 << 0);		/* Raise output? */
+	temp |= BIT(0);		/* Raise output? */
 	OUTW(temp, base + 0x64);
 
 	w836xx_memw_enable(0x2E);

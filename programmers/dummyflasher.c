@@ -268,9 +268,9 @@ static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg r
 			ro_bits = 0x84;
 			/* Once any of the lock bits (LB[1..3]) are set, they
 			   can't be unset. */
-			ro_bits |= data->emu_status[1] & (1 << 3);
-			ro_bits |= data->emu_status[1] & (1 << 4);
-			ro_bits |= data->emu_status[1] & (1 << 5);
+			ro_bits |= data->emu_status[1] & BIT(3);
+			ro_bits |= data->emu_status[1] & BIT(4);
+			ro_bits |= data->emu_status[1] & BIT(5);
 		} else if (reg == STATUS3) {
 			/* Four reserved bits. */
 			ro_bits = 0x1b;
@@ -290,10 +290,10 @@ static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg r
 			ro_bits = 0x80;
 			/* Once any of the lock bits (LB[0..3]) are set, they
 			   can't be unset. */
-			ro_bits |= data->emu_status[1] & (1 << 2);
-			ro_bits |= data->emu_status[1] & (1 << 3);
-			ro_bits |= data->emu_status[1] & (1 << 4);
-			ro_bits |= data->emu_status[1] & (1 << 5);
+			ro_bits |= data->emu_status[1] & BIT(2);
+			ro_bits |= data->emu_status[1] & BIT(3);
+			ro_bits |= data->emu_status[1] & BIT(4);
+			ro_bits |= data->emu_status[1] & BIT(5);
 		} else if (reg == STATUS3) {
 			/* Two reserved bits. */
 			ro_bits = 0x11;

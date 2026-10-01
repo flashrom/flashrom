@@ -163,10 +163,10 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	}
 
 	msg_cdbg2("  Status register is ");
-	if (tmp32 & (1 << 3)) {
+	if (tmp32 & BIT(3)) {
 		msg_cdbg2("volatile and writes to the status register have to "
 			  "be enabled with ");
-		if (tmp32 & (1 << 4)) {
+		if (tmp32 & BIT(4)) {
 			chip->feature_bits = FEATURE_WRSR_WREN;
 			msg_cdbg2("WREN (0x06).\n");
 		} else {
@@ -181,7 +181,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		}
 
 	msg_cdbg2("  Write chunk size is ");
-	if (tmp32 & (1 << 2)) {
+	if (tmp32 & BIT(2)) {
 		msg_cdbg2("at least 64 B.\n");
 		chip->page_size = 64;
 		chip->write = SPI_CHIP_WRITE256;
@@ -204,7 +204,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	tmp32 |= ((unsigned int)buf[(4 * 1) + 2]) << 16;
 	tmp32 |= ((unsigned int)buf[(4 * 1) + 3]) << 24;
 
-	if (tmp32 & (1 << 31)) {
+	if (tmp32 & BIT(31)) {
 		msg_cdbg("Flash chip size >= 4 Gb/512 MB not supported.\n");
 		return 1;
 	}
@@ -314,7 +314,7 @@ static int parse_rpmc_parameter_table(struct flashchip *const chip, const uint8_
 
 	chip->feature_bits |= FEATURE_FLASH_HARDENING;
 
-	chip->rpmc_ctx.busy_polling_method = (first_dword & (1 << 2)) >> 2;
+	chip->rpmc_ctx.busy_polling_method = (first_dword & BIT(2)) >> 2;
 	msg_cspew("Busy polling method: %u\n", chip->rpmc_ctx.busy_polling_method);
 
 	chip->rpmc_ctx.num_counters = ((first_dword & (0xf << 4)) >> 4) + 1;

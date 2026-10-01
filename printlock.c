@@ -35,8 +35,8 @@ static int regspace2_walk_unlockblocks(const struct flashctx *flash, const struc
 	return 0;
 }
 
-#define REG2_RWLOCK ((1 << 2) | (1 << 0))
-#define REG2_LOCKDOWN (1 << 1)
+#define REG2_RWLOCK (BIT(2) | BIT(0))
+#define REG2_LOCKDOWN BIT(1)
 #define REG2_MASK (REG2_RWLOCK | REG2_LOCKDOWN)
 
 static int printlock_regspace2_block(const struct flashctx *flash, chipaddr lockreg)

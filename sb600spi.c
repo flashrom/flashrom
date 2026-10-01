@@ -45,7 +45,7 @@ enum amd_chipset {
 
 #define SPI100_CMD_CODE_REG	0x45
 #define SPI100_CMD_TRIGGER_REG	0x47
-#define   SPI100_EXECUTE_CMD	(1 << 7)
+#define   SPI100_EXECUTE_CMD	BIT(7)
 
 struct sb600spi_data {
 	struct flashctx *flash;
@@ -538,7 +538,7 @@ static int handle_imc(const struct programmer_cfg *cfg, struct pci_dev *dev, enu
 	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50, Bolton: Misc_Reg: 80h-87h;
 	 * sb7xx, sp5100: PM_Reg: B0h-B1h) etc. */
 	uint8_t reg = pci_read_byte(dev, 0x40);
-	if ((reg & (1 << 7)) == 0) {
+	if ((reg & BIT(7)) == 0) {
 		msg_pdbg("IMC is not active.\n");
 		return 0;
 	}
@@ -764,8 +764,8 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	/* GPIO11/SPI_DO and GPIO12/SPI_DI status */
 	reg = pci_read_byte(smbus_dev, 0xAB);
 	reg &= 0xC0;
-	msg_pdbg("GPIO11 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_DO");
-	msg_pdbg("GPIO12 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_DI");
+	msg_pdbg("GPIO11 used for %s\n", (reg & BIT(6)) ? "GPIO" : "SPI_DO");
+	msg_pdbg("GPIO12 used for %s\n", (reg & BIT(7)) ? "GPIO" : "SPI_DI");
 	if (reg != 0x00) {
 		msg_pdbg("Not enabling SPI");
 		return 0;
@@ -773,8 +773,8 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	/* GPIO31/SPI_HOLD and GPIO32/SPI_CS status */
 	reg = pci_read_byte(smbus_dev, 0x83);
 	reg &= 0xC0;
-	msg_pdbg("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
-	msg_pdbg("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
+	msg_pdbg("GPIO31 used for %s\n", (reg & BIT(6)) ? "GPIO" : "SPI_HOLD");
+	msg_pdbg("GPIO32 used for %s\n", (reg & BIT(7)) ? "GPIO" : "SPI_CS");
 	/* SPI_HOLD is not used on all boards, filter it out. */
 	if ((reg & 0x80) != 0x00) {
 		msg_pdbg("Not enabling SPI");
@@ -783,7 +783,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	/* GPIO47/SPI_CLK status */
 	reg = pci_read_byte(smbus_dev, 0xA7);
 	reg &= 0x40;
-	msg_pdbg("GPIO47 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_CLK");
+	msg_pdbg("GPIO47 used for %s\n", (reg & BIT(6)) ? "GPIO" : "SPI_CLK");
 	if (reg != 0x00) {
 		msg_pdbg("Not enabling SPI");
 		return 0;

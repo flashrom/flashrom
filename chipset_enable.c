@@ -328,10 +328,10 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 
 	/* Tunnel Creek has a cache disable at bit 2 of the lowest BIOS_CNTL byte. */
 	if (ich_generation == CHIPSET_TUNNEL_CREEK)
-		wanted |= (1 << 2);
+		wanted |= BIT(2);
 
-	wanted |= (1 << 0); /* Set BIOS Write Enable */
-	wanted &= ~(1 << 1); /* Disable lock (futile) */
+	wanted |= BIT(0); /* Set BIOS Write Enable */
+	wanted &= ~BIT(1); /* Disable lock (futile) */
 
 	/* Only write the register if it's necessary */
 	if (wanted != old) {
@@ -346,8 +346,8 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 		new = old;
 
 	msg_pdbg("\nBIOS_CNTL = 0x%02x: ", new);
-	msg_pdbg("BIOS Lock Enable: %sabled, ", (new & (1 << 1)) ? "en" : "dis");
-	msg_pdbg("BIOS Write Enable: %sabled\n", (new & (1 << 0)) ? "en" : "dis");
+	msg_pdbg("BIOS Lock Enable: %sabled, ", (new & BIT(1)) ? "en" : "dis");
+	msg_pdbg("BIOS Write Enable: %sabled\n", (new & BIT(0)) ? "en" : "dis");
 	if (new & (1 << smm_bwp_bit))
 		msg_pwarn("Warning: BIOS region SMM protection is enabled!\n");
 
@@ -356,7 +356,7 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 			  "New value is 0x%02x.\n", bios_cntl, old, wanted, new);
 
 	/* Return an error if we could not set the write enable only. */
-	if (!(new & (1 << 0)))
+	if (!(new & BIT(0)))
 		return -1;
 
 	return 0;
@@ -1301,13 +1301,13 @@ static int enable_flash_cs5530(const struct programmer_cfg *cfg, struct pci_dev 
 #define CS5530_RESET_CONTROL_REG	0x44	/* F0 index 0x44 */
 #define CS5530_USB_SHADOW_REG		0x43	/* F0 index 0x43 */
 
-#define LOWER_ROM_ADDRESS_RANGE		(1 << 0)
-#define ROM_WRITE_ENABLE		(1 << 1)
-#define UPPER_ROM_ADDRESS_RANGE		(1 << 2)
-#define BIOS_ROM_POSITIVE_DECODE	(1 << 5)
-#define CS5530_ISA_MASTER		(1 << 7)
-#define CS5530_ENABLE_SA2320		(1 << 2)
-#define CS5530_ENABLE_SA20		(1 << 6)
+#define LOWER_ROM_ADDRESS_RANGE		BIT(0)
+#define ROM_WRITE_ENABLE		BIT(1)
+#define UPPER_ROM_ADDRESS_RANGE		BIT(2)
+#define BIOS_ROM_POSITIVE_DECODE	BIT(5)
+#define CS5530_ISA_MASTER		BIT(7)
+#define CS5530_ENABLE_SA2320		BIT(2)
+#define CS5530_ENABLE_SA20		BIT(6)
 
 	internal_buses_supported &= BUS_PARALLEL;
 	/* Decode 0x000E0000-0x000FFFFF (128 kB), not just 64 kB, and
@@ -1757,8 +1757,8 @@ static int enable_flash_mcp6x_7x(const struct programmer_cfg *cfg, struct pci_de
 
 	/* Force enable SPI and disable LPC? Not a good idea. */
 #if 0
-	val |= (1 << 6);
-	val &= ~(1 << 5);
+	val |= BIT(6);
+	val &= ~BIT(5);
 	rpci_write_byte(dev, 0x8a, val);
 #endif
 
@@ -1782,7 +1782,7 @@ static int enable_flash_ht1000(const struct programmer_cfg *cfg, struct pci_dev 
 	rpci_write_byte(dev, 0x41, val);
 
 	val = pci_read_byte(dev, 0x43);
-	val |= (1 << 4);
+	val |= BIT(4);
 	rpci_write_byte(dev, 0x43, val);
 
 	return 0;
@@ -1821,7 +1821,7 @@ static int get_flashbase_sc520(const struct programmer_cfg *cfg, struct pci_dev 
 	 *    PARx[25] = 0b --> flashbase[29:12] = PARx[17:0]
 	 */
 	if (bootcs_found) {
-		if (parx & (1 << 25)) {
+		if (parx & BIT(25)) {
 			parx &= (1 << 14) - 1; /* Mask [13:0] */
 			flashbase = parx << 16;
 		} else {

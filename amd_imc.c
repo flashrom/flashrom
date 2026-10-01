@@ -84,7 +84,7 @@ static int imc_send_cmd(struct pci_dev *dev, uint8_t cmd)
 	uint16_t mbox_port;
 
 	/* IntegratedEcPresent? */
-	if (!(pci_read_byte(dev, 0x40) & (1 << 7)))
+	if (!(pci_read_byte(dev, 0x40) & BIT(7)))
 		return -1;
 
 	sio_port = get_sio_port(dev);

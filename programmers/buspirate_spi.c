@@ -677,15 +677,15 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	/* Initial setup (SPI peripherals config): Enable power, CS high */
 	bp_commbuf[0] = 0x40 | 0x09;
 	if (pullup) {
-		bp_commbuf[0] |= (1 << 2);
+		bp_commbuf[0] |= BIT(2);
 		msg_pdbg("Enabling pull-up resistors.\n");
 	}
 	if (psu) {
-		bp_commbuf[0] |= (1 << 3);
+		bp_commbuf[0] |= BIT(3);
 		msg_pdbg("Enabling PSUs.\n");
 	}
 	if (aux) {
-		bp_commbuf[0] |= (1 << 1);
+		bp_commbuf[0] |= BIT(1);
 		msg_pdbg("Driving AUX high.\n");
 	} else {
 		msg_pdbg("Driving AUX low.\n");
@@ -713,7 +713,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	/* Set SPI config: output type, idle, clock edge, sample */
 	bp_commbuf[0] = 0x80 | 0xa;
 	if (pullup || hiz) {
-		bp_commbuf[0] &= ~(1 << 3);
+		bp_commbuf[0] &= ~BIT(3);
 		msg_pdbg("Pull-ups or HiZ enabled, so using HiZ pin output! (Open-Drain mode)\n");
 	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);

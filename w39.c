@@ -35,10 +35,10 @@ static uint8_t w39_idmode_readb(struct flashctx *flash, unsigned int offset)
 static int printlock_w39_tblwp(uint8_t lock)
 {
 	msg_cdbg("Hardware bootblock locking (#TBL) is %sactive.\n",
-		 (lock & (1 << 2)) ? "" : "not ");
+		 (lock & BIT(2)) ? "" : "not ");
 	msg_cdbg("Hardware remaining chip locking (#WP) is %sactive..\n",
-		(lock & (1 << 3)) ? "" : "not ");
-	if (lock & ((1 << 2) | (1 << 3)))
+		(lock & BIT(3)) ? "" : "not ");
+	if (lock & (BIT(2) | BIT(3)))
 		return -1;
 
 	return 0;
@@ -56,10 +56,10 @@ static int printlock_w39_single_bootblock(uint8_t lock, uint16_t kB)
 static int printlock_w39_bootblock_64k16k(uint8_t lock)
 {
 	msg_cdbg("Software 64 kB bootblock locking is %sactive.\n",
-		 (lock & (1 << 0)) ? "" : "not ");
+		 (lock & BIT(0)) ? "" : "not ");
 	msg_cdbg("Software 16 kB bootblock locking is %sactive.\n",
-		 (lock & (1 << 1)) ? "" : "not ");
-	if (lock & ((1 << 1) | (1 << 0)))
+		 (lock & BIT(1)) ? "" : "not ");
+	if (lock & (BIT(1) | BIT(0)))
 		return -1;
 
 	return 0;

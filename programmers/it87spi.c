@@ -363,25 +363,25 @@ static uint16_t it87spi_probe(const struct programmer_cfg *cfg, uint16_t port)
 		return 0;
 	}
 	msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
-		 0xFFFE0000, 0xFFFFFFFF, (tmp & 1 << 1) ? "en" : "dis");
+		 0xFFFE0000, 0xFFFFFFFF, (tmp & BIT(1)) ? "en" : "dis");
 	msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
-		 0x000E0000, 0x000FFFFF, (tmp & 1 << 1) ? "en" : "dis");
+		 0x000E0000, 0x000FFFFF, (tmp & BIT(1)) ? "en" : "dis");
 	msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
-		 0xFFEE0000, 0xFFEFFFFF, (tmp & 1 << 2) ? "en" : "dis");
+		 0xFFEE0000, 0xFFEFFFFF, (tmp & BIT(2)) ? "en" : "dis");
 	msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
-		 0xFFF80000, 0xFFFEFFFF, (tmp & 1 << 3) ? "en" : "dis");
+		 0xFFF80000, 0xFFFEFFFF, (tmp & BIT(3)) ? "en" : "dis");
 	msg_pdbg("LPC write to serial flash %sabled\n",
-		 (tmp & 1 << 4) ? "en" : "dis");
+		 (tmp & BIT(4)) ? "en" : "dis");
 	/* The LPC->SPI force write enable below only makes sense for
 	 * non-programmer mode.
 	 */
 	/* If any serial flash segment is enabled, enable writing. */
-	if ((tmp & 0xe) && (!(tmp & 1 << 4))) {
+	if ((tmp & 0xe) && (!(tmp & BIT(4)))) {
 		msg_pdbg("Enabling LPC write to serial flash\n");
-		tmp |= 1 << 4;
+		tmp |= BIT(4);
 		sio_write(port, 0x24, tmp);
 	}
-	msg_pdbg("Serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
+	msg_pdbg("Serial flash pin %i\n", (tmp & BIT(5)) ? 87 : 29);
 	/* LDN 0x7, reg 0x64/0x65 */
 	sio_write(port, 0x07, 0x7);
 	flashport = sio_read(port, 0x64) << 8;

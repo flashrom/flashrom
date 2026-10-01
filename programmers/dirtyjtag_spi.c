@@ -53,12 +53,12 @@ enum dirtyjtag_command_identifier {
 };
 
 enum dirtyjtag_signal_identifier {
-	SIG_TCK = 1 << 1,
-	SIG_TDI = 1 << 2,
-	SIG_TDO = 1 << 3,
-	SIG_TMS = 1 << 4,
-	SIG_TRST = 1 << 5,
-	SIG_SRST = 1 << 6
+	SIG_TCK = BIT(1),
+	SIG_TDI = BIT(2),
+	SIG_TDO = BIT(3),
+	SIG_TMS = BIT(4),
+	SIG_TRST = BIT(5),
+	SIG_SRST = BIT(6)
 };
 
 static int dirtyjtag_send(struct dirtyjtag_spi_data *djtag_data, uint8_t *data, size_t len)

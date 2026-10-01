@@ -45,10 +45,10 @@
 #define CMD_RST		0x99
 
 #define CR1NV_ADDR	0x000002
-#define CR1_BPNV_O	(1 << 3)
-#define CR1_TBPROT_O	(1 << 5)
+#define CR1_BPNV_O	BIT(3)
+#define CR1_TBPROT_O	BIT(5)
 #define CR3NV_ADDR	0x000004
-#define CR3NV_20H_NV	(1 << 3)
+#define CR3NV_20H_NV	BIT(3)
 
 /* See "Embedded Algorithm Performance Tables for additional timing specs. */
 #define T_W		145 * 1000	/* NV register write time (145ms) */
@@ -145,7 +145,7 @@ static int s25f_poll_status(const struct flashctx *flash)
 			return -1;
 		}
 
-		if (tmp & (1 << 6)) {
+		if (tmp & BIT(6)) {
 			msg_cerr("Programming error occurred\n");
 			s25f_legacy_software_reset(flash);
 			return -1;

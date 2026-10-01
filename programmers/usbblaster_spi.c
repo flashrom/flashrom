@@ -45,12 +45,12 @@ struct usbblaster_spi_data {
 };
 
 // command bytes
-#define BIT_BYTE	(1<<7)	// byte mode (rather than bitbang)
-#define BIT_READ	(1<<6)	// read request
-#define BIT_LED		(1<<5)
-#define BIT_CS		(1<<3)
-#define BIT_TMS		(1<<1)
-#define BIT_CLK		(1<<0)
+#define BIT_BYTE	BIT(7)	// byte mode (rather than bitbang)
+#define BIT_READ	BIT(6)	// read request
+#define BIT_LED		BIT(5)
+#define BIT_CS		BIT(3)
+#define BIT_TMS		BIT(1)
+#define BIT_CLK		BIT(0)
 
 #define BUF_SIZE	64
 

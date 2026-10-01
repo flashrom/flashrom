@@ -54,10 +54,10 @@ static void atavia_prettyprint_access(uint8_t access)
 	uint8_t size = access & BROM_SIZE_MASK;
 
 	msg_pspew("Accessing byte(s):%s%s%s%s\n",
-		  ((bmask & (1<<3)) == 0) ? " 3" : "",
-		  ((bmask & (1<<2)) == 0) ? " 2" : "",
-		  ((bmask & (1<<1)) == 0) ? " 1" : "",
-		  ((bmask & (1<<0)) == 0) ? " 0" : "");
+		  ((bmask & BIT(3)) == 0) ? " 3" : "",
+		  ((bmask & BIT(2)) == 0) ? " 2" : "",
+		  ((bmask & BIT(1)) == 0) ? " 1" : "",
+		  ((bmask & BIT(0)) == 0) ? " 0" : "");
 	if (size == BROM_SIZE_0K) {
 		msg_pspew("No ROM device found.\n");
 	} else

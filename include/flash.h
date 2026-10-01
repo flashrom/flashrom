@@ -56,11 +56,11 @@ void programmer_delay(const struct flashrom_flashctx *flash, unsigned int usecs)
 
 enum chipbustype {
 	BUS_NONE	= 0,
-	BUS_PARALLEL	= 1 << 0,
-	BUS_LPC		= 1 << 1,
-	BUS_FWH		= 1 << 2,
-	BUS_SPI		= 1 << 3,
-	BUS_PROG	= 1 << 4,
+	BUS_PARALLEL	= BIT(0),
+	BUS_LPC		= BIT(1),
+	BUS_FWH		= BIT(2),
+	BUS_SPI		= BIT(3),
+	BUS_PROG	= BIT(4),
 	BUS_NONSPI	= BUS_PARALLEL | BUS_LPC | BUS_FWH,
 };
 
@@ -100,32 +100,32 @@ enum write_granularity {
 #define MAX_CHIP_RESTORE_FUNCTIONS 4
 
 /* Feature bits used for non-SPI only */
-#define FEATURE_REGISTERMAP	(1 << 0)
+#define FEATURE_REGISTERMAP	BIT(0)
 #define FEATURE_LONG_RESET	(0 << 4)
-#define FEATURE_SHORT_RESET	(1 << 4)
+#define FEATURE_SHORT_RESET	BIT(4)
 #define FEATURE_EITHER_RESET	FEATURE_LONG_RESET
 #define FEATURE_RESET_MASK	(FEATURE_LONG_RESET | FEATURE_SHORT_RESET)
 #define FEATURE_ADDR_FULL	(0 << 2)
 #define FEATURE_ADDR_MASK	(3 << 2)
-#define FEATURE_ADDR_2AA	(1 << 2)
+#define FEATURE_ADDR_2AA	BIT(2)
 #define FEATURE_ADDR_AAA	(2 << 2)
-#define FEATURE_ADDR_SHIFTED	(1 << 5)
+#define FEATURE_ADDR_SHIFTED	BIT(5)
 /* Feature bits used for SPI only */
-#define FEATURE_WRSR_EWSR	(1 << 6)
-#define FEATURE_WRSR_WREN	(1 << 7)
+#define FEATURE_WRSR_EWSR	BIT(6)
+#define FEATURE_WRSR_WREN	BIT(7)
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
-#define FEATURE_OTP		(1 << 8)
-#define FEATURE_QPI		(1 << 9)
-#define FEATURE_4BA_ENTER	(1 << 10) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 w/o WREN */
-#define FEATURE_4BA_ENTER_WREN	(1 << 11) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 after WREN */
-#define FEATURE_4BA_ENTER_EAR7	(1 << 12) /**< Can enter/exit 4BA mode by setting bit7 of the ext addr reg */
-#define FEATURE_4BA_EAR_C5C8	(1 << 13) /**< Regular 3-byte operations can be used by writing the most
+#define FEATURE_OTP		BIT(8)
+#define FEATURE_QPI		BIT(9)
+#define FEATURE_4BA_ENTER	BIT(10) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 w/o WREN */
+#define FEATURE_4BA_ENTER_WREN	BIT(11) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 after WREN */
+#define FEATURE_4BA_ENTER_EAR7	BIT(12) /**< Can enter/exit 4BA mode by setting bit7 of the ext addr reg */
+#define FEATURE_4BA_EAR_C5C8	BIT(13) /**< Regular 3-byte operations can be used by writing the most
 					       significant address byte into an extended address register
 					       (using 0xc5/0xc8 instructions). */
-#define FEATURE_4BA_EAR_1716	(1 << 14) /**< Like FEATURE_4BA_EAR_C5C8 but with 0x17/0x16 instructions. */
-#define FEATURE_4BA_READ	(1 << 15) /**< Native 4BA read instruction (0x13) is supported. */
-#define FEATURE_4BA_FAST_READ	(1 << 16) /**< Native 4BA fast read instruction (0x0c) is supported. */
-#define FEATURE_4BA_WRITE	(1 << 17) /**< Native 4BA byte program (0x12) is supported. */
+#define FEATURE_4BA_EAR_1716	BIT(14) /**< Like FEATURE_4BA_EAR_C5C8 but with 0x17/0x16 instructions. */
+#define FEATURE_4BA_READ	BIT(15) /**< Native 4BA read instruction (0x13) is supported. */
+#define FEATURE_4BA_FAST_READ	BIT(16) /**< Native 4BA fast read instruction (0x0c) is supported. */
+#define FEATURE_4BA_WRITE	BIT(17) /**< Native 4BA byte program (0x12) is supported. */
 /* 4BA Shorthands */
 #define FEATURE_4BA_EAR_ANY	(FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_EAR_1716)
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
@@ -136,7 +136,7 @@ enum write_granularity {
  * Most flash chips are erased to ones and programmed to zeros. However, some
  * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.
  */
-#define FEATURE_ERASED_ZERO	(1 << 18)
+#define FEATURE_ERASED_ZERO	BIT(18)
 /*
  * Feature indicates that the chip does not require erase before writing:
  * write operations can set any bit to any value without first doing an erase,
@@ -145,40 +145,40 @@ enum write_granularity {
  * EEPROMs usually behave this way (compare to Flash, which requires erase),
  * for example the ST M95M02.
  */
-#define FEATURE_NO_ERASE	(1 << 19)
+#define FEATURE_NO_ERASE	BIT(19)
 
-#define FEATURE_WRSR_EXT2	(1 << 20)
-#define FEATURE_WRSR2		(1 << 21)
-#define FEATURE_WRSR_EXT3	((1 << 22) | FEATURE_WRSR_EXT2)
-#define FEATURE_WRSR3		(1 << 23)
+#define FEATURE_WRSR_EXT2	BIT(20)
+#define FEATURE_WRSR2		BIT(21)
+#define FEATURE_WRSR_EXT3	(BIT(22) | FEATURE_WRSR_EXT2)
+#define FEATURE_WRSR3		BIT(23)
 
 /*
  * Whether chip has security register (RDSCUR/WRSCUR commands).
  * Not to be confused with "secure registers" of OTP.
  */
-#define FEATURE_SCUR		(1 << 24)
+#define FEATURE_SCUR		BIT(24)
 
 /* Whether chip has configuration register (RDCR/WRSR_EXT2 commands) */
-#define FEATURE_CFGR	    (1 << 25)
+#define FEATURE_CFGR	    BIT(25)
 
 /*
  * Whether the chip supports serial flash hardening specified in JESD260
  */
-#define FEATURE_FLASH_HARDENING (1 << 26)
+#define FEATURE_FLASH_HARDENING BIT(26)
 
  /*
  * Each die of the multi-die chip has its own status register.
  * On such chips global chip commands (C7h/60h-Chip Erase), require
  * polling SR on each die separately to assure completion.
  */
-#define FEATURE_STATUS_PER_DIE	(1 << 27)
+#define FEATURE_STATUS_PER_DIE	BIT(27)
 
 /*
  * Chip uses a 16-bit (2-byte) address for read/program instructions instead of
  * the default 24-bit (3-byte) address. Used by small SPI EEPROMs such as the
  * ST M95320 (chips up to 64 KiB in the M95XXX family).
  */
-#define FEATURE_ADDR_2BYTE	(1 << 28)
+#define FEATURE_ADDR_2BYTE	BIT(28)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)

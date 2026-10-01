@@ -224,7 +224,7 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	case JEDEC_WREN: return 0;
 	/* WRSR requires BIT6 && BIT5 set. */
 	case JEDEC_WRSR:
-		ctrl_reg_val |= (1 << 5);
+		ctrl_reg_val |= BIT(5);
 		ctrl_reg_val |= (2 << 5);
 		break;
 	/* Erasures require BIT7 && BIT5 set. */
@@ -236,7 +236,7 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	case JEDEC_BE_D8:
 	case JEDEC_BE_D7:
 	case JEDEC_SE:
-		ctrl_reg_val |= (1 << 5);
+		ctrl_reg_val |= BIT(5);
 		ctrl_reg_val |= (4 << 5);
 		break;
 	default:

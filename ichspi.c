@@ -2065,7 +2065,7 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 		offs = 0x60 + (i * 4);
 		msg_pdbg("0x%02x: 0x%08"PRIx32" (PBR%u)\n", offs, mmio_readl(spibar + offs), i);
 	}
-	if (mmio_readw(spibar) & (1 << 15)) {
+	if (mmio_readw(spibar) & BIT(15)) {
 		msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
 		ichspi_lock = true;
 	}
@@ -2527,7 +2527,7 @@ int via_init_spi(uint32_t mmio_base)
 		msg_pdbg("0x%02x: 0x%08"PRIx32" (PBR%d)\n", offs, mmio_readl(ich_spibar + offs), i);
 	}
 	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n", mmio_readw(ich_spibar + 0x6c));
-	if (mmio_readw(ich_spibar) & (1 << 15)) {
+	if (mmio_readw(ich_spibar) & BIT(15)) {
 		msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
 		ichspi_lock = true;
 	}

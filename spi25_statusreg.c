@@ -378,7 +378,7 @@ static int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flas
  * protected/locked by bit #7. Useful when bits 4-5 may be non-0). */
 static int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x0C, BIT(7), 0, 0xFF);
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x1C (BP0-2) and
@@ -386,21 +386,21 @@ static int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
  * non-0). */
 static int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x1C, BIT(7), 0, 0xFF);
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C (BP0-3) and
  * protected/locked by bit #7. */
 static int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x3C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x3C, BIT(7), 0, 0xFF);
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x7C (BP0-4) and
  * protected/locked by bit #7. */
 static int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x7C, BIT(7), 0, 0xFF);
 }
 
 static void spi_prettyprint_status_register_hex(uint8_t status)
@@ -412,23 +412,23 @@ static void spi_prettyprint_status_register_hex(uint8_t status)
 static void spi_prettyprint_status_register_srwd(uint8_t status)
 {
 	msg_cdbg("Chip status register: Status Register Write Disable (SRWD, SRP, ...) is %sset\n",
-		 (status & (1 << 7)) ? "" : "not ");
+		 (status & BIT(7)) ? "" : "not ");
 }
 
 /* Common highest bit: Block Protect Write Disable (BPL). */
 static void spi_prettyprint_status_register_bpl(uint8_t status)
 {
 	msg_cdbg("Chip status register: Block Protect Write Disable (BPL) is %sset\n",
-		 (status & (1 << 7)) ? "" : "not ");
+		 (status & BIT(7)) ? "" : "not ");
 }
 
 /* Common lowest 2 bits: WEL and WIP. */
 static void spi_prettyprint_status_register_welwip(uint8_t status)
 {
 	msg_cdbg("Chip status register: Write Enable Latch (WEL) is %sset\n",
-		 (status & (1 << 1)) ? "" : "not ");
+		 (status & BIT(1)) ? "" : "not ");
 	msg_cdbg("Chip status register: Write In Progress (WIP/BUSY) is %sset\n",
-		 (status & (1 << 0)) ? "" : "not ");
+		 (status & BIT(0)) ? "" : "not ");
 }
 
 /* Common block protection (BP) bits. */
@@ -437,23 +437,23 @@ static void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 	switch (bp) {
 	case 4:
 		msg_cdbg("Chip status register: Block Protect 4 (BP4) is %sset\n",
-			 (status & (1 << 6)) ? "" : "not ");
+			 (status & BIT(6)) ? "" : "not ");
 		/* Fall through. */
 	case 3:
 		msg_cdbg("Chip status register: Block Protect 3 (BP3) is %sset\n",
-			 (status & (1 << 5)) ? "" : "not ");
+			 (status & BIT(5)) ? "" : "not ");
 		/* Fall through. */
 	case 2:
 		msg_cdbg("Chip status register: Block Protect 2 (BP2) is %sset\n",
-			 (status & (1 << 4)) ? "" : "not ");
+			 (status & BIT(4)) ? "" : "not ");
 		/* Fall through. */
 	case 1:
 		msg_cdbg("Chip status register: Block Protect 1 (BP1) is %sset\n",
-			 (status & (1 << 3)) ? "" : "not ");
+			 (status & BIT(3)) ? "" : "not ");
 		/* Fall through. */
 	case 0:
 		msg_cdbg("Chip status register: Block Protect 0 (BP0) is %sset\n",
-			 (status & (1 << 2)) ? "" : "not ");
+			 (status & BIT(2)) ? "" : "not ");
 	}
 }
 
@@ -586,7 +586,7 @@ static int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
 
 	spi_prettyprint_status_register_bpl(status);
 	spi_prettyprint_status_register_bit(status, 6);
-	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & BIT(5)) ? "bottom" : "top");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
@@ -601,8 +601,8 @@ static int spi_prettyprint_status_register_srwd_sec_tb_bp2_welwip(struct flashct
 	spi_prettyprint_status_register_hex(status);
 
 	spi_prettyprint_status_register_srwd(status);
-	msg_cdbg("Chip status register: Sector Protect Size (SEC) is %i KB\n", (status & (1 << 6)) ? 4 : 64);
-	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+	msg_cdbg("Chip status register: Sector Protect Size (SEC) is %i KB\n", (status & BIT(6)) ? 4 : 64);
+	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & BIT(5)) ? "bottom" : "top");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	msg_cdbg("Chip status register 2 is NOT decoded!\n");
@@ -614,21 +614,21 @@ static int spi_prettyprint_status_register_srwd_sec_tb_bp2_welwip(struct flashct
 static void spi_prettyprint_status_register_atmel_at25_wpen(uint8_t status)
 {
 	msg_cdbg("Chip status register: Write Protect Enable (WPEN) is %sset\n",
-		 (status & (1 << 7)) ? "" : "not ");
+		 (status & BIT(7)) ? "" : "not ");
 }
 
 static void spi_prettyprint_status_register_atmel_at25_srpl(uint8_t status)
 {
 	msg_cdbg("Chip status register: Sector Protection Register Lock (SRPL) is %sset\n",
-		 (status & (1 << 7)) ? "" : "not ");
+		 (status & BIT(7)) ? "" : "not ");
 }
 
 static void spi_prettyprint_status_register_atmel_at25_epewpp(uint8_t status)
 {
 	msg_cdbg("Chip status register: Erase/Program Error (EPE) is %sset\n",
-		 (status & (1 << 5)) ? "" : "not ");
+		 (status & BIT(5)) ? "" : "not ");
 	msg_cdbg("Chip status register: WP# pin (WPP) is %sasserted\n",
-		 (status & (1 << 4)) ? "not " : "");
+		 (status & BIT(4)) ? "not " : "");
 }
 
 static void spi_prettyprint_status_register_atmel_at25_swp(uint8_t status)
@@ -759,14 +759,14 @@ static int spi_prettyprint_status_register_at25fs010(struct flashctx *flash)
 
 	spi_prettyprint_status_register_atmel_at25_wpen(status);
 	msg_cdbg("Chip status register: Bit 6 / Block Protect 4 (BP4) is "
-		 "%sset\n", (status & (1 << 6)) ? "" : "not ");
+		 "%sset\n", (status & BIT(6)) ? "" : "not ");
 	msg_cdbg("Chip status register: Bit 5 / Block Protect 3 (BP3) is "
-		 "%sset\n", (status & (1 << 5)) ? "" : "not ");
+		 "%sset\n", (status & BIT(5)) ? "" : "not ");
 	spi_prettyprint_status_register_bit(status, 4);
 	msg_cdbg("Chip status register: Bit 3 / Block Protect 1 (BP1) is "
-		 "%sset\n", (status & (1 << 3)) ? "" : "not ");
+		 "%sset\n", (status & BIT(3)) ? "" : "not ");
 	msg_cdbg("Chip status register: Bit 2 / Block Protect 0 (BP0) is "
-		 "%sset\n", (status & (1 << 2)) ? "" : "not ");
+		 "%sset\n", (status & BIT(2)) ? "" : "not ");
 	/* FIXME: Pretty-print detailed sector protection status. */
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
@@ -797,7 +797,7 @@ static int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
 
 	spi_prettyprint_status_register_atmel_at25_srpl(status);
 	msg_cdbg("Chip status register: Sequential Program Mode Status (SPM) is %sset\n",
-		 (status & (1 << 6)) ? "" : "not ");
+		 (status & BIT(6)) ? "" : "not ");
 	spi_prettyprint_status_register_atmel_at25_epewpp(status);
 	spi_prettyprint_status_register_atmel_at25_swp(status);
 	spi_prettyprint_status_register_welwip(status);
@@ -811,7 +811,7 @@ static int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
  * Affected are all known Atmel chips matched by AT2[56]D[FLQ]..1A? but the AT26DF041. */
 static int spi_disable_blockprotect_at2x_global_unprotect(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 1 << 4, 0x00);
+	return spi_disable_blockprotect_generic(flash, 0x0C, BIT(7), BIT(4), 0x00);
 }
 
 static int spi_disable_blockprotect_at2x_global_unprotect_sec(struct flashctx *flash)
@@ -823,27 +823,27 @@ static int spi_disable_blockprotect_at2x_global_unprotect_sec(struct flashctx *f
 
 static int spi_disable_blockprotect_at25f(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x0C, BIT(7), 0, 0xFF);
 }
 
 static int spi_disable_blockprotect_at25f512a(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x04, BIT(7), 0, 0xFF);
 }
 
 static int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 1 << 4, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x04, BIT(7), BIT(4), 0xFF);
 }
 
 static int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x6C, BIT(7), 0, 0xFF);
  }
 
 static int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x7C, BIT(7), 0, 0xFF);
 }
 
 /* === Eon === */
@@ -857,7 +857,7 @@ static int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 	spi_prettyprint_status_register_hex(status);
 
 	spi_prettyprint_status_register_srwd(status);
-	msg_cdbg("Chip status register: WP# disable (WPDIS) is %sabled\n", (status & (1 << 6)) ? "en " : "dis");
+	msg_cdbg("Chip status register: WP# disable (WPDIS) is %sabled\n", (status & BIT(6)) ? "en " : "dis");
 	spi_prettyprint_status_register_bp(status, 3);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
@@ -867,7 +867,7 @@ static int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 
 static int spi_disable_blockprotect_n25q(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x5C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_generic(flash, 0x5C, BIT(7), 0, 0xFF);
 }
 
 static int spi_prettyprint_status_register_n25q(struct flashctx *flash)
@@ -883,8 +883,8 @@ static int spi_prettyprint_status_register_n25q(struct flashctx *flash)
 		spi_prettyprint_status_register_bit(status, 6);
 	else
 		msg_cdbg("Chip status register: Block Protect 3 (BP3) is %sset\n",
-			 (status & (1 << 6)) ? "" : "not ");
-	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+			 (status & BIT(6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & BIT(5)) ? "bottom" : "top");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
@@ -949,9 +949,9 @@ static int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
 
 	spi_prettyprint_status_register_srwd(status);
 	msg_cdbg("Chip status register: Program Fail Flag (P_FAIL) is %sset\n",
-		 (status & (1 << 6)) ? "" : "not ");
+		 (status & BIT(6)) ? "" : "not ");
 	msg_cdbg("Chip status register: Erase Fail Flag (E_FAIL) is %sset\n",
-		 (status & (1 << 5)) ? "" : "not ");
+		 (status & BIT(5)) ? "" : "not ");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 
@@ -973,10 +973,10 @@ static int spi_prettyprint_status_register_bp2_ep_srwd_sr2(struct flashctx *flas
 		return ret;
 
 	msg_cdbg("Chip status register 2 is 0x%02x.\n", status);
-	msg_cdbg("Chip status register 2: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
-	msg_cdbg("Chip status register 2: BPNV is %s\n", (status & (1 << 3)) ? "volatitle" : "non-volatile");
-	msg_cdbg("Chip status register 2: QUAD is %s\n", (status & (1 << 1)) ? "Quad" : "dual or serial");
-	msg_cdbg("Chip status register 2: freeze is %s\n", (status & (1 << 0)) ? "locked" : "unlocked");
+	msg_cdbg("Chip status register 2: Top/Bottom (TB) is %s\n", (status & BIT(5)) ? "bottom" : "top");
+	msg_cdbg("Chip status register 2: BPNV is %s\n", (status & BIT(3)) ? "volatitle" : "non-volatile");
+	msg_cdbg("Chip status register 2: QUAD is %s\n", (status & BIT(1)) ? "Quad" : "dual or serial");
+	msg_cdbg("Chip status register 2: freeze is %s\n", (status & BIT(0)) ? "locked" : "unlocked");
 
 	return 0;
 }
@@ -989,7 +989,7 @@ static void spi_prettyprint_status_register_sst25_common(uint8_t status)
 
 	spi_prettyprint_status_register_bpl(status);
 	msg_cdbg("Chip status register: Auto Address Increment Programming (AAI) is %sset\n",
-		 (status & (1 << 6)) ? "" : "not ");
+		 (status & BIT(6)) ? "" : "not ");
 	spi_prettyprint_status_register_bp(status, 3);
 	spi_prettyprint_status_register_welwip(status);
 }

@@ -259,7 +259,7 @@ enum rpmc_result rpmc_write_root_key(struct flashrom_flashctx *flash,
 	if (ret != RPMC_SUCCESS)
 		return ret;
 
-	if (status & (1 << 1)) {
+	if (status & BIT(1)) {
 		return RPMC_ERROR_ROOT_KEY_OVERWRITE;
 	} else if (status != 0x80) {
 		// Incorrect payload size received or we have an unexpected bit set
@@ -302,9 +302,9 @@ enum rpmc_result rpmc_update_hmac_key(struct flashrom_flashctx *flash,
 	if (ret != RPMC_SUCCESS)
 		return ret;
 
-	if (status & (1 << 1)) {
+	if (status & BIT(1)) {
 		return RPMC_ERROR_COUNTER_UNINITIALIZED;
-	} else if (status & (1 << 2)) {
+	} else if (status & BIT(2)) {
 		// Counter address out of range or incorrect payload size received
 		// also possible but we check those in the code
 		return RPMC_ERROR_WRONG_SIGNATURE;
@@ -350,11 +350,11 @@ enum rpmc_result rpmc_increment_counter(struct flashrom_flashctx *flash,
 	if (ret != RPMC_SUCCESS)
 		return ret;
 
-	if (status & (1 << 4)) {
+	if (status & BIT(4)) {
 		return RPMC_ERROR_COUNTER_DATA_MISMATCH;
-	} else if (status & (1 << 3)) {
+	} else if (status & BIT(3)) {
 		return RPMC_ERROR_HMAC_KEY_REGISTER_UNINITIALIZED;
-	} else if (status & (1 << 2)) {
+	} else if (status & BIT(2)) {
 		// Counter address out of range or incorrect payload size received
 		// also possible but we check those in the code
 		return RPMC_ERROR_WRONG_SIGNATURE;
@@ -419,9 +419,9 @@ enum rpmc_result rpmc_get_monotonic_counter(struct flashrom_flashctx *flash,
 	if (!(ret == RPMC_ERROR_TAG_MISMATCH || ret == RPMC_ERROR_SIGNATURE_MISMATCH || ret == RPMC_SUCCESS))
 		return ret;
 
-	if (status.status & (1 << 3)) {
+	if (status.status & BIT(3)) {
 		return RPMC_ERROR_HMAC_KEY_REGISTER_UNINITIALIZED;
-	} else if (status.status & (1 << 2)) {
+	} else if (status.status & BIT(2)) {
 		// Counter address out of range or incorrect payload size received
 		// also possible but we check those in the code
 		return RPMC_ERROR_WRONG_SIGNATURE;
