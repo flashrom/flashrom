@@ -416,28 +416,129 @@ int serialport_shutdown(void *data)
 	return 0;
 }
 
-int serialport_write(const unsigned char *buf, unsigned int writecnt)
+/* Reads up to readcnt bytes from the serial port into buf. The amount of bytes
+ * that could actually be read is stored in actual, which may be zero if the
+ * port had nothing to offer. Returns 0 on success and 1 on error. */
+static int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual)
 {
 #if IS_WINDOWS
-	DWORD tmp = 0;
+	DWORD rv;
+	if (!ReadFile(serialport_fd, buf, readcnt, &rv, NULL)) {
+		msg_perr_strerror("Serial port read error: ");
+		return 1;
+	}
 #else
-	ssize_t tmp = 0;
+	ssize_t rv = read(serialport_fd, buf, readcnt);
+	if (rv < 0) {
+		/* Having nothing to read is not an error while non-blocking. */
+		if (errno == EAGAIN) {
+			*actual = 0;
+			return 0;
+		}
+		msg_perr_strerror("Serial port read error: ");
+		return 1;
+	}
 #endif
+	*actual = rv;
+	return 0;
+}
+
+/* Writes up to writecnt bytes from buf to the serial port. The amount of bytes
+ * that could actually be written is stored in actual, which may be zero if the
+ * port was not ready to accept any. Returns 0 on success and 1 on error. */
+static int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
+{
+#if IS_WINDOWS
+	DWORD rv;
+	if (!WriteFile(serialport_fd, buf, writecnt, &rv, NULL)) {
+		msg_perr_strerror("Serial port write error: ");
+		return 1;
+	}
+#else
+	ssize_t rv = write(serialport_fd, buf, writecnt);
+	if (rv < 0) {
+		/* Not being able to write right away is not an error while non-blocking. */
+		if (errno == EAGAIN) {
+			*actual = 0;
+			return 0;
+		}
+		msg_perr_strerror("Serial port write error: ");
+		return 1;
+	}
+#endif
+	*actual = rv;
+	return 0;
+}
+
+#if IS_WINDOWS
+static COMMTIMEOUTS saved_timeouts;
+#else
+static int saved_flags;
+#endif
+
+/* Makes the serial port return from reads and writes immediately instead of
+ * waiting for the requested amount of bytes. The previous behavior is saved and
+ * can be restored with serialport_nonblock_leave().
+ * Returns 0 on success and 1 on error. */
+static int serialport_nonblock_enter(void)
+{
+#if IS_WINDOWS
+	COMMTIMEOUTS timeouts = {
+		.ReadIntervalTimeout = MAXDWORD,
+		.ReadTotalTimeoutMultiplier = 0,
+		.ReadTotalTimeoutConstant = 0,
+		.WriteTotalTimeoutMultiplier = 0,
+		.WriteTotalTimeoutConstant = 0
+	};
+	if (!GetCommTimeouts(serialport_fd, &saved_timeouts)) {
+		msg_perr_strerror("Could not get serial port timeout settings: ");
+		return 1;
+	}
+	if (!SetCommTimeouts(serialport_fd, &timeouts)) {
+		msg_perr_strerror("Could not set serial port timeout settings: ");
+		return 1;
+	}
+#else
+	saved_flags = fcntl(serialport_fd, F_GETFL);
+	if (saved_flags == -1) {
+		msg_perr_strerror("Could not get serial port mode: ");
+		return 1;
+	}
+	if (fcntl(serialport_fd, F_SETFL, saved_flags | O_NONBLOCK) != 0) {
+		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+/* Restores the behavior saved by serialport_nonblock_enter().
+ * Returns 0 on success and 1 on error. */
+static int serialport_nonblock_leave(void)
+{
+#if IS_WINDOWS
+	if (!SetCommTimeouts(serialport_fd, &saved_timeouts)) {
+		msg_perr_strerror("Could not restore serial port timeout settings: ");
+		return 1;
+	}
+#else
+	if (fcntl(serialport_fd, F_SETFL, saved_flags) != 0) {
+		msg_perr_strerror("Could not restore serial port mode to blocking: ");
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+int serialport_write(const unsigned char *buf, unsigned int writecnt)
+{
 	unsigned int empty_writes = 250; /* results in a ca. 125ms timeout */
 
 	while (writecnt > 0) {
-#if IS_WINDOWS
-		if (!WriteFile(serialport_fd, buf, writecnt, &tmp, NULL)) {
-			msg_perr("Serial port write error!\n");
+		unsigned int tmp;
+
+		if (serialport_raw_write(buf, writecnt, &tmp))
 			return 1;
-		}
-#else
-		tmp = write(serialport_fd, buf, writecnt);
-		if (tmp == -1) {
-			msg_perr("Serial port write error!\n");
-			return 1;
-		}
-#endif
 		if (!tmp) {
 			msg_pdbg2("Empty write\n");
 			empty_writes--;
@@ -456,25 +557,11 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 
 int serialport_read(unsigned char *buf, unsigned int readcnt)
 {
-#if IS_WINDOWS
-	DWORD tmp = 0;
-#else
-	ssize_t tmp = 0;
-#endif
-
 	while (readcnt > 0) {
-#if IS_WINDOWS
-		if (!ReadFile(serialport_fd, buf, readcnt, &tmp, NULL)) {
-			msg_perr("Serial port read error!\n");
+		unsigned int tmp;
+
+		if (serialport_raw_read(buf, readcnt, &tmp))
 			return 1;
-		}
-#else
-		tmp = read(serialport_fd, buf, readcnt);
-		if (tmp == -1) {
-			msg_perr("Serial port read error!\n");
-			return 1;
-		}
-#endif
 		if (!tmp)
 			msg_pdbg2("Empty read\n");
 		readcnt -= tmp;
@@ -490,60 +577,22 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read)
 {
 	int ret = 1;
-	/* disable blocked i/o and declare platform-specific variables */
-#if IS_WINDOWS
-	DWORD rv;
-	COMMTIMEOUTS oldTimeout;
-	COMMTIMEOUTS newTimeout = {
-		.ReadIntervalTimeout = MAXDWORD,
-		.ReadTotalTimeoutMultiplier = 0,
-		.ReadTotalTimeoutConstant = 0,
-		.WriteTotalTimeoutMultiplier = 0,
-		.WriteTotalTimeoutConstant = 0
-	};
-	if(!GetCommTimeouts(serialport_fd, &oldTimeout)) {
-		msg_perr_strerror("Could not get serial port timeout settings: ");
+
+	if (serialport_nonblock_enter())
 		return -1;
-	}
-	if(!SetCommTimeouts(serialport_fd, &newTimeout)) {
-		msg_perr_strerror("Could not set serial port timeout settings: ");
-		return -1;
-	}
-#else
-	ssize_t rv;
-	const int flags = fcntl(serialport_fd, F_GETFL);
-	if (flags == -1) {
-		msg_perr_strerror("Could not get serial port mode: ");
-		return -1;
-	}
-	if (fcntl(serialport_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
-		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
-		return -1;
-	}
-#endif
 
 	unsigned int i;
 	unsigned int rd_bytes = 0;
 	for (i = 0; i < timeout; i++) {
+		unsigned int rv;
+
 		msg_pspew("readcnt %u rd_bytes %u\n", readcnt, rd_bytes);
-#if IS_WINDOWS
-		if (!ReadFile(serialport_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL)) {
-			msg_perr_strerror("Serial port read error: ");
+		if (serialport_raw_read(c + rd_bytes, readcnt - rd_bytes, &rv)) {
 			ret = -1;
 			break;
 		}
-		msg_pspew("read %lu bytes\n", rv);
-#else
-		rv = read(serialport_fd, c + rd_bytes, readcnt - rd_bytes);
-		msg_pspew("read %zd bytes\n", rv);
-		if ((rv == -1) && (errno != EAGAIN)) {
-			msg_perr_strerror("Serial port read error: ");
-			ret = -1;
-			break;
-		}
-#endif
-		if (rv > 0)
-			rd_bytes += rv;
+		msg_pspew("read %u bytes\n", rv);
+		rd_bytes += rv;
 		if (rd_bytes == readcnt) {
 			ret = 0;
 			break;
@@ -553,18 +602,9 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	if (really_read != NULL)
 		*really_read = rd_bytes;
 
-	/* restore original blocking behavior */
-#if IS_WINDOWS
-	if (!SetCommTimeouts(serialport_fd, &oldTimeout)) {
-		msg_perr_strerror("Could not restore serial port timeout settings: ");
+	if (serialport_nonblock_leave())
 		ret = -1;
-	}
-#else
-	if (fcntl(serialport_fd, F_SETFL, flags) != 0) {
-		msg_perr_strerror("Could not restore serial port mode to blocking: ");
-		ret = -1;
-	}
-#endif
+
 	return ret;
 }
 
@@ -574,59 +614,22 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote)
 {
 	int ret = 1;
-	/* disable blocked i/o and declare platform-specific variables */
-#if IS_WINDOWS
-	DWORD rv;
-	COMMTIMEOUTS oldTimeout;
-	COMMTIMEOUTS newTimeout = {
-		.ReadIntervalTimeout = MAXDWORD,
-		.ReadTotalTimeoutMultiplier = 0,
-		.ReadTotalTimeoutConstant = 0,
-		.WriteTotalTimeoutMultiplier = 0,
-		.WriteTotalTimeoutConstant = 0
-	};
-	if(!GetCommTimeouts(serialport_fd, &oldTimeout)) {
-		msg_perr_strerror("Could not get serial port timeout settings: ");
+
+	if (serialport_nonblock_enter())
 		return -1;
-	}
-	if(!SetCommTimeouts(serialport_fd, &newTimeout)) {
-		msg_perr_strerror("Could not set serial port timeout settings: ");
-		return -1;
-	}
-#else
-	ssize_t rv;
-	const int flags = fcntl(serialport_fd, F_GETFL);
-	if (flags == -1) {
-		msg_perr_strerror("Could not get serial port mode: ");
-		return -1;
-	}
-	if (fcntl(serialport_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
-		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
-		return -1;
-	}
-#endif
 
 	unsigned int i;
 	unsigned int wr_bytes = 0;
 	for (i = 0; i < timeout; i++) {
+		unsigned int rv;
+
 		msg_pspew("writecnt %u wr_bytes %u\n", writecnt, wr_bytes);
-#if IS_WINDOWS
-		if (!WriteFile(serialport_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL)) {
-			msg_perr_strerror("Serial port write error: ");
+		if (serialport_raw_write(buf + wr_bytes, writecnt - wr_bytes, &rv)) {
 			ret = -1;
 			break;
 		}
-		msg_pspew("wrote %lu bytes\n", rv);
-#else
-		rv = write(serialport_fd, buf + wr_bytes, writecnt - wr_bytes);
-		msg_pspew("wrote %zd bytes\n", rv);
-		if ((rv == -1) && (errno != EAGAIN)) {
-			msg_perr_strerror("Serial port write error: ");
-			ret = -1;
-			break;
-		}
-#endif
-		if (rv > 0) {
+		msg_pspew("wrote %u bytes\n", rv);
+		if (rv) {
 			wr_bytes += rv;
 			if (wr_bytes == writecnt) {
 				msg_pspew("write successful\n");
@@ -639,17 +642,8 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 	if (really_wrote != NULL)
 		*really_wrote = wr_bytes;
 
-	/* restore original blocking behavior */
-#if IS_WINDOWS
-	if (!SetCommTimeouts(serialport_fd, &oldTimeout)) {
-		msg_perr_strerror("Could not restore serial port timeout settings: ");
-		return -1;
-	}
-#else
-	if (fcntl(serialport_fd, F_SETFL, flags) != 0) {
-		msg_perr_strerror("Could not restore serial port blocking behavior: ");
-		return -1;
-	}
-#endif
+	if (serialport_nonblock_leave())
+		ret = -1;
+
 	return ret;
 }
