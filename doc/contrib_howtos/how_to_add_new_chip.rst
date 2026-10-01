@@ -179,6 +179,11 @@ a layout that starts with a single 8 kB block, followed by two 4 kB blocks and 7
 
 ``.eraseblocks`` should be listed in order, from the smallest to the largest size.
 
+Many SPI chips share one uniform layout: 4 kB blocks (0x20), 32 kB blocks (0x52), 64 kB blocks (0xd8) and
+both chip erase opcodes (0x60, 0xc7). Such chips can use ``SPI_ERASERS_20_52_D8_60_C7(size)`` with the same
+value as ``.total_size`` (in kB) instead of spelling out the layout. Check the datasheet first: some chips use
+0x52 for 64 kB blocks and need the full definition.
+
 Printlock
 ---------
 

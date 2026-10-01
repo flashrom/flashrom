@@ -12,6 +12,27 @@
 
 #include "chipdrivers.h"
 
+/* Uniform 4 KiB, 32 KiB and 64 KiB block erasers plus both chip erase opcodes */
+#define SPI_ERASERS_20_52_D8_60_C7(size)						\
+	{										\
+		{									\
+			.eraseblocks = { {4 * KiB, (size) / 4} },			\
+			.block_erase = SPI_BLOCK_ERASE_20,				\
+		}, {									\
+			.eraseblocks = { {32 * KiB, (size) / 32} },			\
+			.block_erase = SPI_BLOCK_ERASE_52,				\
+		}, {									\
+			.eraseblocks = { {64 * KiB, (size) / 64} },			\
+			.block_erase = SPI_BLOCK_ERASE_D8,				\
+		}, {									\
+			.eraseblocks = { {(size) * KiB, 1} },				\
+			.block_erase = SPI_BLOCK_ERASE_60,				\
+		}, {									\
+			.eraseblocks = { {(size) * KiB, 1} },				\
+			.block_erase = SPI_BLOCK_ERASE_C7,				\
+		}									\
+	}
+
 /**
  * List of supported flash chips.
  *
