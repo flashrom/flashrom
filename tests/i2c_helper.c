@@ -44,7 +44,7 @@ void i2c_require_allow_brick_invalid_test_success(void **state)
 
 	/* Anything other than "yes" is malformed and must be rejected. */
 	const char *invalid[] = { "allow_brick=no", "allow_brick=", "allow_brick=maybe" };
-	const int count = sizeof(invalid) / sizeof(invalid[0]);
+	const int count = ARRAY_SIZE(invalid);
 
 	for (int i = 0; i < count; i++)
 		assert_int_equal(-1, run_require_allow_brick(invalid[i]));

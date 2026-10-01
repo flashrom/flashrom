@@ -6,6 +6,7 @@
 #include <include/test.h>
 
 #include "tests.h"
+#include "flash.h"
 #include "helpers.h"
 #include "platform/string.h"
 
@@ -78,7 +79,7 @@ void parse_voltage_success(void **state)
 
 	const char *volt[] = {"2.3", "2,3", "3.5V", "3,5V", "1950mV", "2700mv", "1950milliv"};
 	const int result[] = {2300, 2300, 3500, 3500, 1950, 2700, 1950};
-	const int count = sizeof(volt) / sizeof((volt)[0]);
+	const int count = ARRAY_SIZE(volt);
 
 	for (int i = 0; i < count; i++) {
 		char *voltage = strdup(volt[i]);
@@ -99,7 +100,7 @@ void parse_voltage_invalid(void **state)
 		"2300village",
 		"milliv1950",
 	};
-	const int count = sizeof(invalid_volt) / sizeof((invalid_volt)[0]);
+	const int count = ARRAY_SIZE(invalid_volt);
 
 	for (int i = 0; i < count; i++) {
 		char *voltage = strdup(invalid_volt[i]);
@@ -151,7 +152,7 @@ void parse_usbpath_invalid(void **state)
 		"1-",
 	};
 
-	const int count = sizeof(invalid_usbpath) / sizeof((invalid_usbpath)[0]);
+	const int count = ARRAY_SIZE(invalid_usbpath);
 
 	for (int i = 0; i < count; i++) {
 		char *badpath = strdup(invalid_usbpath[i]);

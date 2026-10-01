@@ -174,7 +174,7 @@ static const struct flashchip chip_no_erase = {
 	.block_erasers  =
 	{
 		{
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			/* Special erase fn for chips without erase capability. */
 			.block_erase = SPI_BLOCK_ERASE_EMULATION,
 		}
@@ -213,10 +213,10 @@ static const struct flashchip chip_dual_die_c2 = {
 		/* The goal is to test select die feature, which is used for
 		 * chip erase ops 60h and C7h. No other ops are needed for this mock. */
 		{
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_60,
 		}, {
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_C7,
 		}
 	},
@@ -233,19 +233,19 @@ static const struct flashchip chip_W25Q128_V = {
 	.block_erasers  =
 	{
 		{
-			.eraseblocks = { {4 * 1024, 4096} },
+			.eraseblocks = { {4 * KiB, 4096} },
 			.block_erase = SPI_BLOCK_ERASE_20,
 		}, {
-			.eraseblocks = { {32 * 1024, 512} },
+			.eraseblocks = { {32 * KiB, 512} },
 			.block_erase = SPI_BLOCK_ERASE_52,
 		}, {
-			.eraseblocks = { {64 * 1024, 256} },
+			.eraseblocks = { {64 * KiB, 256} },
 			.block_erase = SPI_BLOCK_ERASE_D8,
 		}, {
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_60,
 		}, {
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_C7,
 		}
 	},
@@ -360,7 +360,7 @@ void read_chip_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
@@ -389,7 +389,7 @@ void read_chip_with_progress(void **state)
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
@@ -416,7 +416,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
@@ -442,7 +442,7 @@ void write_chip_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -471,7 +471,7 @@ void write_chip_with_progress(void **state)
 	struct progress_user_data progress_user_data = {0};
 	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -498,7 +498,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -527,7 +527,7 @@ void write_chip_feature_no_erase(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -557,7 +557,7 @@ void write_chip_feature_no_erase_with_progress(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -662,7 +662,7 @@ void verify_chip_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -696,7 +696,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 
 	setup_chip(&flashctx, &mock_chip, param_dup, NULL);
 
-	unsigned long size = mock_chip.total_size * 1024;
+	unsigned long size = mock_chip.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 
@@ -764,7 +764,7 @@ void read_chip_bad_status_test(void **state)
 	struct flashchip mock_chip = chip_bad;
 	setup_bad_chip(&flashctx, &mock_chip);
 
-	unsigned long size = chip_bad.total_size * 1024;
+	unsigned long size = chip_bad.total_size * KiB;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	assert_non_null(buf);
 
@@ -786,7 +786,7 @@ void write_chip_bad_status_test(void **state)
 	struct flashchip mock_chip = chip_bad;
 	setup_bad_chip(&flashctx, &mock_chip);
 
-	unsigned long size = chip_bad.total_size * 1024;
+	unsigned long size = chip_bad.total_size * KiB;
 	uint8_t *const newcontents = malloc(size);
 	assert_non_null(newcontents);
 

@@ -69,7 +69,7 @@ void selfcheck_eraseblocks(void **state)
 	for (chip_index = 0; chip_index < flashchips_size - 1; chip_index++) {
 		size_t i, j, k;
 		const struct flashchip *chip = &flashchips[chip_index];
-		unsigned int prev_eraseblock_count = chip->total_size * 1024;
+		unsigned int prev_eraseblock_count = chip->total_size * KiB;
 
 		for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 			unsigned int done = 0;
@@ -98,10 +98,10 @@ void selfcheck_eraseblocks(void **state)
 
 			if (!done)
 				continue;
-			if (done != chip->total_size * 1024) {
+			if (done != chip->total_size * KiB) {
 				fail_msg(
 					"Flash chip %s erase function %zu region walking resulted in 0x%06x bytes total, expected 0x%06x bytes.",
-					chip->name, k, done, chip->total_size * 1024);
+					chip->name, k, done, chip->total_size * KiB);
 				assert_true(false);
 			}
 

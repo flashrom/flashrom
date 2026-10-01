@@ -70,19 +70,19 @@ static const struct flashchip chip_W25Q128_V = {
 	.block_erasers  =
 	{
 		{
-			.eraseblocks = { {4 * 1024, 4096} },
+			.eraseblocks = { {4 * KiB, 4096} },
 			.block_erase = SPI_BLOCK_ERASE_20,
 		}, {
-			.eraseblocks = { {32 * 1024, 512} },
+			.eraseblocks = { {32 * KiB, 512} },
 			.block_erase = SPI_BLOCK_ERASE_52,
 		}, {
-			.eraseblocks = { {64 * 1024, 256} },
+			.eraseblocks = { {64 * KiB, 256} },
 			.block_erase = SPI_BLOCK_ERASE_D8,
 		}, {
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_60,
 		}, {
-			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			.eraseblocks = { {16 * MiB, 1} },
 			.block_erase = SPI_BLOCK_ERASE_C7,
 		}
 	},
