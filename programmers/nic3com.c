@@ -132,7 +132,7 @@ static int nic3com_init(const struct programmer_cfg *cfg)
 	data->internal_conf = internal_conf;
 	data->id = id;
 
-	max_rom_decode.parallel = 128 * 1024;
+	max_rom_decode.parallel = 128 * KiB;
 
 	return register_par_master(&par_master_nic3com, BUS_PARALLEL, data);
 

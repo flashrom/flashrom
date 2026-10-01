@@ -166,7 +166,7 @@ static int linux_mtd_probe(struct flashctx *flash)
 	if (data->no_erase)
 		flash->chip->feature_bits |= FEATURE_NO_ERASE;
 	flash->chip->tested = TEST_OK_PREWB;
-	flash->chip->total_size = data->total_size / 1024;	/* bytes -> kB */
+	flash->chip->total_size = data->total_size / KiB;	/* bytes -> kB */
 	flash->chip->block_erasers[0].eraseblocks[0].size = data->erasesize;
 	flash->chip->block_erasers[0].eraseblocks[0].count =
 		data->total_size / data->erasesize;

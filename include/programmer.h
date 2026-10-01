@@ -239,7 +239,7 @@ char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char 
 
 /* spi.c */
 #define MAX_DATA_UNSPECIFIED 0
-#define MAX_DATA_READ_UNLIMITED 64 * 1024
+#define MAX_DATA_READ_UNLIMITED (64 * KiB)
 #define MAX_DATA_WRITE_UNLIMITED 256
 
 #define SPI_MASTER_4BA			(1U << 0)  /**< Can handle 4-byte addresses */

@@ -312,7 +312,7 @@ static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi
 
 static const struct spi_master spi_master_ft2232 = {
 	.features	= SPI_MASTER_4BA,
-	.max_data_read	= 64 * 1024,
+	.max_data_read	= 64 * KiB,
 	.max_data_write	= 256,
 	.multicommand	= ft2232_spi_send_multicommand,
 	.read		= default_spi_read,

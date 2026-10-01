@@ -138,7 +138,7 @@ static int probe_variable_size(struct flashctx *flash)
 	if (!emu_data || emu_data->emu_chip != EMULATE_VARIABLE_SIZE)
 		return 0;
 
-	flash->chip->total_size = emu_data->emu_chip_size / 1024;
+	flash->chip->total_size = emu_data->emu_chip_size / KiB;
 	msg_cdbg("%s: set flash->total_size to %dK bytes.\n", __func__,
 	         flash->chip->total_size);
 
@@ -1111,7 +1111,7 @@ static int init_data(const struct programmer_cfg *cfg,
 	tmp = extract_programmer_param_str(cfg, "size");
 	if (tmp) {
 		size = strtol(tmp, NULL, 10);
-		if (size <= 0 || (size % 1024 != 0)) {
+		if (size <= 0 || (size % KiB != 0)) {
 			msg_perr("%s: Chip size is not a multiple of 1024: %s\n",
 					 __func__, tmp);
 			free(tmp);
@@ -1148,13 +1148,13 @@ static int init_data(const struct programmer_cfg *cfg,
 
 	if (!strcmp(tmp, "M25P10.RES")) {
 		data->emu_chip = EMULATE_ST_M25P10_RES;
-		data->emu_chip_size = 128 * 1024;
+		data->emu_chip_size = 128 * KiB;
 		data->emu_max_byteprogram_size = 128;
 		data->emu_max_aai_size = 0;
 		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 0;
 		data->emu_jedec_be_52_size = 0;
-		data->emu_jedec_be_d8_size = 32 * 1024;
+		data->emu_jedec_be_d8_size = 32 * KiB;
 		data->emu_jedec_ce_60_size = 0;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating ST M25P10.RES SPI flash chip (RES, page "
@@ -1162,12 +1162,12 @@ static int init_data(const struct programmer_cfg *cfg,
 	}
 	if (!strcmp(tmp, "SST25VF040.REMS")) {
 		data->emu_chip = EMULATE_SST_SST25VF040_REMS;
-		data->emu_chip_size = 512 * 1024;
+		data->emu_chip_size = 512 * KiB;
 		data->emu_max_byteprogram_size = 1;
 		data->emu_max_aai_size = 0;
 		data->emu_status_len = 1;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
+		data->emu_jedec_se_size = 4 * KiB;
+		data->emu_jedec_be_52_size = 32 * KiB;
 		data->emu_jedec_be_d8_size = 0;
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = 0;
@@ -1176,13 +1176,13 @@ static int init_data(const struct programmer_cfg *cfg,
 	}
 	if (!strcmp(tmp, "SST25VF032B")) {
 		data->emu_chip = EMULATE_SST_SST25VF032B;
-		data->emu_chip_size = 4 * 1024 * 1024;
+		data->emu_chip_size = 4 * MiB;
 		data->emu_max_byteprogram_size = 1;
 		data->emu_max_aai_size = 2;
 		data->emu_status_len = 1;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
-		data->emu_jedec_be_d8_size = 64 * 1024;
+		data->emu_jedec_se_size = 4 * KiB;
+		data->emu_jedec_be_52_size = 32 * KiB;
+		data->emu_jedec_be_d8_size = 64 * KiB;
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating SST SST25VF032B SPI flash chip (RDID, AAI "
@@ -1190,13 +1190,13 @@ static int init_data(const struct programmer_cfg *cfg,
 	}
 	if (!strcmp(tmp, "MX25L6436")) {
 		data->emu_chip = EMULATE_MACRONIX_MX25L6436;
-		data->emu_chip_size = 8 * 1024 * 1024;
+		data->emu_chip_size = 8 * MiB;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
 		data->emu_status_len = 1;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
-		data->emu_jedec_be_d8_size = 64 * 1024;
+		data->emu_jedec_se_size = 4 * KiB;
+		data->emu_jedec_be_52_size = 32 * KiB;
+		data->emu_jedec_be_d8_size = 64 * KiB;
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating Macronix MX25L6436 SPI flash chip (RDID, "
@@ -1205,13 +1205,13 @@ static int init_data(const struct programmer_cfg *cfg,
 	if (!strcmp(tmp, "W25Q128FV")) {
 		data->emu_chip = EMULATE_WINBOND_W25Q128FV;
 		data->emu_wrsr_ext2 = true;
-		data->emu_chip_size = 16 * 1024 * 1024;
+		data->emu_chip_size = 16 * MiB;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
 		data->emu_status_len = 3;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
-		data->emu_jedec_be_d8_size = 64 * 1024;
+		data->emu_jedec_se_size = 4 * KiB;
+		data->emu_jedec_be_52_size = 32 * KiB;
+		data->emu_jedec_be_d8_size = 64 * KiB;
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating Winbond W25Q128FV SPI flash chip (RDID)\n");
@@ -1220,13 +1220,13 @@ static int init_data(const struct programmer_cfg *cfg,
 		data->emu_chip = EMULATE_SPANSION_S25FL128L;
 		data->emu_wrsr_ext2 = true;
 		data->emu_wrsr_ext3 = true;
-		data->emu_chip_size = 16 * 1024 * 1024;
+		data->emu_chip_size = 16 * MiB;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
 		data->emu_status_len = 3;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
-		data->emu_jedec_be_d8_size = 64 * 1024;
+		data->emu_jedec_se_size = 4 * KiB;
+		data->emu_jedec_be_52_size = 32 * KiB;
+		data->emu_jedec_be_d8_size = 64 * KiB;
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating Spansion S25FL128L SPI flash chip (RES, RDID, WP)\n");

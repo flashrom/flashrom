@@ -29,7 +29,7 @@ static const struct dev_entry nics_intel[] = {
 /* Arbitrary limit, taken from the datasheet I just had lying around.
  * 128 kByte on the 82559 device. Or not. Depends on whom you ask.
  */
-#define NICINTEL_MEMMAP_SIZE (128 * 1024)
+#define NICINTEL_MEMMAP_SIZE (128 * KiB)
 #define NICINTEL_MEMMAP_MASK (NICINTEL_MEMMAP_SIZE - 1)
 
 #define NICINTEL_CONTROL_MEMMAP_SIZE	0x10

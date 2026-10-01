@@ -242,7 +242,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 	 * the mainboard does not use IT87 SPI translation. This should be done
 	 * via a programmer parameter for the internal programmer.
 	 */
-	if ((flash->chip->total_size * 1024 > 512 * 1024)) {
+	if ((flash->chip->total_size * KiB > 512 * KiB)) {
 		default_spi_read(flash, buf, start, len);
 	} else {
 		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
@@ -265,7 +265,7 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 	 * the mainboard does not use IT87 SPI translation. This should be done
 	 * via a programmer parameter for the internal programmer.
 	 */
-	if ((chip->total_size * 1024 > 512 * 1024) || (chip->page_size > 256)) {
+	if ((chip->total_size * KiB > 512 * KiB) || (chip->page_size > 256)) {
 		spi_chip_write_1(flash, buf, start, len);
 	} else {
 		unsigned int lenhere;
