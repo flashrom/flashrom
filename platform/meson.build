@@ -43,8 +43,14 @@ elif host_machine.system() == 'darwin'
 else
   custom_baud_c = 'custom_baud.c'
 endif
+# Windows needs its own serial port implementation
+if host_machine.system() in ['cygwin', 'windows']
+  serial_c = 'serial_windows.c'
+else
+  serial_c = 'serial_posix.c'
+endif
 dep_platform_serial = declare_dependency(
-  sources : files('serial.c', custom_baud_c),
+  sources : files('serial_common.c', serial_c, custom_baud_c),
 )
 
 # String

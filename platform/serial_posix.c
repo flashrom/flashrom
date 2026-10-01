@@ -6,30 +6,17 @@
 
 #include "platform/serial.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "flash.h"
+#include "log.h"
+#include "platform/custom_baud.h"
 #include "platform/string.h"
-#include <ctype.h>
-#include <fcntl.h>
-#include <sys/stat.h>
+
 #include <errno.h>
-#include <inttypes.h>
-#if IS_WINDOWS
-#include <conio.h>
-#else
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#endif
-#include "flash.h"
-#include "programmer.h"
-#include "platform/custom_baud.h"
-#include "platform/udelay.h"
-#include "log.h"
-
-serialport_fdtype serialport_fd = SERIALPORT_INV_FD;
 
 /* There is no way defined by POSIX to use arbitrary baud rates. It only defines some macros that can be used to
  * specify respective baud rates and many implementations extend this list with further macros, cf. TERMIOS(3)
@@ -43,12 +30,7 @@ serialport_fdtype serialport_fd = SERIALPORT_INV_FD;
  * On Darwin there is also a non-standard ioctl() to set arbitrary baud rates
  * and any above 230400, see platform/custom_baud_darwin.c and
  * https://opensource.apple.com/source/IOSerialFamily/IOSerialFamily-91/tests/IOSerialTestLib.c.auto.html
- *
- * On Windows there exist similar macros (starting with CBR_ instead of B) but they are only defined for
- * backwards compatibility and the API supports arbitrary baud rates in the same manner as the macros, see
- * http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx
  */
-#if !IS_WINDOWS
 #define BAUDENTRY(baud) { B##baud, baud },
 
 static const struct baudentry serialport_baudtable[] = {
@@ -124,27 +106,14 @@ static const struct baudentry *round_baud(unsigned int baud)
 	msg_pinfo("Using slowest possible baudrate: %d.\n", serialport_baudtable[0].baud);
 	return &serialport_baudtable[0];
 }
-#endif
 
 /* Uses msg_perr to print the last system error.
  * Prints "Error: " followed first by \c msg and then by the description of the last error retrieved via
- * strerror() or FormatMessage() and ending with a linebreak. */
+ * strerror() and ending with a linebreak. */
 static void msg_perr_strerror(const char *msg)
 {
 	msg_perr("Error: %s", msg);
-#if IS_WINDOWS
-	char *lpMsgBuf;
-	DWORD nErr = GetLastError();
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, nErr,
-		      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
-	msg_perr(lpMsgBuf);
-	/* At least some formatted messages contain a line break at the end. Make sure to always print one */
-	if (lpMsgBuf[strlen(lpMsgBuf)-1] != '\n')
-		msg_perr("\n");
-	LocalFree(lpMsgBuf);
-#else
 	msg_perr("%s\n", strerror(errno));
-#endif
 }
 
 int serialport_config(serialport_fdtype fd, int baud)
@@ -154,42 +123,6 @@ int serialport_config(serialport_fdtype fd, int baud)
 		return 1;
 	}
 
-#if IS_WINDOWS
-	DCB dcb;
-	if (!GetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not fetch original serial port configuration: ");
-		return 1;
-	}
-	if (baud >= 0) {
-		dcb.BaudRate = baud;
-	}
-	dcb.ByteSize = 8;
-	dcb.Parity = NOPARITY;
-	dcb.StopBits = ONESTOPBIT;
-	dcb.fBinary = true;
-	dcb.fParity = false;
-	dcb.fOutxCtsFlow = false;
-	dcb.fOutxDsrFlow = false;
-	dcb.fDsrSensitivity = false;
-	dcb.fOutX = false;
-	dcb.fInX = false;
-	dcb.fErrorChar = false;
-	dcb.fNull = false;
-	dcb.fAbortOnError = false;
-	if (dcb.fDtrControl == DTR_CONTROL_HANDSHAKE)
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-	if (dcb.fRtsControl == RTS_CONTROL_HANDSHAKE)
-		dcb.fRtsControl = RTS_CONTROL_ENABLE;
-	if (!SetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not change serial port configuration: ");
-		return 1;
-	}
-	if (!GetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not fetch new serial port configuration: ");
-		return 1;
-	}
-	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
-#else
 	int custom_baud = (baud >= 0 && use_custom_baud(baud, serialport_baudtable));
 	struct termios wanted, observed;
 	if (tcgetattr(fd, &observed) != 0) {
@@ -265,41 +198,12 @@ int serialport_config(serialport_fdtype fd, int baud)
 			  (long)cfgetispeed(&observed), (long)cfgetospeed(&observed));
 	}
 	// FIXME: display actual baud rate - at least if none was specified by the user.
-#endif
 	return 0;
 }
 
 serialport_fdtype serialport_openserport(char *dev, int baud)
 {
 	serialport_fdtype fd;
-#if IS_WINDOWS
-	char *dev2 = dev;
-	if ((strlen(dev) > 3) &&
-	    (tolower((unsigned char)dev[0]) == 'c') &&
-	    (tolower((unsigned char)dev[1]) == 'o') &&
-	    (tolower((unsigned char)dev[2]) == 'm')) {
-		dev2 = malloc(strlen(dev) + 5);
-		if (!dev2) {
-			msg_perr_strerror("Out of memory: ");
-			return SERIALPORT_INV_FD;
-		}
-		strcpy(dev2, "\\\\.\\");
-		strcpy(dev2 + 4, dev);
-	}
-	fd = CreateFile(dev2, GENERIC_READ | GENERIC_WRITE, 0, NULL,
-			OPEN_EXISTING, 0, NULL);
-	if (dev2 != dev)
-		free(dev2);
-	if (fd == INVALID_HANDLE_VALUE) {
-		msg_perr_strerror("Cannot open serial port: ");
-		return SERIALPORT_INV_FD;
-	}
-	if (serialport_config(fd, baud) != 0) {
-		CloseHandle(fd);
-		return SERIALPORT_INV_FD;
-	}
-	return fd;
-#else
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY); // Use O_NDELAY to ignore DCD state
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
@@ -324,24 +228,9 @@ serialport_fdtype serialport_openserport(char *dev, int baud)
 err:
 	close(fd);
 	return SERIALPORT_INV_FD;
-#endif
 }
 
 void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
-#if IS_WINDOWS
-	DWORD ctl;
-
-	if(pin == PIN_TXD) {
-		ctl = val ? SETBREAK: CLRBREAK;
-	}
-	else if(pin == PIN_DTR) {
-		ctl = val ? SETDTR: CLRDTR;
-	}
-	else {
-		ctl = val ? SETRTS: CLRRTS;
-	}
-	EscapeCommFunction(serialport_fd, ctl);
-#else
 	int ctl, s;
 
 	if(pin == PIN_TXD) {
@@ -359,21 +248,13 @@ void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
 		}
 		ioctl(serialport_fd, TIOCMSET, &ctl);
 	}
-#endif
 }
 
 int serialport_get_pin(enum SERIALPORT_PIN pin) {
 	int s;
-#if IS_WINDOWS
-	DWORD ctl;
-
-	s = (pin == PIN_CTS) ? MS_CTS_ON : MS_DSR_ON;
-	GetCommModemStatus(serialport_fd, &ctl);
-#else
 	int ctl;
 	s = (pin == PIN_CTS) ? TIOCM_CTS : TIOCM_DSR;
 	ioctl(serialport_fd, TIOCMGET, &ctl);
-#endif
 
 	return ((ctl & s) ? 1 : 0);
 
@@ -381,9 +262,6 @@ int serialport_get_pin(enum SERIALPORT_PIN pin) {
 
 void serialport_flush_incoming(void)
 {
-#if IS_WINDOWS
-	PurgeComm(serialport_fd, PURGE_RXCLEAR);
-#else
 	if (!tcflush(serialport_fd, TCIFLUSH))
 		return;
 
@@ -403,31 +281,16 @@ void serialport_flush_incoming(void)
 	} else { // any other errno indicates an unrecoverable serialport_fd state
 		msg_perr_strerror("Could not flush serial port incoming buffer: ");
 	}
-#endif
 }
 
 int serialport_shutdown(void *data)
 {
-#if IS_WINDOWS
-	CloseHandle(serialport_fd);
-#else
 	close(serialport_fd);
-#endif
 	return 0;
 }
 
-/* Reads up to readcnt bytes from the serial port into buf. The amount of bytes
- * that could actually be read is stored in actual, which may be zero if the
- * port had nothing to offer. Returns 0 on success and 1 on error. */
-static int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual)
+int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual)
 {
-#if IS_WINDOWS
-	DWORD rv;
-	if (!ReadFile(serialport_fd, buf, readcnt, &rv, NULL)) {
-		msg_perr_strerror("Serial port read error: ");
-		return 1;
-	}
-#else
 	ssize_t rv = read(serialport_fd, buf, readcnt);
 	if (rv < 0) {
 		/* Having nothing to read is not an error while non-blocking. */
@@ -438,23 +301,12 @@ static int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigne
 		msg_perr_strerror("Serial port read error: ");
 		return 1;
 	}
-#endif
 	*actual = rv;
 	return 0;
 }
 
-/* Writes up to writecnt bytes from buf to the serial port. The amount of bytes
- * that could actually be written is stored in actual, which may be zero if the
- * port was not ready to accept any. Returns 0 on success and 1 on error. */
-static int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
+int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
 {
-#if IS_WINDOWS
-	DWORD rv;
-	if (!WriteFile(serialport_fd, buf, writecnt, &rv, NULL)) {
-		msg_perr_strerror("Serial port write error: ");
-		return 1;
-	}
-#else
 	ssize_t rv = write(serialport_fd, buf, writecnt);
 	if (rv < 0) {
 		/* Not being able to write right away is not an error while non-blocking. */
@@ -465,40 +317,14 @@ static int serialport_raw_write(const unsigned char *buf, unsigned int writecnt,
 		msg_perr_strerror("Serial port write error: ");
 		return 1;
 	}
-#endif
 	*actual = rv;
 	return 0;
 }
 
-#if IS_WINDOWS
-static COMMTIMEOUTS saved_timeouts;
-#else
 static int saved_flags;
-#endif
 
-/* Makes the serial port return from reads and writes immediately instead of
- * waiting for the requested amount of bytes. The previous behavior is saved and
- * can be restored with serialport_nonblock_leave().
- * Returns 0 on success and 1 on error. */
-static int serialport_nonblock_enter(void)
+int serialport_nonblock_enter(void)
 {
-#if IS_WINDOWS
-	COMMTIMEOUTS timeouts = {
-		.ReadIntervalTimeout = MAXDWORD,
-		.ReadTotalTimeoutMultiplier = 0,
-		.ReadTotalTimeoutConstant = 0,
-		.WriteTotalTimeoutMultiplier = 0,
-		.WriteTotalTimeoutConstant = 0
-	};
-	if (!GetCommTimeouts(serialport_fd, &saved_timeouts)) {
-		msg_perr_strerror("Could not get serial port timeout settings: ");
-		return 1;
-	}
-	if (!SetCommTimeouts(serialport_fd, &timeouts)) {
-		msg_perr_strerror("Could not set serial port timeout settings: ");
-		return 1;
-	}
-#else
 	saved_flags = fcntl(serialport_fd, F_GETFL);
 	if (saved_flags == -1) {
 		msg_perr_strerror("Could not get serial port mode: ");
@@ -508,142 +334,14 @@ static int serialport_nonblock_enter(void)
 		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
 		return 1;
 	}
-#endif
 	return 0;
 }
 
-/* Restores the behavior saved by serialport_nonblock_enter().
- * Returns 0 on success and 1 on error. */
-static int serialport_nonblock_leave(void)
+int serialport_nonblock_leave(void)
 {
-#if IS_WINDOWS
-	if (!SetCommTimeouts(serialport_fd, &saved_timeouts)) {
-		msg_perr_strerror("Could not restore serial port timeout settings: ");
-		return 1;
-	}
-#else
 	if (fcntl(serialport_fd, F_SETFL, saved_flags) != 0) {
 		msg_perr_strerror("Could not restore serial port mode to blocking: ");
 		return 1;
 	}
-#endif
 	return 0;
-}
-
-int serialport_write(const unsigned char *buf, unsigned int writecnt)
-{
-	unsigned int empty_writes = 250; /* results in a ca. 125ms timeout */
-
-	while (writecnt > 0) {
-		unsigned int tmp;
-
-		if (serialport_raw_write(buf, writecnt, &tmp))
-			return 1;
-		if (!tmp) {
-			msg_pdbg2("Empty write\n");
-			empty_writes--;
-			default_delay(500);
-			if (empty_writes == 0) {
-				msg_perr("Serial port is unresponsive!\n");
-				return 1;
-			}
-		}
-		writecnt -= tmp;
-		buf += tmp;
-	}
-
-	return 0;
-}
-
-int serialport_read(unsigned char *buf, unsigned int readcnt)
-{
-	while (readcnt > 0) {
-		unsigned int tmp;
-
-		if (serialport_raw_read(buf, readcnt, &tmp))
-			return 1;
-		if (!tmp)
-			msg_pdbg2("Empty read\n");
-		readcnt -= tmp;
-		buf += tmp;
-	}
-
-	return 0;
-}
-
-/* Tries up to timeout ms to read readcnt characters and places them into the array starting at c. Returns
- * 0 on success, positive values on temporary errors (e.g. timeouts) and negative ones on permanent errors.
- * If really_read is not NULL, this function sets its contents to the number of bytes read successfully. */
-int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read)
-{
-	int ret = 1;
-
-	if (serialport_nonblock_enter())
-		return -1;
-
-	unsigned int i;
-	unsigned int rd_bytes = 0;
-	for (i = 0; i < timeout; i++) {
-		unsigned int rv;
-
-		msg_pspew("readcnt %u rd_bytes %u\n", readcnt, rd_bytes);
-		if (serialport_raw_read(c + rd_bytes, readcnt - rd_bytes, &rv)) {
-			ret = -1;
-			break;
-		}
-		msg_pspew("read %u bytes\n", rv);
-		rd_bytes += rv;
-		if (rd_bytes == readcnt) {
-			ret = 0;
-			break;
-		}
-		default_delay(1000);	/* 1ms units */
-	}
-	if (really_read != NULL)
-		*really_read = rd_bytes;
-
-	if (serialport_nonblock_leave())
-		ret = -1;
-
-	return ret;
-}
-
-/* Tries up to timeout ms to write writecnt characters from the array starting at buf. Returns
- * 0 on success, positive values on temporary errors (e.g. timeouts) and negative ones on permanent errors.
- * If really_wrote is not NULL, this function sets its contents to the number of bytes written successfully. */
-int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote)
-{
-	int ret = 1;
-
-	if (serialport_nonblock_enter())
-		return -1;
-
-	unsigned int i;
-	unsigned int wr_bytes = 0;
-	for (i = 0; i < timeout; i++) {
-		unsigned int rv;
-
-		msg_pspew("writecnt %u wr_bytes %u\n", writecnt, wr_bytes);
-		if (serialport_raw_write(buf + wr_bytes, writecnt - wr_bytes, &rv)) {
-			ret = -1;
-			break;
-		}
-		msg_pspew("wrote %u bytes\n", rv);
-		if (rv) {
-			wr_bytes += rv;
-			if (wr_bytes == writecnt) {
-				msg_pspew("write successful\n");
-				ret = 0;
-				break;
-			}
-		}
-		default_delay(1000);	/* 1ms units */
-	}
-	if (really_wrote != NULL)
-		*really_wrote = wr_bytes;
-
-	if (serialport_nonblock_leave())
-		ret = -1;
-
-	return ret;
 }
