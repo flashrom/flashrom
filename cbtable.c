@@ -295,7 +295,7 @@ static void search_lb_records(struct lb_record *rec, struct lb_record *last, uns
 	}
 }
 
-#define BYTES_TO_MAP (1024*1024)
+#define BYTES_TO_MAP (1 * MiB)
 /* returns 0 if the table was parsed successfully and cb_vendor/cb_model have been set. */
 int cb_parse_table(const char **vendor, const char **model)
 {

@@ -340,7 +340,7 @@ int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int s
 /* erase chip with block_erase() prototype */
 int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned int blocksize)
 {
-	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
+	if ((addr != 0) || (blocksize != flash->chip->total_size * KiB)) {
 		msg_cerr("%s called with incorrect arguments\n", __func__);
 		return -1;
 	}

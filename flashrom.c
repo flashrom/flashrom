@@ -667,10 +667,10 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 	if (!len)
 		return -1;
 
-	if (start + len > flash->chip->total_size * 1024) {
+	if (start + len > flash->chip->total_size * KiB) {
 		msg_gerr("Error: %s called with start 0x%x + len 0x%x >"
 			" total_size 0x%x\n", __func__, start, len,
-			flash->chip->total_size * 1024);
+			flash->chip->total_size * KiB);
 		return -1;
 	}
 
@@ -906,13 +906,13 @@ unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned i
 void unmap_flash(struct flashctx *flash)
 {
 	if (flash->virtual_registers != (chipaddr)ERROR_PTR) {
-		master_unmap_flash_region(flash->mst, (void *)flash->virtual_registers, flash->chip->total_size * 1024);
+		master_unmap_flash_region(flash->mst, (void *)flash->virtual_registers, flash->chip->total_size * KiB);
 		flash->physical_registers = 0;
 		flash->virtual_registers = (chipaddr)ERROR_PTR;
 	}
 
 	if (flash->virtual_memory != (chipaddr)ERROR_PTR) {
-		master_unmap_flash_region(flash->mst, (void *)flash->virtual_memory, flash->chip->total_size * 1024);
+		master_unmap_flash_region(flash->mst, (void *)flash->virtual_memory, flash->chip->total_size * KiB);
 		flash->physical_memory = 0;
 		flash->virtual_memory = (chipaddr)ERROR_PTR;
 	}
@@ -930,7 +930,7 @@ int map_flash(struct flashctx *flash)
 	if (flash->chip->total_size == 0)
 		return 0;
 
-	const chipsize_t size = flash->chip->total_size * 1024;
+	const chipsize_t size = flash->chip->total_size * KiB;
 	uintptr_t base = flashbase ? flashbase : (0xffffffff - size + 1);
 	void *addr = master_map_flash_region(flash->mst, flash->chip->name, base, size);
 	if (addr == ERROR_PTR) {
@@ -1005,7 +1005,7 @@ static int init_default_layout(struct flashctx *flash)
 	/* Fill default layout covering the whole chip. */
 	if (flashrom_layout_new(&flash->default_layout) ||
 	    flashrom_layout_add_region(flash->default_layout,
-			0, flash->chip->total_size * 1024 - 1, "complete flash") ||
+			0, flash->chip->total_size * KiB - 1, "complete flash") ||
 	    flashrom_layout_include_region(flash->default_layout, "complete flash"))
 	        return -1;
 	return 0;
@@ -1101,7 +1101,7 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 {
 	int i, j, k;
 	int ret = 0;
-	unsigned int prev_eraseblock_count = chip->total_size * 1024;
+	unsigned int prev_eraseblock_count = chip->total_size * KiB;
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		unsigned int done = 0;
@@ -1137,12 +1137,12 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 				  "non-empty erase function. Not an error.\n");
 		if (!done)
 			continue;
-		if (done != chip->total_size * 1024) {
+		if (done != chip->total_size * KiB) {
 			msg_gerr("ERROR: Flash chip %s erase function %i "
 				"region walking resulted in 0x%06x bytes total,"
 				" expected 0x%06x bytes. Please report a bug at"
 				" flashrom@flashrom.org\n", chip->name, k,
-				done, chip->total_size * 1024);
+				done, chip->total_size * KiB);
 			ret = 1;
 		}
 		if (!eraser.block_erase)
@@ -1466,7 +1466,7 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 static int erase_by_layout(struct flashctx *const flashctx)
 {
 	bool all_skipped = true;
-	const uint32_t flash_size = flashctx->chip->total_size * 1024;
+	const uint32_t flash_size = flashctx->chip->total_size * KiB;
 	uint8_t* curcontents = malloc(flash_size);
 	uint8_t* newcontents = malloc(flash_size);
 	struct erase_layout *erase_layout;
@@ -2065,7 +2065,7 @@ int flashrom_flash_erase(struct flashctx *const flashctx)
 
 int flashrom_image_read(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len)
 {
-	const size_t flash_size = flashctx->chip->total_size * 1024;
+	const size_t flash_size = flashctx->chip->total_size * KiB;
 
 	if (flash_size > buffer_len)
 		return 2;
@@ -2109,14 +2109,14 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
 	}
 
 	/* copy the rest of the chip */
-	const chipsize_t copy_len = flashctx->chip->total_size * 1024 - start;
+	const chipsize_t copy_len = flashctx->chip->total_size * KiB - start;
 	memcpy(newcontents + start, oldcontents + start, copy_len);
 }
 
 int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len,
                          const void *const refbuffer)
 {
-	const size_t flash_size = flashctx->chip->total_size * 1024;
+	const size_t flash_size = flashctx->chip->total_size * KiB;
 	const bool verify_all = flashctx->flags.verify_whole_chip;
 	const bool verify = flashctx->flags.verify_after_write;
 	const struct flashrom_layout *const verify_layout =
@@ -2272,7 +2272,7 @@ _free_ret:
 int flashrom_image_verify(struct flashctx *const flashctx, const void *const buffer, const size_t buffer_len)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
-	const size_t flash_size = flashctx->chip->total_size * 1024;
+	const size_t flash_size = flashctx->chip->total_size * KiB;
 
 	if (buffer_len != flash_size)
 		return 2;

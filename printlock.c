@@ -74,14 +74,14 @@ static int printlock_regspace2_block(const struct flashctx *flash, chipaddr lock
 
 static int printlock_regspace2_uniform(struct flashctx *flash, unsigned long block_size)
 {
-	const unsigned int elems = flash->chip->total_size * 1024 / block_size;
+	const unsigned int elems = flash->chip->total_size * KiB / block_size;
 	struct unlockblock blocks[2] = {{.size = block_size, .count = elems}};
 	return regspace2_walk_unlockblocks(flash, blocks, &printlock_regspace2_block);
 }
 
 int printlock_regspace2_uniform_64k(struct flashctx *flash)
 {
-	return printlock_regspace2_uniform(flash, 64 * 1024);
+	return printlock_regspace2_uniform(flash, 64 * KiB);
 }
 
 int printlock_regspace2_block_eraser_0(struct flashctx *flash)
@@ -172,19 +172,19 @@ static int unlock_regspace2_block_generic(const struct flashctx *flash, chipaddr
 
 static int unlock_regspace2_uniform(struct flashctx *flash, unsigned long block_size)
 {
-	const unsigned int elems = flash->chip->total_size * 1024 / block_size;
+	const unsigned int elems = flash->chip->total_size * KiB / block_size;
 	struct unlockblock blocks[2] = {{.size = block_size, .count = elems}};
 	return regspace2_walk_unlockblocks(flash, blocks, &unlock_regspace2_block_generic);
 }
 
 static int unlock_regspace2_uniform_64k(struct flashctx *flash)
 {
-	return unlock_regspace2_uniform(flash, 64 * 1024);
+	return unlock_regspace2_uniform(flash, 64 * KiB);
 }
 
 static int unlock_regspace2_uniform_32k(struct flashctx *flash)
 {
-	return unlock_regspace2_uniform(flash, 32 * 1024);
+	return unlock_regspace2_uniform(flash, 32 * KiB);
 }
 
 static int unlock_regspace2_block_eraser_0(struct flashctx *flash)

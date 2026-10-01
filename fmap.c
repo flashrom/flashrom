@@ -160,11 +160,11 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 	bool fmap_found = false;
 	bool check_offset_0 = true;
 	struct fmap *fmap;
-	const unsigned int chip_size = flashctx->chip->total_size * 1024;
+	const unsigned int chip_size = flashctx->chip->total_size * KiB;
 	const int sig_len = strlen(FMAP_SIGNATURE);
 	bool skip_unreadable_orig = flashctx->flags.skip_unreadable_regions;
 
-	if (rom_offset + len > flashctx->chip->total_size * 1024)
+	if (rom_offset + len > flashctx->chip->total_size * KiB)
 		return 1;
 
 	if (len < sizeof(*fmap))

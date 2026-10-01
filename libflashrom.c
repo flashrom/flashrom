@@ -427,7 +427,7 @@ int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
 
 size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
 {
-	return flashctx->chip->total_size * 1024;
+	return flashctx->chip->total_size * KiB;
 }
 
 void flashrom_flash_release(struct flashrom_flashctx *const flashctx)

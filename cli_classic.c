@@ -771,7 +771,7 @@ static unsigned int count_max_decode_exceedings(const struct flashctx *flash,
 		const struct decode_sizes *max_rom_decode_)
 {
 	unsigned int limitexceeded = 0;
-	uint32_t size = flash->chip->total_size * 1024;
+	uint32_t size = flash->chip->total_size * KiB;
 	enum chipbustype buses = flash->mst->buses_supported & flash->chip->bustype;
 
 	if ((buses & BUS_PARALLEL) && (max_rom_decode_->parallel < size)) {
@@ -779,32 +779,32 @@ static unsigned int count_max_decode_exceedings(const struct flashctx *flash,
 		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
 			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode_->parallel / 1024, "Parallel");
+			 "probe/read/erase/write may fail. ", size / KiB,
+			 max_rom_decode_->parallel / KiB, "Parallel");
 	}
 	if ((buses & BUS_LPC) && (max_rom_decode_->lpc < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
 			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode_->lpc / 1024, "LPC");
+			 "probe/read/erase/write may fail. ", size / KiB,
+			 max_rom_decode_->lpc / KiB, "LPC");
 	}
 	if ((buses & BUS_FWH) && (max_rom_decode_->fwh < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
 			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode_->fwh / 1024, "FWH");
+			 "probe/read/erase/write may fail. ", size / KiB,
+			 max_rom_decode_->fwh / KiB, "FWH");
 	}
 	if ((buses & BUS_SPI) && (max_rom_decode_->spi < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
 			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode_->spi / 1024, "SPI");
+			 "probe/read/erase/write may fail. ", size / KiB,
+			 max_rom_decode_->spi / KiB, "SPI");
 	}
 	return limitexceeded;
 }

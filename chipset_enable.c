@@ -1330,18 +1330,18 @@ static int enable_flash_cs5530(const struct programmer_cfg *cfg, struct pci_dev 
 	reg8 = pci_read_byte(dev, CS5530_RESET_CONTROL_REG);
 	if (reg8 & CS5530_ISA_MASTER) {
 		/* We have A0-A23 available. */
-		max_rom_decode.parallel = 16 * 1024 * 1024;
+		max_rom_decode.parallel = 16 * MiB;
 	} else {
 		reg8 = pci_read_byte(dev, CS5530_USB_SHADOW_REG);
 		if (reg8 & CS5530_ENABLE_SA2320) {
 			/* We have A0-19, A20-A23 available. */
-			max_rom_decode.parallel = 16 * 1024 * 1024;
+			max_rom_decode.parallel = 16 * MiB;
 		} else if (reg8 & CS5530_ENABLE_SA20) {
 			/* We have A0-19, A20 available. */
-			max_rom_decode.parallel = 2 * 1024 * 1024;
+			max_rom_decode.parallel = 2 * MiB;
 		} else {
 			/* A20 and above are not active. */
-			max_rom_decode.parallel = 1024 * 1024;
+			max_rom_decode.parallel = 1 * MiB;
 		}
 	}
 
@@ -1447,14 +1447,14 @@ static int enable_flash_amd_via(const struct programmer_cfg *cfg, struct pci_dev
 static int enable_flash_amd_768_8111(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
 	/* Enable decoding of 0xFFB00000 to 0xFFFFFFFF (5 MB). */
-	max_rom_decode.lpc = 5 * 1024 * 1024;
+	max_rom_decode.lpc = 5 * MiB;
 	return enable_flash_amd_via(cfg, dev, name, 0xC0);
 }
 
 static int enable_flash_vt82c586(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
 	/* Enable decoding of 0xFFF80000 to 0xFFFFFFFF. (512 kB) */
-	max_rom_decode.parallel = 512 * 1024;
+	max_rom_decode.parallel = 512 * KiB;
 	return enable_flash_amd_via(cfg, dev, name, 0xC0);
 }
 
@@ -1462,7 +1462,7 @@ static int enable_flash_vt82c586(const struct programmer_cfg *cfg, struct pci_de
 static int enable_flash_vt82c596(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
 	/* Enable decoding of 0xFFF00000 to 0xFFFFFFFF. (1 MB) */
-	max_rom_decode.parallel = 1024 * 1024;
+	max_rom_decode.parallel = 1 * MiB;
 	return enable_flash_amd_via(cfg, dev, name, 0xE0);
 }
 

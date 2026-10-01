@@ -157,7 +157,7 @@ static int unlock_28f004s5(struct flashctx *flash)
 	}
 
 	/* Read block lock-bits */
-	for (i = 0; i < flash->chip->total_size * 1024; i+= (64 * 1024)) {
+	for (i = 0; i < flash->chip->total_size * KiB; i+= (64 * KiB)) {
 		bcfg = chip_readb(flash, bios + i + 2); // read block lock config
 		msg_cdbg("block lock at %06x is %slocked!\n", i, bcfg ? "" : "un");
 		if (bcfg) {
@@ -210,8 +210,8 @@ static int unlock_lh28f008bjt(struct flashctx *flash)
 	}
 
 	/* Read block lock-bits, 8 * 8 KB + 15 * 64 KB */
-	for (i = 0; i < flash->chip->total_size * 1024;
-	     i += (i >= (64 * 1024) ? 64 * 1024 : 8 * 1024)) {
+	for (i = 0; i < flash->chip->total_size * KiB;
+	     i += (i >= (64 * KiB) ? 64 * KiB : 8 * KiB)) {
 		bcfg = chip_readb(flash, bios + i + 2); /* read block lock config */
 		msg_cdbg("block lock at %06x is %slocked!\n", i,
 			 bcfg ? "" : "un");

@@ -339,7 +339,7 @@ void cleanup_include_args(struct layout_include_args **args)
 int layout_sanity_checks(const struct flashrom_flashctx *const flash)
 {
 	const struct flashrom_layout *const layout = get_layout(flash);
-	const chipsize_t total_size = flash->chip->total_size * 1024;
+	const chipsize_t total_size = flash->chip->total_size * KiB;
 	int ret = 0;
 
 	const struct romentry *entry = NULL;

@@ -21,7 +21,7 @@ static size_t calculate_block_count(const struct flashchip *chip, size_t eraser_
 	size_t block_count = 0;
 
 	chipoff_t addr = 0;
-	for (size_t i = 0; addr < chip->total_size * 1024; i++) {
+	for (size_t i = 0; addr < chip->total_size * KiB; i++) {
 		const struct eraseblock *block = &chip->block_erasers[eraser_idx].eraseblocks[i];
 		block_count += block->count;
 		addr += block->size * block->count;

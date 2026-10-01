@@ -71,7 +71,7 @@ struct sfdp_tbl_hdr {
 static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint32_t block_size)
 {
 	int i;
-	uint32_t total_size = chip->total_size * 1024;
+	uint32_t total_size = chip->total_size * KiB;
 	enum block_erase_func erasefn = spi25_get_erasefn_from_opcode(opcode);
 
 	if (erasefn == NO_BLOCK_ERASE_FUNC || total_size == 0 || block_size == 0 ||
@@ -209,7 +209,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		return 1;
 	}
 	total_size = ((tmp32 & 0x7FFFFFFF) + 1) / 8;
-	chip->total_size = total_size / 1024;
+	chip->total_size = total_size / KiB;
 	msg_cdbg2("  Flash chip size is %d kB.\n", chip->total_size);
 	if (total_size > (1 << 24)) {
 		msg_cdbg("Flash chip size is bigger than what 3-Byte addressing "
@@ -218,7 +218,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	}
 
 	if (opcode_4k_erase != 0xFF)
-		sfdp_add_uniform_eraser(chip, opcode_4k_erase, 4 * 1024);
+		sfdp_add_uniform_eraser(chip, opcode_4k_erase, 4 * KiB);
 
 	/* FIXME: double words 3-7 contain unused fast read information */
 

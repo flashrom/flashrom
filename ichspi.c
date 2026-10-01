@@ -1217,7 +1217,7 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 	} else if (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS ||
 	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
 		/* BBAR may cut part of the chip off at the lower end. */
-		const uint32_t valid_base = ichspi_bbar & ((flash->chip->total_size * 1024) - 1);
+		const uint32_t valid_base = ichspi_bbar & ((flash->chip->total_size * KiB) - 1);
 		const uint32_t addr_offset = ichspi_bbar - valid_base;
 		/* Highest address we can program is (2^24 - 1). */
 		const uint32_t valid_end = (1 << 24) - addr_offset;
@@ -1309,13 +1309,13 @@ static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr, uint32_t addr_
 	uint8_t enc_berase;
 	static const uint32_t dec_berase[4] = {
 		256,
-		4 * 1024,
-		8 * 1024,
-		64 * 1024
+		4 * KiB,
+		8 * KiB,
+		64 * KiB
 	};
 
 	if (only_4k) {
-		return 4 * 1024;
+		return 4 * KiB;
 	}
 
 	ich_hwseq_set_addr(addr, addr_mask);
@@ -1618,8 +1618,8 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		msg_cdbg("s with a combined");
 	else
 		msg_cdbg(" with a");
-	msg_cdbg(" density of %"PRId32" kB.\n", total_size / 1024);
-	flash->chip->total_size = total_size / 1024;
+	msg_cdbg(" density of %"PRId32" kB.\n", total_size / KiB);
+	flash->chip->total_size = total_size / KiB;
 
 	eraser = &(flash->chip->block_erasers[0]);
 	if (!hwseq_data->only_4k)
@@ -1688,7 +1688,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 		return -1;
 	}
 
-	if (addr + len > flash->chip->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * KiB) {
 		msg_perr("Request to erase some inaccessible memory address(es)"
 			 " (addr=0x%x, len=%d). Not erasing anything.\n", addr, len);
 		return -1;
@@ -1708,7 +1708,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	uint8_t block_len;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
-	if (addr + len > flash->chip->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * KiB) {
 		msg_perr("Request to read from an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;
@@ -1740,7 +1740,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	uint8_t block_len;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
-	if (addr + len > flash->chip->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * KiB) {
 		msg_perr("Request to write to an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;

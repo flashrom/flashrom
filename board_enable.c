@@ -612,16 +612,16 @@ int it8705f_write_enable(uint8_t port)
 		msg_pdbg("Enabling IT8705F flash ROM interface write.\n");
 		if (tmp & 0x02) {
 			/* The data sheet contradicts itself about max size. */
-			max_rom_decode.parallel = 1024 * 1024;
+			max_rom_decode.parallel = 1 * MiB;
 			msg_pinfo("IT8705F with very unusual settings.\n"
 				  "Please send the output of \"flashrom -V -p internal\" to flashrom@flashrom.org\n"
 				  "with \"IT8705: your board name: flashrom -V\" as the subject to help us finish\n"
 				  "support for your Super I/O. Thanks.\n");
 			ret = 1;
 		} else if (tmp & 0x08) {
-			max_rom_decode.parallel = 512 * 1024;
+			max_rom_decode.parallel = 512 * KiB;
 		} else {
-			max_rom_decode.parallel = 256 * 1024;
+			max_rom_decode.parallel = 256 * KiB;
 		}
 		/* Safety checks. The data sheet is unclear here: Segments 1+3
 		 * overlap, no segment seems to cover top - 1MB to top - 512kB.
@@ -2757,7 +2757,7 @@ int board_flash_enable(struct board_cfg *cfg,
 
 	/* limit the maximum size of the parallel bus */
 	if (board->max_rom_decode_parallel)
-		max_rom_decode.parallel = board->max_rom_decode_parallel * 1024;
+		max_rom_decode.parallel = board->max_rom_decode_parallel * KiB;
 
 	if (board->enable) {
 		msg_pinfo("Enabling full flash access for board \"%s %s\"... ",
