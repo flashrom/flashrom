@@ -23,16 +23,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 256} },
+				.eraseblocks = { {4 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -58,16 +58,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 1024} },
+				.eraseblocks = { {4 * KiB, 1024} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 64} },
+				.eraseblocks = { {64 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.eraseblocks = { {4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.eraseblocks = { {4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -94,14 +94,14 @@
 		{
 			{
 				.eraseblocks = {
-					{128 * 1024, 1},
-					{96 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{128 * KiB, 1},
+					{96 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},

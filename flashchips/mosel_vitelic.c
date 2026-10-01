@@ -26,7 +26,7 @@
 				.eraseblocks = { {512, 128} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 1} },
+				.eraseblocks = { {64 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -53,7 +53,7 @@
 				.eraseblocks = { {512, 128} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 1} },
+				.eraseblocks = { {64 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -80,7 +80,7 @@
 				.eraseblocks = { {1024, 512} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -107,7 +107,7 @@
 				.eraseblocks = { {1024, 512} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -134,7 +134,7 @@
 				.eraseblocks = { {512, 128} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 1} },
+				.eraseblocks = { {64 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -161,7 +161,7 @@
 				.eraseblocks = { {512, 256} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -188,7 +188,7 @@
 				.eraseblocks = { {512, 512} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},

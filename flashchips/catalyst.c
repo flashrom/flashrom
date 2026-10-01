@@ -23,7 +23,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 1} },
+				.eraseblocks = { {64 * KiB, 1} },
 				.block_erase = NO_BLOCK_ERASE_FUNC, /* TODO */
 			},
 		},

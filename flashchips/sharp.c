@@ -15,7 +15,7 @@
 		.manufacture_id	= SHARP_ID,
 		.model_id	= SHARP_LH28F008BJ__PB,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_AT82802AB,
 		.probe_timing	= TIMING_ZERO,
@@ -23,12 +23,12 @@
 		{
 			{
 				.eraseblocks = {
-					{8 * 1024, 8},
-					{64 * 1024, 15}
+					{8 * KiB, 8},
+					{64 * KiB, 15}
 				 },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}
 		},
@@ -45,7 +45,7 @@
 		.manufacture_id	= SHARP_ID,
 		.model_id	= SHARP_LHF00L04,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -54,13 +54,13 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 15},
-					{8 * 1024, 8}
+					{64 * KiB, 15},
+					{8 * KiB, 8}
 				 },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
 				.eraseblocks = {
-					{1024 * 1024, 1}
+					{1 * MiB, 1}
 				},
 				.block_erase = NO_BLOCK_ERASE_FUNC, /* 30 D0, only in A/A mux mode */
 			},

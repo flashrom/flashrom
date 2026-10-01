@@ -23,10 +23,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -52,10 +52,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -81,10 +81,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -110,10 +110,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 64} },
+				.eraseblocks = { {64 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.eraseblocks = { {4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -139,10 +139,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 128} },
+				.eraseblocks = { {64 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {8 * 1024 * 1024, 1} },
+				.eraseblocks = { {8 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -169,16 +169,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 512} },
+				.eraseblocks = { {4 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 2048 * 1024, 1} },
+				.eraseblocks = { { 2 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 2048 * 1024, 1} },
+				.eraseblocks = { { 2 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -206,13 +206,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 64} },
+				.eraseblocks = { {256 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -246,18 +246,18 @@
 				 * space. Trying to access an address outside these 4kB blocks does have no
 				 * effect on the memory contents, e.g.
 				.eraseblocks = {
-					{4 * 1024, 32},
-					{64 * 1024, 254} // inaccessible
+					{4 * KiB, 32},
+					{64 * KiB, 254} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
-				.eraseblocks = { { 64 * 1024, 256} },
+				.eraseblocks = { { 64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -284,19 +284,19 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 4096} },
+				.eraseblocks = { {4 * KiB, 4096} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {32 * 1024, 512} },
+				.eraseblocks = { {32 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {16384 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {16384 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -340,16 +340,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -375,10 +375,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 64} },
+				.eraseblocks = { {256 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -410,18 +410,18 @@
 				 * opcode 0x20. Trying to access an address outside these 4kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{4 * 1024, 32},
-					{64 * 1024, 254} // inaccessible
+					{4 * KiB, 32},
+					{64 * KiB, 254} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
-				.eraseblocks = { { 64 * 1024, 256} },
+				.eraseblocks = { { 64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -449,13 +449,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 64} },
+				.eraseblocks = { {256 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -481,13 +481,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {128 * 1024, 128} },
+				.eraseblocks = { {128 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
@@ -512,13 +512,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
@@ -548,25 +548,25 @@
 			 * opcode 0x20. Trying to access an address outside these 4kB blocks does have no
 			 * effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{4 * 1024, 32},
-					{64 * 1024, 254} // inaccessible
+					{4 * KiB, 32},
+					{64 * KiB, 254} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
 			/* FIXME: Additionally it also supports erase opcode 40h for the respective 2*4 kB pairs
 				.eraseblocks = {
-					{8 * 1024, 16},
-					{64 * 1024, 254} // inaccessible
+					{8 * KiB, 16},
+					{64 * KiB, 254} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { { 64 * 1024, 256} },
+				.eraseblocks = { { 64 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -593,13 +593,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 64} },
+				.eraseblocks = { {256 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 16384 * 1024, 1} },
+				.eraseblocks = { { 16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -626,16 +626,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 1024} },
+				.eraseblocks = { {4 * KiB, 1024} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 64} },
+				.eraseblocks = { {64 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 4096 * 1024, 1} },
+				.eraseblocks = { { 4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 4096 * 1024, 1} },
+				.eraseblocks = { { 4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -662,16 +662,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 2048} },
+				.eraseblocks = { {4 * KiB, 2048} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 128} },
+				.eraseblocks = { {64 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 8192 * 1024, 1} },
+				.eraseblocks = { { 8 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 8192 * 1024, 1} },
+				.eraseblocks = { { 8 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -697,16 +697,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 128} },
+				.eraseblocks = { {4 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 512 * 1024, 1} },
+				.eraseblocks = { { 512 * KiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 512 * 1024, 1} },
+				.eraseblocks = { { 512 * KiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -732,16 +732,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 256} },
+				.eraseblocks = { {4 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 1024 * 1024, 1} },
+				.eraseblocks = { { 1 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 1024 * 1024, 1} },
+				.eraseblocks = { { 1 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -769,28 +769,28 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 8192} },
+				.eraseblocks = { {4 * KiB, 8192} },
 				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
-				.eraseblocks = { {4 * 1024, 8192} },
+				.eraseblocks = { {4 * KiB, 8192} },
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
-				.eraseblocks = { {32 * 1024, 1024} },
+				.eraseblocks = { {32 * KiB, 1024} },
 				.block_erase = SPI_BLOCK_ERASE_53,
 			}, {
-				.eraseblocks = { {32 * 1024, 1024} },
+				.eraseblocks = { {32 * KiB, 1024} },
 				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
-				.eraseblocks = { {64 * 1024, 512} },
+				.eraseblocks = { {64 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
-				.eraseblocks = { {64 * 1024, 512} },
+				.eraseblocks = { {64 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {32768 * 1024, 1} },
+				.eraseblocks = { {32 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {32768 * 1024, 1} },
+				.eraseblocks = { {32 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -833,10 +833,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 64} },
+				.eraseblocks = { {256 * KiB, 64} },
 				.block_erase = S25FL_BLOCK_ERASE,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
@@ -862,10 +862,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = S25FL_BLOCK_ERASE,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
@@ -896,21 +896,21 @@
 				 * opcode 0x20. Trying to access an address outside these 4kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{4 * 1024, 32},
-					{64 * 1024, 254} // inaccessible
+					{4 * KiB, 32},
+					{64 * KiB, 254} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
-				.eraseblocks = { { 64 * 1024, 512} },
+				.eraseblocks = { { 64 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
-				.eraseblocks = { { 64 * 1024, 512} },
+				.eraseblocks = { { 64 * KiB, 512} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 32768 * 1024, 1} },
+				.eraseblocks = { { 32 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 32768 * 1024, 1} },
+				.eraseblocks = { { 32 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -938,16 +938,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { { 256 * 1024, 256} },
+				.eraseblocks = { { 256 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
-				.eraseblocks = { { 256 * 1024, 256} },
+				.eraseblocks = { { 256 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 65536 * 1024, 1} },
+				.eraseblocks = { { 64 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 65536 * 1024, 1} },
+				.eraseblocks = { { 64 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -973,13 +973,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = S25FS_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
@@ -1004,13 +1004,13 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 256} },
+				.eraseblocks = { {64 * KiB, 256} },
 				.block_erase = S25FS_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
@@ -1046,16 +1046,16 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { { 256 * 1024, 256} },
+				.eraseblocks = { { 256 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
-				.eraseblocks = { { 256 * 1024, 256} },
+				.eraseblocks = { { 256 * KiB, 256} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { { 65536 * 1024, 1} },
+				.eraseblocks = { { 64 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
-				.eraseblocks = { { 65536 * 1024, 1} },
+				.eraseblocks = { { 64 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},

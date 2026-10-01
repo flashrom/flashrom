@@ -15,7 +15,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F002B,
 		.total_size	= 256,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_AAA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -24,14 +24,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 3},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -47,7 +47,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F002T,
 		.total_size	= 256,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_AAA | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -56,14 +56,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 3},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -79,7 +79,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F040B,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -87,10 +87,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -107,7 +107,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F400BB,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -116,14 +116,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 7},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 7},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -140,7 +140,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F400BT,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -149,14 +149,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 7},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 7},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -172,7 +172,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29W010B,
 		.total_size	= 128,
-		.page_size	= 16 * 1024,
+		.page_size	= 16 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -180,10 +180,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {16 * 1024, 8} },
+				.eraseblocks = { {16 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -199,7 +199,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29W040B,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -207,10 +207,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -226,7 +226,7 @@
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29W512B,
 		.total_size	= 64,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -234,7 +234,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 1} },
+				.eraseblocks = { {64 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
@@ -259,14 +259,14 @@
 		{
 			{
 				.eraseblocks = {
-					{4 * 1024, 16}, /* sector */
-					{64 * 1024, 5}, /* block */
-					{4 * 1024, 16}, /* sector */
-					{4 * 1024, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{64 * KiB, 5}, /* block */
+					{4 * KiB, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
 				},
 				.block_erase = STM50_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -292,14 +292,14 @@
 		{
 			{
 				.eraseblocks = {
-					{4 * 1024, 16}, /* sector */
-					{4 * 1024, 16}, /* sector */
-					{64 * 1024, 5}, /* block */
-					{4 * 1024, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{64 * KiB, 5}, /* block */
+					{4 * KiB, 16}, /* sector */
 				},
 				.block_erase = STM50_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -325,14 +325,14 @@
 		{
 			{
 				.eraseblocks = {
-					{4 * 1024, 16}, /* sector */
-					{64 * 1024, 13}, /* block */
-					{4 * 1024, 16}, /* sector */
-					{4 * 1024, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{64 * KiB, 13}, /* block */
+					{4 * KiB, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
 				},
 				.block_erase = STM50_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -359,14 +359,14 @@
 		{
 			{
 				.eraseblocks = {
-					{4 * 1024, 16}, /* sector */
-					{4 * 1024, 16}, /* sector */
-					{64 * 1024, 13}, /* block */
-					{4 * 1024, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{4 * KiB, 16}, /* sector */
+					{64 * KiB, 13}, /* block */
+					{4 * KiB, 16}, /* sector */
 				},
 				.block_erase = STM50_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -393,14 +393,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 3},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = NO_BLOCK_ERASE_FUNC, /* Only in A/A mux mode */
 			}
 		},
@@ -426,7 +426,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -451,7 +451,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -476,7 +476,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -501,7 +501,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
@@ -527,11 +527,11 @@
 		{
 			{
 				.eraseblocks = {
-					{4 * 1024, 16},
-					{64 * 1024, 30},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{4 * KiB, 16},
+					{64 * KiB, 30},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			}
@@ -562,7 +562,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 1} },
+				.eraseblocks = { {4 * KiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_EMULATION,
 			}
 		},
@@ -589,7 +589,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_EMULATION,
 			}
 		},

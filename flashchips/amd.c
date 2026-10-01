@@ -24,14 +24,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 3},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -56,14 +56,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 3},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -79,7 +79,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F010,
 		.total_size	= 128,
-		.page_size	= 16 * 1024,
+		.page_size	= 16 * KiB,
 		.feature_bits	= FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -87,10 +87,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {16 * 1024, 8} },
+				.eraseblocks = { {16 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -106,7 +106,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F010,
 		.total_size	= 128,
-		.page_size	= 16 * 1024,
+		.page_size	= 16 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PRE,
 		.probe		= PROBE_JEDEC,
@@ -114,10 +114,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {16 * 1024, 8} },
+				.eraseblocks = { {16 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -132,8 +132,8 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F016D,
-		.total_size	= 2 * 1024,
-		.page_size	= 64 * 1024,
+		.total_size	= 2 * KiB,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -141,10 +141,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -160,7 +160,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F040,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -168,10 +168,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -187,7 +187,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F040,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -195,10 +195,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -214,7 +214,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F080,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -222,10 +222,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -241,7 +241,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29F080,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -249,10 +249,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -268,7 +268,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV001BB,
 		.total_size	= 128,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -277,13 +277,13 @@
 		{
 			{
 				.eraseblocks = {
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-					{16 * 1024, 7},
+					{8 * KiB, 1},
+					{4 * KiB, 2},
+					{16 * KiB, 7},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -299,7 +299,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV001BT,
 		.total_size	= 128,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -308,13 +308,13 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 7},
-					{4 * 1024, 2},
-					{8 * 1024, 1},
+					{16 * KiB, 7},
+					{4 * KiB, 2},
+					{8 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {128 * 1024, 1} },
+				.eraseblocks = { {128 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -330,7 +330,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV002BB,
 		.total_size	= 256,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -339,14 +339,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 3},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -362,7 +362,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV002BT,
 		.total_size	= 256,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -371,14 +371,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 3},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -394,7 +394,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV004BB,
 		.total_size	= 512,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -403,14 +403,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 7},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 7},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -426,7 +426,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV004BT,
 		.total_size	= 512,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -435,14 +435,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 7},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 7},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -458,7 +458,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV008BB,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -467,14 +467,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 15},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 15},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -490,7 +490,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV008BT,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024, /* unused */
+		.page_size	= 64 * KiB, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -499,14 +499,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 15},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 15},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -522,7 +522,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV040B,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -530,10 +530,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -549,7 +549,7 @@
 		.manufacture_id	= AMD_ID,
 		.model_id	= AMD_AM29LV080B,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET, /* datasheet specifies address as don't care */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -557,10 +557,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
+				.eraseblocks = { {1 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},

@@ -28,15 +28,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{8 * 1024, 8},
-					{64 * 1024, 31} // inaccessible
+					{8 * KiB, 8},
+					{64 * KiB, 31} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -67,15 +67,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{64 * 1024, 31}, // inaccessible
-					{8 * 1024, 8}
+					{64 * KiB, 31}, // inaccessible
+					{8 * KiB, 8}
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 32} },
+				.eraseblocks = { {64 * KiB, 32} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -106,15 +106,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{8 * 1024, 8},
-					{64 * 1024, 63} // inaccessible
+					{8 * KiB, 8},
+					{64 * KiB, 63} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 64} },
+				.eraseblocks = { {64 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.eraseblocks = { {4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -145,15 +145,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{64 * 1024, 63}, // inaccessible
-					{8 * 1024, 8}
+					{64 * KiB, 63}, // inaccessible
+					{8 * KiB, 8}
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 64} },
+				.eraseblocks = { {64 * KiB, 64} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.eraseblocks = { {4 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -184,15 +184,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{8 * 1024, 8},
-					{64 * 1024, 127} // inaccessible
+					{8 * KiB, 8},
+					{64 * KiB, 127} // inaccessible
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 128} },
+				.eraseblocks = { {64 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {8 * 1024 * 1024, 1} },
+				.eraseblocks = { {8 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -223,15 +223,15 @@
 				 * opcode 0x40. Trying to access an address outside these 8 8kB blocks does
 				 * have no effect on the memory contents, but sets a flag in the SR.
 				.eraseblocks = {
-					{64 * 1024, 127}, // inaccessible
-					{8 * 1024, 8}
+					{64 * KiB, 127}, // inaccessible
+					{8 * KiB, 8}
 				},
 				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
-				.eraseblocks = { {64 * 1024, 128} },
+				.eraseblocks = { {64 * KiB, 128} },
 				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
-				.eraseblocks = { {8 * 1024 * 1024, 1} },
+				.eraseblocks = { {8 * MiB, 1} },
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
@@ -249,7 +249,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F001B,
 		.total_size	= 128,
-		.page_size	= 128 * 1024, /* 8k + 2x4k + 112k */
+		.page_size	= 128 * KiB, /* 8k + 2x4k + 112k */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -257,9 +257,9 @@
 		{
 			{
 				.eraseblocks = {
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-					{112 * 1024, 1},
+					{8 * KiB, 1},
+					{4 * KiB, 2},
+					{112 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -276,7 +276,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F001T,
 		.total_size	= 128,
-		.page_size	= 128 * 1024, /* 112k + 2x4k + 8k */
+		.page_size	= 128 * KiB, /* 112k + 2x4k + 8k */
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -284,9 +284,9 @@
 		{
 			{
 				.eraseblocks = {
-					{112 * 1024, 1},
-					{4 * 1024, 2},
-					{8 * 1024, 1},
+					{112 * KiB, 1},
+					{4 * KiB, 2},
+					{8 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -303,7 +303,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F002T,
 		.total_size	= 256,
-		.page_size	= 256 * 1024,
+		.page_size	= 256 * KiB,
 		.tested		= TEST_OK_PRE,
 		.probe		= PROBE_AT82802AB,
 		.probe_timing	= TIMING_ZERO, /* Datasheet has no timing info specified */
@@ -311,10 +311,10 @@
 		{
 			{
 				.eraseblocks = {
-					{128 * 1024, 1},
-					{96 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{128 * KiB, 1},
+					{96 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -330,7 +330,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F004B,
 		.total_size	= 512,
-		.page_size	= 128 * 1024, /* maximal block size */
+		.page_size	= 128 * KiB, /* maximal block size */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -338,10 +338,10 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{96 * 1024, 1},
-					{128 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{96 * KiB, 1},
+					{128 * KiB, 3},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -357,7 +357,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F004T,
 		.total_size	= 512,
-		.page_size	= 128 * 1024, /* maximal block size */
+		.page_size	= 128 * KiB, /* maximal block size */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -365,10 +365,10 @@
 		{
 			{
 				.eraseblocks = {
-					{128 * 1024, 3},
-					{96 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{128 * KiB, 3},
+					{96 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -391,7 +391,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
@@ -407,7 +407,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F400B,
 		.total_size	= 512,
-		.page_size	= 128 * 1024, /* maximal block size */
+		.page_size	= 128 * KiB, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -416,10 +416,10 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{96 * 1024, 1},
-					{128 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{96 * KiB, 1},
+					{128 * KiB, 3},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -435,7 +435,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F400T,
 		.total_size	= 512,
-		.page_size	= 128 * 1024, /* maximal block size */
+		.page_size	= 128 * KiB, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -444,10 +444,10 @@
 		{
 			{
 				.eraseblocks = {
-					{128 * 1024, 3},
-					{96 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{128 * KiB, 3},
+					{96 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
@@ -463,7 +463,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_82802AB,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_AT82802AB,
@@ -471,7 +471,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
@@ -488,7 +488,7 @@
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_82802AC,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PR,
 		.probe		= PROBE_AT82802AB,
@@ -496,7 +496,7 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 16} },
+				.eraseblocks = { {64 * KiB, 16} },
 				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},

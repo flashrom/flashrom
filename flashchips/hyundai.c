@@ -15,7 +15,7 @@
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F002B,
 		.total_size	= 256,
-		.page_size	= 256 * 1024,
+		.page_size	= 256 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -24,14 +24,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 3},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -47,7 +47,7 @@
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F002T,
 		.total_size	= 256,
-		.page_size	= 256 * 1024,
+		.page_size	= 256 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
 		.tested		= TEST_OK_PRE,
 		.probe		= PROBE_JEDEC,
@@ -56,14 +56,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 3},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {256 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -79,7 +79,7 @@
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F040A,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -87,10 +87,10 @@
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {64 * 1024, 8} },
+				.eraseblocks = { {64 * KiB, 8} },
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},

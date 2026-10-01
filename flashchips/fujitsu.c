@@ -15,7 +15,7 @@
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29F004BC,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -24,14 +24,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 7},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 7},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -47,7 +47,7 @@
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29F004TC,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -56,14 +56,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 7},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 7},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -80,7 +80,7 @@
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29F400BC,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -89,14 +89,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 7},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 7},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -112,7 +112,7 @@
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29F400TC,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_AAA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -121,14 +121,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 7},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 7},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
-				.eraseblocks = { {512 * 1024, 1} },
+				.eraseblocks = { {512 * KiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -143,7 +143,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29LV160BE,
-		.total_size	= 2 * 1024,
+		.total_size	= 2 * KiB,
 		.page_size	= 0,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -153,14 +153,14 @@
 		{
 			{
 				.eraseblocks = {
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 31},
+					{16 * KiB, 1},
+					{8 * KiB, 2},
+					{32 * KiB, 1},
+					{64 * KiB, 31},
 				},
 				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
@@ -175,7 +175,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= FUJITSU_MBM29LV160TE,
-		.total_size	= 2 * 1024,
+		.total_size	= 2 * KiB,
 		.page_size	= 0,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -185,14 +185,14 @@
 		{
 			{
 				.eraseblocks = {
-					{64 * 1024, 31},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
+					{64 * KiB, 31},
+					{32 * KiB, 1},
+					{8 * KiB, 2},
+					{16 * KiB, 1},
 				},
 				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
+				.eraseblocks = { {2 * MiB, 1} },
 				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
