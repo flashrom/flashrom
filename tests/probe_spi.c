@@ -584,6 +584,86 @@ void probe_big_spansion_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 }
+
+void probe_st95_fixed_chipname(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= ST_M95_RDID,
+		.readcount		= ST_M95_RDID_INSIZE,
+		.writecount		= ST_M95_RDID_3BA_OUTSIZE,
+		.vendor_id		= 0x20, /* ST_ID */
+		.model_id_left_byte	= 0x00, /* ST_M95M02 1st byte */
+		.model_id_right_byte	= 0x12, /* ST_M95M02 2nd byte */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[1] = {"M95M02"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				"M95M02", expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	/* Since fixed chip name was given, probing should happen only once, for that name. */
+	assert_int_equal(1, probe_io_state.opcode_counter);
+	assert_int_equal(1, probe_io_state.counter);
+}
+
+void probe_st95_try_all_flashchips(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= ST_M95_RDID,
+		.readcount		= ST_M95_RDID_INSIZE,
+		.writecount		= ST_M95_RDID_3BA_OUTSIZE,
+		.vendor_id		= 0x20, /* ST_ID */
+		.model_id_left_byte	= 0x00, /* ST_M95M02 1st byte */
+		.model_id_right_byte	= 0x12, /* ST_M95M02 2nd byte */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[1] = {"M95M02"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_true((probe_io_state.opcode_counter >= PROBE_COUNT_JEDEC_ST_M95_RDID)
+			&& (probe_io_state.opcode_counter <= flashchips_size));
+	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
+		       && (probe_io_state.counter <= flashchips_size));
+}
+
+void probe_st95_no_matches_found(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= ST_M95_RDID,
+		.readcount		= ST_M95_RDID_INSIZE,
+		.writecount		= ST_M95_RDID_3BA_OUTSIZE,
+		/* The values below represent non-existent model, we expect no matches found. */
+		.vendor_id		= 0x00,
+		.model_id_left_byte	= 0xFF,
+		.model_id_right_byte	= 0xFF,
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				NULL /* no matched names expected */, 0);
+
+	print_probing_results(probe_io_state);
+
+	/* No matches, but we needed to go through everything to discover that. */
+	// FIXME: change to assert_int_equal after caching is fully implemented.
+	// At the moment the number of opcode calls are greater than, because not all
+	// probing functions are using cache.
+	assert_true((probe_io_state.opcode_counter >= PROBE_COUNT_JEDEC_ST_M95_RDID)
+			&& (probe_io_state.opcode_counter <= flashchips_size));
+	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
+		       && (probe_io_state.counter <= flashchips_size));
+}
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
 	SKIP_TEST(probe_jedec_rdid3_try_all_flashchips)
@@ -600,4 +680,7 @@ void probe_big_spansion_no_matches_found(void **state)
 	SKIP_TEST(probe_big_spansion_fixed_chipname)
 	SKIP_TEST(probe_big_spansion_try_all_flashchips)
 	SKIP_TEST(probe_big_spansion_no_matches_found)
+	SKIP_TEST(probe_st95_fixed_chipname)
+	SKIP_TEST(probe_st95_try_all_flashchips)
+	SKIP_TEST(probe_st95_no_matches_found)
 #endif /* CONFIG_LINUX_SPI */
