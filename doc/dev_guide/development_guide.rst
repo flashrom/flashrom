@@ -334,14 +334,15 @@ Merge checklist
 #. Commit message should have Signed-off-by line, see :ref:`sign-off` and align with the rest
    of the rules for :ref:`commit-message`
 #. All the comments need to be addressed, especially if there was a negative vote in the process of review (-1 or -2).
-#. flashrom developers are people from literally all around the planet, and various timezones. We usually wait
-   for 3 days (3 * 24hours) after the patch is fully approved just in case of last minute concerns from all timezones.
+#. flashrom developers are people from everywhere. We usually wait for 2 days (48 hours) after the patch is fully approved
+   just in case of last minute concerns, except for trivial changes such as typo fixes or small documentation updates
+   which may be merged faster after verification by a second reviewer.
 #. In the case of emergency, merging should not take place within less than 24 hours after the review
    started (i.e. the first message by a reviewer on Gerrit).
 
 To help search for patches which are potential candidates for merging, you can try using this search in Gerrit::
 
-   status:open project:flashrom -is:wip -label:Verified-1 label:Verified+1 -label:Code-Review<0 age:3d is:mergeable is:submittable -has:unresolved
+   status:open project:flashrom -is:wip -label:Verified-1 label:Verified+1 -label:Code-Review<0 age:2d is:mergeable is:submittable -has:unresolved
 
 Note the search is not a replacement for Merge checklist, but it can help find candidates for merging.
 
