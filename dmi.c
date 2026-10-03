@@ -50,8 +50,8 @@ static struct {
  *	- 1: in all likelihood a laptop
  *	- 2: chassis-type is not specific enough
  * A full list of chassis types can be found in the System Management BIOS
- * (SMBIOS) Reference Specification 3.7.0 section 7.4.1 "Chassis Types" at
- * https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf
+ * (SMBIOS) Specification 3.10.0 section 7.4.1 "Chassis Types" at
+ * https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.10.0.pdf
  * The types below are the most common ones.
  */
 static const struct {
@@ -231,10 +231,11 @@ out:
 /* Longest entry point structure: the SMBIOS 2.1 one is 0x1f bytes, the SMBIOS 3.0 one 0x18. */
 #define SMBIOS_EP_MAX_LEN 0x20
 
-/* SMBIOS 2.1 entry point ("_SM_"), SMBIOS spec section 5.2.1. Returns 0 on success. */
+/* SMBIOS 2.1 entry point ("_SM_"), SMBIOS spec section 5.2.1. Returns 0 on success.
+ * Some 2.1 implementations report a length of 0x1e, following an erratum in that spec. */
 static int smbios_decode(const uint8_t *buf, size_t len, int *is_laptop)
 {
-	if (len < 0x1f || buf[0x05] < 0x1f || buf[0x05] > len ||
+	if (len < 0x1e || buf[0x05] < 0x1e || buf[0x05] > len ||
 	    !dmi_checksum(buf, buf[0x05]) ||
 	    (memcmp(buf + 0x10, "_DMI_", 5) != 0) ||
 	    !dmi_checksum(buf + 0x10, 0x0F))
