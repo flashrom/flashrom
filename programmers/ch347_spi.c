@@ -3,40 +3,19 @@
  * SPDX-FileCopyrightText: 2022 Nicholas Chin <nic.c3.14@gmail.com>
  */
 
+#include "ch347_spi.h"
 #include "platform/string.h"
-#include <stdlib.h>
-#include <libusb.h>
 #include "platform/endian.h"
 #include "programmer.h"
 #include "flash.h"
 #include "helpers.h"
 #include "log.h"
 #include "usb_device.h"
-
-#define CH347_CMD_SPI_SET_CFG	0xC0
-#define CH347_CMD_SPI_CS_CTRL	0xC1
-#define CH347_CMD_SPI_OUT_IN	0xC2
-#define CH347_CMD_SPI_IN	0xC3
-#define CH347_CMD_SPI_OUT	0xC4
-#define CH347_CMD_SPI_GET_CFG	0xCA
-
-#define CH347_CS_ASSERT		0x00
-#define CH347_CS_DEASSERT	0x40
-#define CH347_CS_CHANGE		0x80
-#define CH347_CS_IGNORE		0x00
-
-#define WRITE_EP	0x06
-#define READ_EP 	0x86
+#include <libusb.h>
+#include <stdlib.h>
 
 #define CH347T_IFACE 2
 #define CH347F_IFACE 4
-
-/* The USB descriptor says the max transfer size is 512 bytes, but the
- * vendor driver only seems to transfer a maximum of 510 bytes at once,
- * leaving 507 bytes for data as the command + length take up 3 bytes
- */
-#define CH347_PACKET_SIZE 510
-#define CH347_MAX_DATA_LEN (CH347_PACKET_SIZE - 3)
 
 struct ch347_spi_data {
 	struct libusb_device_handle *handle;
@@ -94,7 +73,7 @@ static int ch347_cs_control(struct ch347_spi_data *ch347_data, uint8_t cs1, uint
 		[8] = cs2
 	};
 
-	int32_t ret = libusb_bulk_transfer(ch347_data->handle, WRITE_EP, cmd, sizeof(cmd), NULL, 1000);
+	int32_t ret = libusb_bulk_transfer(ch347_data->handle, CH347_WRITE_EP, cmd, sizeof(cmd), NULL, 1000);
 	if (ret < 0) {
 		msg_perr("Could not change CS!\n");
 		return -1;
@@ -122,13 +101,13 @@ static int ch347_write(struct ch347_spi_data *ch347_data, unsigned int writecnt,
 		buffer[2] = ((data_len) & 0xFF00) >> 8;
 		memcpy(buffer + 3, writearr + bytes_written, data_len);
 
-		ret = libusb_bulk_transfer(ch347_data->handle, WRITE_EP, buffer, packet_len, &transferred, 1000);
+		ret = libusb_bulk_transfer(ch347_data->handle, CH347_WRITE_EP, buffer, packet_len, &transferred, 1000);
 		if (ret < 0 || transferred != packet_len) {
 			msg_perr("Could not send write command\n");
 			return -1;
 		}
 
-		ret = libusb_bulk_transfer(ch347_data->handle, READ_EP, resp_buf, sizeof(resp_buf), NULL, 1000);
+		ret = libusb_bulk_transfer(ch347_data->handle, CH347_READ_EP, resp_buf, sizeof(resp_buf), NULL, 1000);
 		if (ret < 0) {
 			msg_perr("Could not receive write command response\n");
 			return -1;
@@ -155,14 +134,14 @@ static int ch347_read(struct ch347_spi_data *ch347_data, unsigned int readcnt, u
 		[6] = (readcnt & 0xFF000000) >> 24
 	};
 
-	ret = libusb_bulk_transfer(ch347_data->handle, WRITE_EP, command_buf, sizeof(command_buf), &transferred, 1000);
+	ret = libusb_bulk_transfer(ch347_data->handle, CH347_WRITE_EP, command_buf, sizeof(command_buf), &transferred, 1000);
 	if (ret < 0 || transferred != sizeof(command_buf)) {
 		msg_perr("Could not send read command\n");
 		return -1;
 	}
 
 	while (bytes_read < readcnt) {
-		ret = libusb_bulk_transfer(ch347_data->handle, READ_EP, buffer, CH347_PACKET_SIZE, &transferred, 1000);
+		ret = libusb_bulk_transfer(ch347_data->handle, CH347_READ_EP, buffer, CH347_PACKET_SIZE, &transferred, 1000);
 		if (ret < 0) {
 			msg_perr("Could not read data\n");
 			return -1;
@@ -263,7 +242,7 @@ static int32_t ch347_spi_config(struct ch347_spi_data *ch347_data, uint8_t divis
 		[19] = 7,
 	};
 
-	ret = libusb_bulk_transfer(ch347_data->handle, WRITE_EP, buff, sizeof(buff), NULL, 1000);
+	ret = libusb_bulk_transfer(ch347_data->handle, CH347_WRITE_EP, buff, sizeof(buff), NULL, 1000);
 	if (ret < 0) {
 		msg_perr("Could not configure SPI interface\n");
 		return ret;
@@ -274,7 +253,7 @@ static int32_t ch347_spi_config(struct ch347_spi_data *ch347_data, uint8_t divis
 	 * config. The expected ACK is 4 bytes: cmd, length(2), status.
 	 */
 	uint8_t rbuf[sizeof(buff)] = {0};
-	ret = libusb_bulk_transfer(ch347_data->handle, READ_EP, rbuf, sizeof(rbuf), &transferred, 1000);
+	ret = libusb_bulk_transfer(ch347_data->handle, CH347_READ_EP, rbuf, sizeof(rbuf), &transferred, 1000);
 	if (ret < 0) {
 		msg_perr("Could not receive configure SPI command response\n");
 		return ret;

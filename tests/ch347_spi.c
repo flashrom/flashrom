@@ -3,19 +3,13 @@
  * SPDX-FileCopyrightText: 2026 Abdelkader Boudih <coreboot@seuros.com>
  */
 
+#include "ch347_spi.h"
+#include "lifecycle.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "lifecycle.h"
-
 #if CONFIG_CH347_SPI == 1
-
-/* Constants mirrored from ch347_spi.c */
-#define WRITE_EP		0x06
-#define READ_EP			0x86
-#define CH347_CMD_SPI_SET_CFG	0xC0
-#define CH347_CMD_SPI_OUT	0xC4
-#define CH347_CMD_SPI_IN	0xC3
 
 /*
  * The CH347 speaks a small packet protocol over two bulk endpoints:
@@ -23,7 +17,7 @@
  *   IN : [cmd][len_lo][len_hi][data...]
  * The driver only needs config to be acknowledged for init, and an RDID
  * response framed correctly for probe. We track the last SPI opcode and read
- * count seen on WRITE_EP so the following READ_EP returns a matching frame.
+ * count seen on CH347_WRITE_EP so the following CH347_READ_EP returns a matching frame.
  */
 struct ch347_spi_io_state {
 	uint8_t last_cmd;
@@ -37,7 +31,7 @@ static int ch347_spi_libusb_bulk_transfer(void *state, libusb_device_handle *dev
 {
 	struct ch347_spi_io_state *s = state;
 
-	if (endpoint == WRITE_EP) {
+	if (endpoint == CH347_WRITE_EP) {
 		if (length >= 1)
 			s->last_cmd = data[0];
 		if (length >= 4 && data[0] == CH347_CMD_SPI_OUT)
@@ -51,7 +45,7 @@ static int ch347_spi_libusb_bulk_transfer(void *state, libusb_device_handle *dev
 		return 0;
 	}
 
-	/* READ_EP */
+	/* CH347_READ_EP */
 	if (s->expect_in) {
 		unsigned int n = s->readcnt;
 		s->expect_in = 0;
