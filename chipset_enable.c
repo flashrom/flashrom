@@ -89,9 +89,10 @@ static int enable_flash_sis85c496(const struct programmer_cfg *cfg, struct pci_d
 	return 0;
 }
 
+#define SIS_MAPREG	0x40
+
 static int enable_flash_sis_mapping(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
-	#define SIS_MAPREG 0x40
 	uint8_t new, newer;
 
 	/* Extended BIOS enable = 1, Lower BIOS Enable = 1 */
@@ -173,9 +174,10 @@ static int enable_flash_sis5511(const struct programmer_cfg *cfg, struct pci_dev
 	return ret;
 }
 
+#define SIS_REG	0x45
+
 static int enable_flash_sis5x0(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name, uint8_t dis_mask, uint8_t en_mask)
 {
-	#define SIS_REG 0x45
 	uint8_t new, newer;
 	int ret = 0;
 	struct pci_dev *sbdev;
@@ -1223,6 +1225,8 @@ static int enable_flash_vt823x(const struct programmer_cfg *cfg, struct pci_dev 
 	return 0;
 }
 
+#define SPI_CNTL_LEN	0x08
+
 static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
 	struct pci_dev *south_north = pcidev_find(0x1106, 0xa353);
@@ -1241,7 +1245,6 @@ static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *
 	uint32_t mmio_base;
 	void *mmio_base_physmapped;
 	uint32_t spi_cntl;
-	#define SPI_CNTL_LEN 0x08
 	uint32_t spi0_mm_base = 0;
 	switch(dev->device_id) {
 		case 0x8353: /* VX800/VX820 */
@@ -1385,9 +1388,10 @@ static int enable_flash_cs5536(const struct programmer_cfg *cfg, struct pci_dev 
 	return 0;
 }
 
+#define SC_REG	0x52
+
 static int enable_flash_sc1100(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
-	#define SC_REG 0x52
 	uint8_t new;
 
 	rpci_write_byte(dev, SC_REG, 0xee);
@@ -1402,6 +1406,9 @@ static int enable_flash_sc1100(const struct programmer_cfg *cfg, struct pci_dev 
 	return 0;
 }
 
+#define AMD_ENREG	0x40
+#define AMD_MAPREG	0x43
+
 /* Works for AMD-768, AMD-8111, VIA VT82C586A/B, VIA VT82C596, VIA VT82C686A/B.
  *
  * ROM decode control register matrix
@@ -1410,10 +1417,8 @@ static int enable_flash_sc1100(const struct programmer_cfg *cfg, struct pci_dev 
  * 6	FFB0_0000h–FFBF_FFFFh	<-		FFF80000h-FFFDFFFFh	<-			<-
  * 5	00E8...			<-		<-			FFF00000h-FFF7FFFFh	<-
  */
-static int enable_flash_amd_via(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name, uint8_t decode_val)
+static int enable_flash_amd_via(struct pci_dev *dev, const char *name, uint8_t decode_val)
 {
-	#define AMD_MAPREG 0x43
-	#define AMD_ENREG 0x40
 	uint8_t old, new;
 
 	old = pci_read_byte(dev, AMD_MAPREG);
@@ -1448,14 +1453,14 @@ static int enable_flash_amd_768_8111(const struct programmer_cfg *cfg, struct pc
 {
 	/* Enable decoding of 0xFFB00000 to 0xFFFFFFFF (5 MB). */
 	max_rom_decode.lpc = 5 * MiB;
-	return enable_flash_amd_via(cfg, dev, name, 0xC0);
+	return enable_flash_amd_via(dev, name, 0xC0);
 }
 
 static int enable_flash_vt82c586(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {
 	/* Enable decoding of 0xFFF80000 to 0xFFFFFFFF. (512 kB) */
 	max_rom_decode.parallel = 512 * KiB;
-	return enable_flash_amd_via(cfg, dev, name, 0xC0);
+	return enable_flash_amd_via(dev, name, 0xC0);
 }
 
 /* Works for VT82C686A/B too. */
@@ -1463,7 +1468,7 @@ static int enable_flash_vt82c596(const struct programmer_cfg *cfg, struct pci_de
 {
 	/* Enable decoding of 0xFFF00000 to 0xFFFFFFFF. (1 MB) */
 	max_rom_decode.parallel = 1 * MiB;
-	return enable_flash_amd_via(cfg, dev, name, 0xE0);
+	return enable_flash_amd_via(dev, name, 0xE0);
 }
 
 static int enable_flash_sb600(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
