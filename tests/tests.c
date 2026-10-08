@@ -525,6 +525,9 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(probe_at25f_rdid_fixed_chipname),
 		cmocka_unit_test(probe_at25f_rdid_try_all_flashchips),
 		cmocka_unit_test(probe_at25f_rdid_no_matches_found),
+		cmocka_unit_test(probe_jedec_rems_fixed_chipname),
+		cmocka_unit_test(probe_jedec_rems_try_all_flashchips),
+		cmocka_unit_test(probe_jedec_rems_no_matches_found),
 	};
 	ret |= cmocka_run_group_tests_name("probe_spi.c tests", probe_spi_tests, NULL, NULL);
 
