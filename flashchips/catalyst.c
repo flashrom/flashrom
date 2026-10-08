@@ -14,7 +14,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= CATALYST_ID,
 		.model_id	= CATALYST_CAT28F512,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= 0,
 		.tested		= {.probe = OK, .read = OK, .erase = BAD, .write = BAD, .wp = NA},

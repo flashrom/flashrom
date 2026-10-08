@@ -16,7 +16,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ZBIT_ID,
 		.model_id	= ZBIT_ZB25VQ16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,

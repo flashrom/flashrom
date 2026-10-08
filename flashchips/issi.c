@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id = ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP016,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -55,7 +55,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP032,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -96,7 +96,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP064,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -137,7 +137,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -178,7 +178,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP256,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total; read 0x68; write 0x62, erase 0x64, read ID 0x4B */
@@ -228,7 +228,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP512MG,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 4x512B total; read 0x68; write 0x62, erase 0x64 */
@@ -279,7 +279,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LP01GJ,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 4x1KB total; read 0x68; write 0x62, erase 0x64 */
@@ -331,7 +331,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LQ016,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 256B total; read 0x4b; write 0xb1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
@@ -370,7 +370,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP016,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -412,7 +412,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25LQ032,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 256B total; read 0x4b; write 0xb1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
@@ -454,7 +454,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP020,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -496,7 +496,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP032,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -538,7 +538,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -580,7 +580,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP064,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -622,7 +622,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP080,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -664,7 +664,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; read 0x48; write 0x42 */
 		/* QPI enable 0x35, disable 0xF5 */
@@ -706,7 +706,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP256,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total; read 0x68; write 0x62, erase 0x64, read ID 0x4B */
@@ -756,7 +756,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP512MG,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 4x512B total; read 0x68; write 0x62, erase 0x64 */
@@ -807,7 +807,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WP01GJ,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 4x1KB total; read 0x68; write 0x62, erase 0x64 */
@@ -859,7 +859,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
 		.model_id	= ISSI_IS25WQ040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -899,7 +899,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ISSI_ID,
 		.model_id	= ISSI_PMC_IS29GL064B,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -929,7 +929,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ISSI_ID,
 		.model_id	= ISSI_PMC_IS29GL064HL,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -956,7 +956,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ISSI_ID,
 		.model_id	= ISSI_PMC_IS29GL064T,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -986,7 +986,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ISSI_ID,
 		.model_id	= ISSI_PMC_IS29GL128HL,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,

@@ -12,7 +12,7 @@
 		.vendor		= "ENE",
 		.name		= "KB9012 (EDI)",
 		.bustype	= BUS_SPI,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_ERASED_ZERO,
 		.tested		= TEST_OK_PREW,

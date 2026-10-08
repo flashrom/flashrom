@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q00A__3G,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -60,7 +60,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q00A__1G,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -106,7 +106,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_MT25QL02G,
-		.total_size	= 262144,
+		.total_size	= SIZE_256MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -152,7 +152,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_MT25QU02G,
-		.total_size	= 262144,
+		.total_size	= SIZE_256MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -198,7 +198,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q128__1E,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -238,7 +238,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q128__3E,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -278,7 +278,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q256__3E,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -327,7 +327,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q256__1E,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -376,7 +376,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q512__3G,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -432,7 +432,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q512__1G,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -481,7 +481,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MICRON_ID,
 		.model_id	= MICRON_MT35XU02GCBA,
-		.total_size	= 256 * KiB,
+		.total_size	= SIZE_256MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */

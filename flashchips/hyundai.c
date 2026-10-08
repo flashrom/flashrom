@@ -14,7 +14,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F002B,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
 		.tested		= TEST_UNTESTED,
@@ -46,7 +46,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F002T,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
 		.tested		= TEST_OK_PRE,
@@ -78,7 +78,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= HYUNDAI_ID,
 		.model_id	= HYUNDAI_HY29F040A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,

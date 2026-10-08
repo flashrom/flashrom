@@ -14,7 +14,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= BRIGHT_ID,
 		.model_id	= BRIGHT_BM29F040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PR,

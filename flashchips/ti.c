@@ -14,7 +14,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RB,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 16384, /* Non-uniform sectors */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
@@ -46,7 +46,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RT,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 16384, /* Non-uniform sectors */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,

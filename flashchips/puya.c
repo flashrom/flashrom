@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25Q40HB,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -52,7 +52,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25Q16HB,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -90,7 +90,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25Q06H,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */
@@ -133,7 +133,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25Q11H,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */
@@ -176,7 +176,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25Q21H,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */
@@ -219,7 +219,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25D40SH,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */
@@ -262,7 +262,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25D80H,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */
@@ -305,7 +305,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= PUYA_ID,
 		.model_id	= PUYA_P25D32SH,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 3 x 512 bytes */

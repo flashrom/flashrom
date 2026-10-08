@@ -90,6 +90,8 @@ Properties
 ==========
 
 * From the datasheet, get ``.vendor``, ``.name``, ``.bustype``, ``.total_size``.
+* ``.total_size`` is in KiB. Use the ``SIZE_*`` macros from ``flashchips.c``. For example, the chip which is 256 Mbit
+  in datasheet has size 32 MiB and should use the macro ``SIZE_32MiB``.
 * ``.voltage`` defines the upper and lower bounds of the supply voltage of the chip. If there are multiple chip models
   with different allowed voltage ranges, the `intersection <https://en.wikipedia.org/wiki/Intersection_(set_theory)>`_
   should be used and an appropriate comment added. Bounds are written with the ``MV_*`` macros from ``flashchips.c``,
@@ -174,16 +176,17 @@ To inspect the source code, check the mappings ``lookup_erase_func_ptr`` and sea
 
 Two forms of ``.eraseblocks`` can be distinguished: symmetric and asymmetric layouts.
 Symmetric means that all blocks that can be erased by an opcode are sized equal. In that case a single range can define
-the whole layout (e.g. ``{4 * 1024, 256}`` means 256 blocks of 4 kB each). Asymmetric layouts on the other hand contain
-differently sized blocks, ordered by their base addresses (e.g. ``{{8 * 1024, 1}, {4 * 1024, 2}, {16 * 1024, 7}}`` describes
-a layout that starts with a single 8 kB block, followed by two 4 kB blocks and 7 16 kB blocks at the end).
+the whole layout (e.g. ``{4 * KiB, 256}`` means 256 blocks of 4 KiB each). Asymmetric layouts on the other hand contain
+differently sized blocks, ordered by their base addresses (e.g. ``{{8 * KiB, 1}, {4 * KiB, 2}, {16 * KiB, 7}}`` describes
+a layout that starts with a single 8 KiB block, followed by two 4 KiB blocks and 7 16 KiB blocks at the end).
 
 ``.eraseblocks`` should be listed in order, from the smallest to the largest size.
 
-Many SPI chips share one uniform layout: 4 kB blocks (0x20), 32 kB blocks (0x52), 64 kB blocks (0xd8) and
+Many SPI chips share one uniform layout: 4 KiB blocks (0x20), 32 KiB blocks (0x52), 64 KiB blocks (0xd8) and
 both chip erase opcodes (0x60, 0xc7). Such chips can use ``SPI_ERASERS_20_52_D8_60_C7(size)`` with the same
-value as ``.total_size`` (in kB) instead of spelling out the layout. Check the datasheet first: some chips use
-0x52 for 64 kB blocks and need the full definition.
+value as ``.total_size`` instead of spelling out the layout. For example, the chip which is 32 Mbit in datasheet has
+size 4 MiB and should use ``SPI_ERASERS_20_52_D8_60_C7(SIZE_4MiB)``.
+Check the datasheet first: some chips use 0x52 for 64 KiB blocks and need the full definition.
 
 Printlock
 ---------

@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25W128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 4X256B; read 0x48; write 0x42, erase 0x44 */
@@ -65,7 +65,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25F005,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		/* OTP: 256B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -103,7 +103,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25F01,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		/* OTP: 256B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -141,7 +141,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25F02,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* OTP: 256B total; enter 0x3A, (A version only:) read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -179,7 +179,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25F04,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* OTP: 256B total; enter 0x3A, (A version only:) read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -217,7 +217,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q04,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* QPI enable 0x38, disable 0xFF */
@@ -261,7 +261,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q08,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -301,7 +301,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -341,7 +341,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q32,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -381,7 +381,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q64,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* QPI enable 0x38, disable 0xFF */
@@ -425,7 +425,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= FUDAN_ID_NOPREFIX,
 		.model_id	= FUDAN_FM25Q128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* QPI enable 0x38, disable 0xFF */

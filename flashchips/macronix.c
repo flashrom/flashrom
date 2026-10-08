@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX23L12854,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
@@ -30,7 +30,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX23L1654,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
@@ -46,7 +46,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX23L3254,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
@@ -62,7 +62,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX23L6454,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
@@ -78,7 +78,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1005,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		/* MX25L1006E supports SFDP */
 		.feature_bits	= FEATURE_WRSR_WREN,
@@ -114,7 +114,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -150,7 +150,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 1KB total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_SCUR,
@@ -197,7 +197,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_SCUR,
@@ -244,7 +244,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_SCUR,
@@ -290,7 +290,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
 		.tested		= TEST_OK_PREWB,
@@ -336,7 +336,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1605,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -371,7 +371,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1605,
-		.total_size	= 2048, /* 16M-bits */
+		.total_size	= SIZE_2MiB, /* 16M-bits */
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PR,
@@ -409,7 +409,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1605,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 (MX25L1606E and MX25L1608E only) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -448,7 +448,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1605,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -483,7 +483,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1635D,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -519,7 +519,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1635D,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP ,
@@ -562,7 +562,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1635E,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -605,7 +605,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L2005,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -643,7 +643,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L25635F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -692,7 +692,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -727,7 +727,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -763,7 +763,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -808,7 +808,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -854,7 +854,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3239E,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_SCUR ,
@@ -902,7 +902,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25LM51245G,
-		.total_size	= 64 * KiB,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_4BA | FEATURE_SCUR | FEATURE_CFGR,
 		.tested		= TEST_OK_PREW,
@@ -949,7 +949,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3235D,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 256B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -985,7 +985,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1024,7 +1024,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3255E,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 4K total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1064,7 +1064,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L4005,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1102,7 +1102,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L512,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		/* MX25L512E supports SFDP */
 		.feature_bits	= FEATURE_WRSR_WREN,
@@ -1141,7 +1141,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L5121E,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 32,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1179,7 +1179,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* Has an additional 512B EEPROM sector */
 		.feature_bits	= FEATURE_WRSR_WREN,
@@ -1221,7 +1221,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1264,7 +1264,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* MX25L6406E supports SFDP */
 		/* OTP: 06E 64B total; enter 0xB1, exit 0xC1 */
@@ -1311,7 +1311,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
@@ -1358,7 +1358,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
@@ -1406,7 +1406,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6405,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
@@ -1453,7 +1453,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L6495F,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1491,7 +1491,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L8005,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* MX25L8006E, MX25L8008E support SFDP */
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 (MX25L8006E, MX25L8008E only) */
@@ -1531,7 +1531,7 @@
 		.bustype        = BUS_SPI,
 		.manufacture_id = MACRONIX_ID,
 		.model_id       = MACRONIX_MX25R512F,
-		.total_size     = 64,
+		.total_size     = SIZE_64KiB,
 		.page_size      = 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits   = FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1578,7 +1578,7 @@
 		.bustype        = BUS_SPI,
 		.manufacture_id = MACRONIX_ID,
 		.model_id       = MACRONIX_MX25R1035F,
-		.total_size     = 128,
+		.total_size     = SIZE_128KiB,
 		.page_size      = 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits   = FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1624,7 +1624,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R1635F,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1671,7 +1671,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R2035F,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1718,7 +1718,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R3235F,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1757,7 +1757,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R4035F,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1804,7 +1804,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R6435F,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -1843,7 +1843,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25R8035F,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
@@ -1890,7 +1890,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25V4035F,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* OTP: 8KiB total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_SCUR,
@@ -1925,7 +1925,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25V8035F,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 8KiB total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_SCUR,
@@ -1960,7 +1960,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25V1635F,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 8KiB total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_SCUR,
@@ -1996,7 +1996,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U12835E,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
@@ -2036,7 +2036,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U1635E,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		/* QPI enable 0x35, disable 0xF5 (0xFF et al. work too) */
@@ -2077,7 +2077,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U25635F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA,
@@ -2126,7 +2126,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U25635F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA | FEATURE_CFGR | FEATURE_SCUR,
@@ -2183,7 +2183,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U25635F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA | FEATURE_CFGR | FEATURE_SCUR,
@@ -2239,7 +2239,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U3235E,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* F model supports SFDP */
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
@@ -2281,7 +2281,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U51245G,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* OTP: 512B factory programmed and 512B customer programmed; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA,
@@ -2330,7 +2330,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U6435E,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* F model supports SFDP */
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
@@ -2372,7 +2372,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U8032E,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -2412,7 +2412,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F001B,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 32 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2445,7 +2445,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F001T,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 32 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
@@ -2478,7 +2478,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F002B,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2510,7 +2510,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F002T,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
@@ -2542,7 +2542,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F022B,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2574,7 +2574,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F022T,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PREW,
@@ -2606,7 +2606,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2633,7 +2633,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL128F,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2660,7 +2660,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL320EB,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2690,7 +2690,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL320EHL,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2717,7 +2717,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL320ET,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2747,7 +2747,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL640EB,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2777,7 +2777,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL640EHL,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2804,7 +2804,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29GL640ET,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 128 * KiB, /* actual page size is 16 */
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2834,7 +2834,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29LV040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2861,7 +2861,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX66L51235F,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -2910,7 +2910,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX66L1G45G,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -2959,7 +2959,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX66L2G45G,
-		.total_size	= 256 * KiB,
+		.total_size	= SIZE_256MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -3008,7 +3008,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX66U1G45G,
-		.total_size	= 128 * KiB,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -3057,7 +3057,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX66U2G45G,
-		.total_size	= 256 * KiB,
+		.total_size	= SIZE_256MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -3106,7 +3106,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX77L25650F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA,
@@ -3146,7 +3146,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX77U25650F,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_4BA,
 		.tested		= TEST_OK_PREW,
@@ -3184,7 +3184,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX77U51250F,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_4BA,
 		.tested		= TEST_OK_PREW,

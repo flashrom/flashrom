@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL004A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -43,7 +43,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL008A,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PRE,
@@ -72,7 +72,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL016A,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -101,7 +101,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL032A,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -130,7 +130,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL064A,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -159,7 +159,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL216,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 (S25FL116K only) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -195,7 +195,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 512,
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
@@ -229,7 +229,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
@@ -274,7 +274,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128L,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* 4 x 256B Security Region (OTP) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT3 | FEATURE_OTP,
@@ -331,7 +331,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -366,7 +366,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -395,7 +395,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
@@ -438,7 +438,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 512,
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
@@ -472,7 +472,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128S_UL,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -503,7 +503,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128S_US,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -534,7 +534,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 506B total, 16B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -583,7 +583,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 506B total, 16B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -616,7 +616,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL132K,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 768B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -652,7 +652,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL164K,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -688,7 +688,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL204,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PR,
@@ -723,7 +723,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL208,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -758,7 +758,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL256L,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* 4 x 256B Security Region (OTP) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT3 | FEATURE_OTP |
@@ -824,7 +824,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL256S_UL,
-		.total_size	= 16384,  /* This is just half the size.... */
+		.total_size	= SIZE_16MiB,  /* This is just half the size.... */
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2,
 		.tested		= TEST_UNTESTED,
@@ -853,7 +853,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL256S_US,
-		.total_size	= 16384,   /* This is just half the size.... */
+		.total_size	= SIZE_16MiB,   /* This is just half the size.... */
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -881,7 +881,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL256,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP |
@@ -927,7 +927,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL512S_UL,
-		.total_size	= 65536, /* 512 Mb (=> 64 MB)) */
+		.total_size	= SIZE_64MiB, /* 512 Mb (=> 64 MB)) */
 		.page_size	= 256,
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP |
@@ -964,7 +964,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FS128S_L,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -995,7 +995,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FS128S_S,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1026,7 +1026,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FS512S_UL,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256, /* 256 or 512 bytes page programming buffer */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP | FEATURE_QPI |

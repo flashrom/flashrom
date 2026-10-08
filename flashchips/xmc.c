@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -52,7 +52,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU80B,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -90,7 +90,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH16C,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -128,7 +128,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU16C,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -166,7 +166,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH32C,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -204,7 +204,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU32C,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -242,7 +242,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH64C,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
@@ -280,7 +280,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU64C,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
 		.tested		= TEST_OK_PREW,
@@ -328,7 +328,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH64A,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 512B total; enter 0x3A */
@@ -369,7 +369,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH128A,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
 		.tested		= TEST_OK_PREW,
@@ -417,7 +417,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH128C,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
 		.tested		= TEST_OK_PREW,
@@ -465,7 +465,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU128C,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -505,7 +505,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25RH128C,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
 		.tested		= TEST_UNTESTED,
@@ -553,7 +553,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH256C,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -603,7 +603,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU256C,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -645,7 +645,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25RU256C,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -695,7 +695,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH512C,
-		.total_size	= 64 * KiB,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
@@ -743,7 +743,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU512C,
-		.total_size	= 64 * KiB,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */

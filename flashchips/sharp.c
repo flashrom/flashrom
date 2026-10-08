@@ -14,7 +14,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= SHARP_ID,
 		.model_id	= SHARP_LH28F008BJ__PB,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 64 * KiB,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_AT82802AB,
@@ -44,7 +44,7 @@
 		.bustype	= BUS_FWH, /* A/A Mux */
 		.manufacture_id	= SHARP_ID,
 		.model_id	= SHARP_LHF00L04,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,

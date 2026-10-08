@@ -19,7 +19,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P05_RES,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -48,7 +48,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P05A,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -78,7 +78,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P10_RES,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -107,7 +107,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P10A,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -136,7 +136,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P128,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -165,7 +165,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -194,7 +194,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P20,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -223,7 +223,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P20_RES,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -252,7 +252,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P32,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -281,7 +281,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P40,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -310,7 +310,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P40_RES,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -338,7 +338,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P64,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -367,7 +367,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -396,7 +396,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PE10,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -428,7 +428,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PE16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -460,7 +460,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PE20,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -492,7 +492,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PE40,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -524,7 +524,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PE80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -556,7 +556,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PX16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -589,7 +589,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PX32,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -622,7 +622,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PX64,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -655,7 +655,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25PX80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -688,7 +688,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE10,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
@@ -716,7 +716,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE16,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
@@ -744,7 +744,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE20,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
@@ -772,7 +772,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE40,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
@@ -800,7 +800,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M45PE80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_RDID,
@@ -828,7 +828,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q00A__1G,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -868,7 +868,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q00A__3G,
-		.total_size	= 131072,
+		.total_size	= SIZE_128MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -908,7 +908,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q016__1E,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -945,7 +945,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q032__1E,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -990,7 +990,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q032__3E,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1035,7 +1035,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q064__1E,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1080,7 +1080,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q064__3E,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1125,7 +1125,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q128__1E,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1159,7 +1159,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q128__3E,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1193,7 +1193,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q256__1E,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1233,7 +1233,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q256__3E,
-		.total_size	= 32768,
+		.total_size	= SIZE_32MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1273,7 +1273,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q512__1G,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
@@ -1313,7 +1313,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_N25Q512__3G,
-		.total_size	= 65536,
+		.total_size	= SIZE_64MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */

@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF011,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -53,7 +53,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF021,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -92,7 +92,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF021A,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -131,7 +131,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF041A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -169,7 +169,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF081,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -207,7 +207,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF081A,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -245,7 +245,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF161,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -284,7 +284,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF321,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -322,7 +322,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF321A,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -361,7 +361,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF641,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -399,7 +399,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF081,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -438,7 +438,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DL161,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -477,7 +477,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DQ161,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -516,7 +516,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25EU0161A,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -560,7 +560,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25EU0041A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -606,7 +606,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F1024,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -635,7 +635,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F2048,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -664,7 +664,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F4096,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -694,7 +694,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F512,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -723,7 +723,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F512A,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -753,7 +753,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25F512B,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 256,
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -795,7 +795,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25FF041A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -833,7 +833,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25FS010,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -874,7 +874,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25FS040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -912,7 +912,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SF041,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -950,7 +950,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SF081,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -988,7 +988,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SF128A,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PR,
@@ -1026,7 +1026,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SF161,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -1064,7 +1064,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SF321,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PR,
@@ -1102,7 +1102,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25SL128A,
-		.total_size	= 16384,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* supports SFDP */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
@@ -1151,7 +1151,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT26DF041,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		.tested		= TEST_OK_PREW,
@@ -1183,7 +1183,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT26DF081A,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1221,7 +1221,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT26DF161,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1259,7 +1259,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT26DF161A,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -1297,7 +1297,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT26F004,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD, .wp = NA},
@@ -1334,7 +1334,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT29C010A,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PREW,
@@ -1358,7 +1358,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT29C020,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PREW,
@@ -1382,7 +1382,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT29C040A,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_UNTESTED,
@@ -1406,7 +1406,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT29C512,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PREW,
@@ -1462,7 +1462,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB011D,
-		.total_size	= 128, /* or 132, determined from status register */
+		.total_size	= SIZE_128KiB, /* or 132, determined from status register */
 		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1504,7 +1504,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB021D,
-		.total_size	= 256, /* or 264, determined from status register */
+		.total_size	= SIZE_256KiB, /* or 264, determined from status register */
 		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1546,7 +1546,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB041D,
-		.total_size	= 512, /* or 528, determined from status register */
+		.total_size	= SIZE_512KiB, /* or 528, determined from status register */
 		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1588,7 +1588,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB081D,
-		.total_size	= 1024, /* or 1056, determined from status register */
+		.total_size	= SIZE_1MiB, /* or 1056, determined from status register */
 		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1630,7 +1630,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB161D,
-		.total_size	= 2048, /* or 2112, determined from status register */
+		.total_size	= SIZE_2MiB, /* or 2112, determined from status register */
 		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1715,7 +1715,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321D,
-		.total_size	= 4096, /* or 4224, determined from status register */
+		.total_size	= SIZE_4MiB, /* or 4224, determined from status register */
 		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1757,7 +1757,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321C,
-		.total_size	= 4096, /* or 4224, determined from status register */
+		.total_size	= SIZE_4MiB, /* or 4224, determined from status register */
 		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1799,7 +1799,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB642D,
-		.total_size	= 8192, /* or 8448, determined from status register */
+		.total_size	= SIZE_8MiB, /* or 8448, determined from status register */
 		.page_size	= 1024, /* or 1056, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1841,7 +1841,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB642D, /* Same JEDEC ID, distinguished by EDI */
-		.total_size	= 8192, /* or 8448, determined from status register */
+		.total_size	= SIZE_8MiB, /* or 8448, determined from status register */
 		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
@@ -1883,7 +1883,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F010,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
@@ -1908,7 +1908,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49BV512,
-		.total_size	= 64,
+		.total_size	= SIZE_64KiB,
 		.page_size	= 64,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
@@ -1932,7 +1932,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F002N,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
@@ -1964,7 +1964,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F002NT,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PR,
@@ -1996,7 +1996,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F020,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PRE,
@@ -2027,7 +2027,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F040,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2058,7 +2058,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F080,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2090,7 +2090,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F080T,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
@@ -2121,7 +2121,7 @@
 		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49LH002,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
@@ -2157,7 +2157,7 @@
 		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49LH004,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
@@ -2193,7 +2193,7 @@
 		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49LH00B4,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,

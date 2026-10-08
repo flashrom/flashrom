@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F160S33B8,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -53,7 +53,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F160S33T8,
-		.total_size	= 2048,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -92,7 +92,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F320S33B8,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -131,7 +131,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F320S33T8,
-		.total_size	= 4096,
+		.total_size	= SIZE_4MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -170,7 +170,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F640S33B8,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -209,7 +209,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_25F640S33T8,
-		.total_size	= 8192,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* OTP: 506B total (2x 8B, 30x 16B, 1x 10B); read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
@@ -248,7 +248,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F001B,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 128 * KiB, /* 8k + 2x4k + 112k */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_JEDEC,
@@ -275,7 +275,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F001T,
-		.total_size	= 128,
+		.total_size	= SIZE_128KiB,
 		.page_size	= 128 * KiB, /* 112k + 2x4k + 8k */
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
@@ -302,7 +302,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F002T,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256 * KiB,
 		.tested		= TEST_OK_PRE,
 		.probe		= PROBE_AT82802AB,
@@ -329,7 +329,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F004B,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 128 * KiB, /* maximal block size */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -356,7 +356,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F004T,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 128 * KiB, /* maximal block size */
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -383,7 +383,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F004S3,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_AT82802AB,
@@ -406,7 +406,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F400B,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 128 * KiB, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
 		.tested		= TEST_UNTESTED,
@@ -434,7 +434,7 @@
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_28F400T,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 128 * KiB, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
 		.tested		= TEST_UNTESTED,
@@ -462,7 +462,7 @@
 		.bustype	= BUS_FWH,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_82802AB,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PREW,
@@ -487,7 +487,7 @@
 		.bustype	= BUS_FWH,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= INTEL_82802AC,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 64 * KiB,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PR,

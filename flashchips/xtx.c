@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= XTX_ID,
 		.model_id	= XTX_XT25F02E,
-		.total_size	= 256,
+		.total_size	= SIZE_256KiB,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -49,7 +49,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= XTX_ID,
 		.model_id	= XTX_XT25F64B,
-		.total_size	= 8 * KiB,
+		.total_size	= SIZE_8MiB,
 		.page_size	= 256,
 		/* Supports SFDP */
 		/* OTP: 4 x 256 bytes */
@@ -89,7 +89,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= XTX_ID,
 		.model_id	= XTX_XT25F128B,
-		.total_size	= 16 * KiB,
+		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* Supports SFDP */
 		/* OTP: 4 x 256 bytes */

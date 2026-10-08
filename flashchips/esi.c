@@ -14,7 +14,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= EXCEL_ID_NOPREFIX,
 		.model_id	= EXCEL_ES25P16,
-		.total_size	= 2 * KiB,
+		.total_size	= SIZE_2MiB,
 		.page_size	= 256,
 		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */
@@ -45,7 +45,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= EXCEL_ID_NOPREFIX,
 		.model_id	= EXCEL_ES25P40,
-		.total_size	= 512,
+		.total_size	= SIZE_512KiB,
 		.page_size	= 256,
 		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */
@@ -76,7 +76,7 @@
 		.bustype	= BUS_SPI,
 		.manufacture_id	= EXCEL_ID_NOPREFIX,
 		.model_id	= EXCEL_ES25P80,
-		.total_size	= 1024,
+		.total_size	= SIZE_1MiB,
 		.page_size	= 256,
 		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */

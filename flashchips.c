@@ -30,6 +30,23 @@
 #define MV_5250		5250
 #define MV_5500		5500
 
+/* Chip sizes in KiB, the unit of .total_size */
+#define SIZE_4KiB	4
+#define SIZE_32KiB	32
+#define SIZE_64KiB	64
+#define SIZE_128KiB	128
+#define SIZE_256KiB	256
+#define SIZE_512KiB	512
+#define SIZE_1MiB	1024
+#define SIZE_2MiB	(2 * SIZE_1MiB)
+#define SIZE_4MiB	(4 * SIZE_1MiB)
+#define SIZE_8MiB	(8 * SIZE_1MiB)
+#define SIZE_16MiB	(16 * SIZE_1MiB)
+#define SIZE_32MiB	(32 * SIZE_1MiB)
+#define SIZE_64MiB	(64 * SIZE_1MiB)
+#define SIZE_128MiB	(128 * SIZE_1MiB)
+#define SIZE_256MiB	(256 * SIZE_1MiB)
+
 /* Uniform 4 KiB, 32 KiB and 64 KiB block erasers plus both chip erase opcodes */
 #define SPI_ERASERS_20_52_D8_60_C7(size)						\
 	{										\
