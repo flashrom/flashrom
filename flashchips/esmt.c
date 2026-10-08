@@ -40,7 +40,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -75,7 +75,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -107,5 +107,5 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},

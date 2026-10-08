@@ -32,7 +32,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -59,7 +59,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -86,7 +86,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -113,7 +113,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -140,7 +140,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -167,7 +167,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -194,5 +194,5 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},

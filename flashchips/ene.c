@@ -28,6 +28,6 @@
 		},
 		.write		= EDI_CHIP_WRITE,
 		.read		= EDI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 		.gran		= WRITE_GRAN_128BYTES,
 	},

@@ -12,6 +12,24 @@
 
 #include "chipdrivers.h"
 
+/* Supply voltage bounds in mV */
+#define MV_1600		1600
+#define MV_1650		1650
+#define MV_1695		1695
+#define MV_1700		1700
+#define MV_1950		1950
+#define MV_2000		2000
+#define MV_2300		2300
+#define MV_2500		2500
+#define MV_2650		2650
+#define MV_2700		2700
+#define MV_3000		3000
+#define MV_3600		3600
+#define MV_4500		4500
+#define MV_4750		4750
+#define MV_5250		5250
+#define MV_5500		5500
+
 /* Uniform 4 KiB, 32 KiB and 64 KiB block erasers plus both chip erase opcodes */
 #define SPI_ERASERS_20_52_D8_60_C7(size)						\
 	{										\

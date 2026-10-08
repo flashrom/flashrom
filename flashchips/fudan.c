@@ -45,7 +45,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 		.reg_bits	=
 		{
 			.srp	= {STATUS1, 7, RW},
@@ -94,7 +94,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {2700, 3600}, /* 2.3-2.7V acceptable results in lower performance */
+		.voltage	= {MV_2700, MV_3600}, /* 2.3-2.7V acceptable results in lower performance */
 	},
 
 	{
@@ -132,7 +132,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {2700, 3600}, /* 2.3-2.7V acceptable results in lower performance */
+		.voltage	= {MV_2700, MV_3600}, /* 2.3-2.7V acceptable results in lower performance */
 	},
 
 	{
@@ -170,7 +170,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {2700, 3600}, /* 2.3-2.7V acceptable results in lower performance */
+		.voltage	= {MV_2700, MV_3600}, /* 2.3-2.7V acceptable results in lower performance */
 	},
 
 	{
@@ -208,7 +208,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -252,7 +252,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -292,7 +292,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -332,7 +332,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -372,7 +372,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -416,7 +416,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -460,5 +460,5 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},

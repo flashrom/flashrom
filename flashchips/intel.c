@@ -44,7 +44,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -83,7 +83,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -122,7 +122,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -161,7 +161,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -200,7 +200,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -239,7 +239,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,	/* also fast read 0x0B */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -266,7 +266,7 @@
 		},
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -293,7 +293,7 @@
 		},
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -478,7 +478,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -503,5 +503,5 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},

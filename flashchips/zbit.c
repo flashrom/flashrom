@@ -45,5 +45,5 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},

@@ -37,7 +37,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -69,7 +69,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -101,7 +101,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -139,7 +139,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported by SST25VF010A only */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -177,7 +177,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -209,7 +209,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ, /* only */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -247,7 +247,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* FIXME: 2nd SR */
 		.write		= SPI_WRITE_AAI, /* AAI supported (0xAD) */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -285,7 +285,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -317,7 +317,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -355,7 +355,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_WRITE_AAI, /* AAI supported (0xAD) */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -393,7 +393,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -431,7 +431,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -469,7 +469,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -507,7 +507,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE1, /* AAI supported, but opcode is 0xAF */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported by SST25VF512A only */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -542,7 +542,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -580,7 +580,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -615,7 +615,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -653,7 +653,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -688,7 +688,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual O (0x3B), dual I/O read (0xBB) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -726,7 +726,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP3_SRWD,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -761,7 +761,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual O (0x3B), dual I/O read (0xBB) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -796,7 +796,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_WRITE_AAI,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -834,7 +834,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -872,7 +872,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -910,7 +910,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -938,7 +938,7 @@
 		.unlock		= UNPROTECT_28SF040,
 		.write		= WRITE_28SF040,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -962,7 +962,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -986,7 +986,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1010,7 +1010,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1034,7 +1034,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1061,7 +1061,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1088,7 +1088,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1115,7 +1115,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1142,7 +1142,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1169,7 +1169,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1196,7 +1196,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1223,7 +1223,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1253,7 +1253,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1280,7 +1280,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1312,7 +1312,7 @@
 		.unlock		= UNLOCK_SST_FWHUB,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1344,7 +1344,7 @@
 		.unlock		= UNLOCK_SST_FWHUB,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1379,7 +1379,7 @@
 		.unlock		= UNLOCK_SST_FWHUB,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1413,7 +1413,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_1,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1445,7 +1445,7 @@
 		.unlock		= UNLOCK_SST_FWHUB,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1479,7 +1479,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_1,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1513,7 +1513,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_1,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1543,7 +1543,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1573,7 +1573,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1603,7 +1603,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1634,7 +1634,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1664,7 +1664,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -1698,5 +1698,5 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_1,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},

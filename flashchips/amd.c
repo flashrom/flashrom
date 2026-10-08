@@ -37,7 +37,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
+		.voltage	= {MV_4750, MV_5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
 	},
 
 	{
@@ -69,7 +69,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
+		.voltage	= {MV_4750, MV_5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
 	},
 
 	{
@@ -96,7 +96,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -123,7 +123,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -150,7 +150,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -177,7 +177,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -204,7 +204,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -231,7 +231,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -258,7 +258,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -289,7 +289,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -45R, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -45R, others 2.7-3.6V */
 	},
 
 	{
@@ -320,7 +320,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -45R, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -45R, others 2.7-3.6V */
 	},
 
 	{
@@ -352,7 +352,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -55, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -55, others 2.7-3.6V */
 	},
 
 	{
@@ -384,7 +384,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -55, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -55, others 2.7-3.6V */
 	},
 
 	{
@@ -416,7 +416,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -448,7 +448,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -480,7 +480,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
 	},
 
 	{
@@ -512,7 +512,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
 	},
 
 	{
@@ -539,7 +539,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -60R, others 2.7-3.6V*/
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -60R, others 2.7-3.6V*/
 	},
 
 	{
@@ -566,5 +566,5 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
+		.voltage	= {MV_3000, MV_3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
 	},

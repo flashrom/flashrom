@@ -44,7 +44,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 	},
 
 	{
@@ -83,7 +83,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600}, /* 2.3-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.3-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -122,7 +122,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 	},
 
 	{
@@ -160,7 +160,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600}, /* 2.3-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.3-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -198,7 +198,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1600, 2000}, /* Datasheet says range is 1.65-1.95 V */
+		.voltage	= {MV_1600, MV_2000}, /* Datasheet says range is 1.65-1.95 V. XXXX verify data @seuros */
 	},
 
 	{
@@ -236,7 +236,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -274,7 +274,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	/*The AT26DF321 has the same ID as the AT25DF321. */
@@ -313,7 +313,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -352,7 +352,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -390,7 +390,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -429,7 +429,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256, /* Dual I/O  (0xA2) supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -468,7 +468,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256, /* Dual I/O  (0xA2) supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual I/O  (0x3B) supported */
-		.voltage	= {1650, 1950},
+		.voltage	= {MV_1650, MV_1950},
 	},
 
 	{
@@ -507,7 +507,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -551,7 +551,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 	},
 
 	{
@@ -595,7 +595,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 	},
 
 	{
@@ -626,7 +626,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25F,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -655,7 +655,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25F,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -685,7 +685,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -714,7 +714,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25F,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -744,7 +744,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25F512A,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -786,7 +786,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25F512B,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -824,7 +824,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1650, 3600},
+		.voltage	= {MV_1650, MV_3600},
 	},
 
 	{
@@ -865,7 +865,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25FS010,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -903,7 +903,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT25FS040,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -941,7 +941,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2500, 3600},
+		.voltage	= {MV_2500, MV_3600},
 	},
 
 	{
@@ -979,7 +979,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -1017,7 +1017,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1700, 2000},
+		.voltage	= {MV_1700, MV_2000},
 	},
 
 	{
@@ -1055,7 +1055,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2500, 3600},
+		.voltage	= {MV_2500, MV_3600},
 	},
 
 	{
@@ -1093,7 +1093,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2500, 3600},
+		.voltage	= {MV_2500, MV_3600},
 	},
 
 	{
@@ -1132,7 +1132,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {1700, 2000},
+		.voltage	= {MV_1700, MV_2000},
 		.reg_bits	=
 		{
 			.srp    = {STATUS1, 7, RW},
@@ -1174,7 +1174,7 @@
 		/* Supports also an incompatible page write (of exactly 256 B) and an auto-erasing write. */
 		.write		= SPI_CHIP_WRITE1,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600}, /* 3.0-3.6V for higher speed, 2.7-3.6V normal */
+		.voltage	= {MV_2700, MV_3600}, /* 3.0-3.6V for higher speed, 2.7-3.6V normal */
 	},
 
 	{
@@ -1212,7 +1212,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1250,7 +1250,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1288,7 +1288,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1325,7 +1325,7 @@
 		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN, /* TODO: improve */
 		.write		= 0, /* Incompatible Page write */
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1349,7 +1349,7 @@
 		},
 		.write		= WRITE_JEDEC,	/* FIXME */
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1373,7 +1373,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1397,7 +1397,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1421,7 +1421,7 @@
 		},
 		.write		= WRITE_JEDEC,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1452,7 +1452,7 @@
 		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN,
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 		.gran		= WRITE_GRAN_1056BYTES,
 	},
 
@@ -1495,7 +1495,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1537,7 +1537,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1579,7 +1579,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -1621,7 +1621,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -1663,7 +1663,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -1705,7 +1705,7 @@
 		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_AT45DB, /* Bit 0 is undefined, no lockdown */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB_E8, /* 3 address and 4 dummy bytes */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 		.gran		= WRITE_GRAN_528BYTES,
 	},
 
@@ -1748,7 +1748,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+		.voltage	= {MV_2700, MV_3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -1790,7 +1790,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2500, 3600}, /* 2.3-3.6V & 2.5-3.6V models available */
+		.voltage	= {MV_2500, MV_3600}, /* 2.3-3.6V & 2.5-3.6V models available */
 	},
 
 	{
@@ -1832,7 +1832,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1874,7 +1874,7 @@
 		/* granularity will be set by the probing function. */
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -1899,7 +1899,7 @@
 		.printlock	= PRINTLOCK_AT49F,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1923,7 +1923,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -1955,7 +1955,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -1987,7 +1987,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -2018,7 +2018,7 @@
 		.printlock	= PRINTLOCK_AT49F,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -2049,7 +2049,7 @@
 		.printlock	= PRINTLOCK_AT49F,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -2080,7 +2080,7 @@
 		.printlock	= PRINTLOCK_AT49F,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -2112,7 +2112,7 @@
 		.printlock	= PRINTLOCK_AT49F,
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -2148,7 +2148,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -2184,7 +2184,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},
 
 	{
@@ -2220,5 +2220,5 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600},
+		.voltage	= {MV_3000, MV_3600},
 	},

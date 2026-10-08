@@ -39,7 +39,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -71,7 +71,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -108,7 +108,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* #WP pin write-protects SRWP bit. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -140,7 +140,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* #WP pin write-protects SRWP bit. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -178,7 +178,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B), dual read (0x3B) and dual I/O (0xBB) supported */
-		.voltage	= {2300, 3600},
+		.voltage	= {MV_2300, MV_3600},
 	},
 
 	{
@@ -210,7 +210,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -241,7 +241,7 @@
 		.unlock		= NO_BLOCKPROTECT_FUNC, /* #WP pin write-protects lower 64kB. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -272,7 +272,7 @@
 		.unlock		= NO_BLOCKPROTECT_FUNC, /* #WP pin write-protects lower 64kB. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -304,7 +304,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -336,7 +336,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* #WP pin write-protects SRWP bit. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* some quad-read supported ("HD_READ mode") */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -371,7 +371,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* #WP pin write-protects SRWP bit. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -403,5 +403,5 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* #WP pin write-protects SRWP bit. */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* some quad-read supported ("HD_READ mode") */
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},

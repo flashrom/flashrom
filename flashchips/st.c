@@ -37,7 +37,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -X, others 4.5-5.5V */
+		.voltage	= {MV_4750, MV_5250}, /* 4.75-5.25V for type -X, others 4.5-5.5V */
 	},
 
 	{
@@ -69,7 +69,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -X, others 4.5-5.5V */
+		.voltage	= {MV_4750, MV_5250}, /* 4.75-5.25V for type -X, others 4.5-5.5V */
 	},
 
 	{
@@ -96,7 +96,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -129,7 +129,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -162,7 +162,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {4500, 5500},
+		.voltage	= {MV_4500, MV_5500},
 	},
 
 	{
@@ -189,7 +189,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -216,7 +216,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -240,7 +240,7 @@
 		},
 		.write		= WRITE_JEDEC1,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {2700, 3600},
+		.voltage	= {MV_2700, MV_3600},
 	},
 
 	{
@@ -273,7 +273,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -306,7 +306,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -340,7 +340,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -374,7 +374,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -408,7 +408,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -433,7 +433,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -458,7 +458,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -483,7 +483,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -508,7 +508,7 @@
 		.unlock		= UNLOCK_REGSPACE2_UNIFORM_64K,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -540,7 +540,7 @@
 		.unlock		= UNLOCK_REGSPACE2_BLOCK_ERASER_0,
 		.write		= WRITE_82802AB,
 		.read		= READ_MEMMAPPED,
-		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+		.voltage	= {MV_3000, MV_3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -571,7 +571,7 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2500, 5500},
+		.voltage	= {MV_2500, MV_5500},
 	},
 
 	{
@@ -598,5 +598,5 @@
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
-		.voltage	= {2500, 5500},
+		.voltage	= {MV_2500, MV_5500},
 	},

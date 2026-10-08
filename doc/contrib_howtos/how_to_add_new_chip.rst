@@ -92,7 +92,8 @@ Properties
 * From the datasheet, get ``.vendor``, ``.name``, ``.bustype``, ``.total_size``.
 * ``.voltage`` defines the upper and lower bounds of the supply voltage of the chip. If there are multiple chip models
   with different allowed voltage ranges, the `intersection <https://en.wikipedia.org/wiki/Intersection_(set_theory)>`_
-  should be used and an appropriate comment added.
+  should be used and an appropriate comment added. Bounds are written with the ``MV_*`` macros from ``flashchips.c``,
+  named after their value in mV, e.g. ``{MV_2700, MV_3600}`` for 2.7-3.6 V. Add a new macro if a bound is missing.
 * ``.page_size`` is really hard.
   Please read this `long explanation <https://mail.coreboot.org/pipermail/flashrom/2013-April/010817.html>`_,
   or ignore it for now and set it to 256.
