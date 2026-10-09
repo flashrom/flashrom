@@ -22,6 +22,20 @@
 #define ENE_XBI_EFCMD_PROGRAM		0x70
 #define ENE_XBI_EFCMD_HVPL_CLEAR	0x80
 
+/*
+ * Watchdog timer configuration register. The address is part of the ENE
+ * KB9010 register map used by OLPC's Open Firmware (cpu/arm/olpc/edi.fth),
+ * which shares its EDI ID and flash and 8051 registers with the KB9012.
+ */
+#define ENE_EC_WDTCFG			0xfe80
+
+/*
+ * Writing this value to WDTCFG disables the watchdog timer on the KB9542GF.
+ * It was found by testing on hardware. Open Firmware disables the KB9010
+ * watchdog differently, by writing 0x00 to WDTCFG.
+ */
+#define ENE_EC_WDTCFG_DISABLE		0x48
+
 #define ENE_EC_PXCFG			0xff14
 
 #define ENE_EC_PXCFG_8051_RESET		0x01
@@ -31,6 +45,9 @@
 
 #define ENE_KB9012_HWVERSION		0xc3
 #define ENE_KB9012_EDIID		0x04
+
+#define ENE_KB9542GF_HWVERSION		0xf0
+#define ENE_KB9542GF_EDIID		0x07
 
 struct ene_chip {
 	unsigned char hwversion;

@@ -150,6 +150,7 @@ int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int
 int edi_chip_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int edi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int edi_probe_kb9012(struct flashctx *flash);
+int edi_probe_kb9542gf(struct flashctx *flash);
 
 /* spi95.c */
 int probe_spi_st95(struct flashctx *flash);

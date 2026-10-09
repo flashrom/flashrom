@@ -19,6 +19,11 @@ static const struct ene_chip ene_kb9012 = {
 	.ediid = ENE_KB9012_EDIID,
 };
 
+static const struct ene_chip ene_kb9542gf = {
+	.hwversion = ENE_KB9542GF_HWVERSION,
+	.ediid = ENE_KB9542GF_EDIID,
+};
+
 static void edi_write_cmd(unsigned char *cmd, unsigned short address, unsigned char data)
 {
 	cmd[0] = EDI_WRITE; /* EDI write command. */
@@ -271,6 +276,23 @@ static int edi_8051_execute(struct flashctx *flash)
 	return 0;
 }
 
+static int edi_check_state(struct flashctx *flash)
+{
+	unsigned char pxcfg, efcfg;
+
+	/* Only the KB9542GF is known to get reset by its watchdog, see edi_probe_kb9542gf(). */
+	if (flash->chip->probe != PROBE_EDI_KB9542GF)
+		return 0;
+
+	if (edi_read(flash, ENE_EC_PXCFG, &pxcfg) < 0 || edi_read(flash, ENE_XBI_EFCFG, &efcfg) < 0)
+		return -1;
+
+	if (!(pxcfg & ENE_EC_PXCFG_8051_RESET) || !(efcfg & ENE_XBI_EFCFG_CMD_WE))
+		return -1;
+
+	return 0;
+}
+
 int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int size)
 {
 	unsigned int timeout = 64;
@@ -284,6 +306,11 @@ int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int
 	rc = edi_spi_enable(flash);
 	if (rc < 0) {
 		msg_perr("%s: Unable to enable SPI!\n", __func__);
+		return -1;
+	}
+
+	if (edi_check_state(flash) < 0) {
+		msg_perr("%s: EC was reset before erase at 0x%05x!\n", __func__, page);
 		return -1;
 	}
 
@@ -342,6 +369,11 @@ int edi_chip_write(struct flashctx *flash, const uint8_t *buf, unsigned int star
 
 	for (i = 0; i < pages; i++) {
 		timeout = 64;
+
+		if (edi_check_state(flash) < 0) {
+			msg_perr("%s: EC was reset before write at 0x%05x!\n", __func__, address);
+			return -1;
+		}
 
 		/* Clear page buffer. */
 		rc = edi_write(flash, ENE_XBI_EFCMD, ENE_XBI_EFCMD_HVPL_CLEAR);
@@ -411,6 +443,16 @@ int edi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsi
 
 	for (i = 0; i < len; i++) {
 		timeout = 64;
+
+		/*
+		 * If the EC gets reset behind our back (e.g. by its watchdog),
+		 * EDI keeps answering but every flash read returns garbage.
+		 * Check periodically that our setup is still in place.
+		 */
+		if ((address & 0xff) == 0 && edi_check_state(flash) < 0) {
+			msg_perr("%s: EC was reset during read at 0x%05x!\n", __func__, address);
+			return -1;
+		}
 
 		rc = edi_spi_address(flash, start, address);
 		if (rc < 0)
@@ -503,6 +545,83 @@ int edi_probe_kb9012(struct flashctx *flash)
 	}
 
 	register_shutdown(edi_shutdown, (void *)flash);
+
+	return 1;
+}
+
+static int edi_8051_reset_verified(struct flashctx *flash)
+{
+	unsigned char pxcfg;
+
+	if (edi_8051_reset(flash) < 0 || edi_read(flash, ENE_EC_PXCFG, &pxcfg) < 0)
+		return -1;
+
+	return (pxcfg & ENE_EC_PXCFG_8051_RESET) ? 0 : -1;
+}
+
+static int edi_shutdown_retry(void *data)
+{
+	unsigned int tries;
+
+	for (tries = 0; tries < EDI_SESSION_RETRIES; tries++) {
+		if (edi_shutdown(data) == 0)
+			return 0;
+		programmer_delay((struct flashctx *)data, EDI_SESSION_RETRY_DELAY_US);
+	}
+
+	return -1;
+}
+
+int edi_probe_kb9542gf(struct flashctx *flash)
+{
+	unsigned int tries;
+	unsigned char hwversion;
+
+	/*
+	 * While the EC firmware is running (e.g. right after a previous session
+	 * released the 8051), EDI intermittently doesn't answer at all and
+	 * returns only 0x00 or 0xff. Keep retrying until it does, then hold the
+	 * 8051 in reset: from that point on EDI is stable.
+	 */
+	for (tries = 0; tries < EDI_SESSION_RETRIES; tries++) {
+		/* Dummy read to draw the chip's attention, see edi_probe_kb9012(). */
+		edi_read(flash, ENE_EC_HWVERSION, &hwversion);
+
+		if (edi_chip_probe(flash, &ene_kb9542gf))
+			break;
+
+		programmer_delay(flash, EDI_SESSION_RETRY_DELAY_US);
+	}
+
+	if (tries == EDI_SESSION_RETRIES)
+		return 0;
+
+	if (tries)
+		msg_cdbg("%s: chip answered after %u retries\n", __func__, tries);
+
+	for (tries = 0; tries < EDI_SESSION_RETRIES; tries++) {
+		if (edi_8051_reset_verified(flash) == 0)
+			break;
+
+		programmer_delay(flash, EDI_SESSION_RETRY_DELAY_US);
+	}
+
+	if (tries == EDI_SESSION_RETRIES) {
+		msg_perr("%s: Unable to reset 8051!\n", __func__);
+		return 0;
+	}
+
+	/*
+	 * The EC firmware enables the watchdog, which keeps running while the
+	 * 8051 is held in reset. When it fires (after a few seconds), the whole
+	 * chip is reset and all further flash reads return garbage.
+	 */
+	if (edi_write(flash, ENE_EC_WDTCFG, ENE_EC_WDTCFG_DISABLE) < 0) {
+		msg_perr("%s: Unable to disable watchdog!\n", __func__);
+		return 0;
+	}
+
+	register_shutdown(edi_shutdown_retry, (void *)flash);
 
 	return 1;
 }
