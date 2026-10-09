@@ -41,7 +41,7 @@
 /*
  * This number represents how many times in total a probing opcode is sent to a SPI chip,
  * during the probing operation which goes through the whole flashchips array.
- * opcodes: {9f+3bytes, 9f+4, 15+2, ab+1, ab+2, 90+2, 83+3, 9f+6, 5a+3, 5a+3}
+ * opcodes: {9f+3bytes, 9f+4, 15+2, ab+1, ab+2, 90+2, 83+3, 9f+6}
  *
  * Probing has a caching mechanism which tries to cache the ID response from the chip,
  * so that not to request the same info again.
@@ -58,8 +58,7 @@
 					PROBE_COUNT_JEDEC_RES_2 + \
 					PROBE_COUNT_JEDEC_REMS + \
 					PROBE_COUNT_JEDEC_ST_M95_RDID + \
-					PROBE_COUNT_JEDEC_RDID_6 + \
-					PROBE_COUNT_JEDEC_SFDP \
+					PROBE_COUNT_JEDEC_RDID_6 \
 					)
 
 struct probe_io_state {
@@ -74,6 +73,7 @@ struct probe_io_state {
 	unsigned char model_id_ext_byte1;
 	unsigned char model_id_ext_byte2;
 	unsigned int opcode_counter;
+	unsigned int sfdp_counter;
 	unsigned int counter;
 };
 
@@ -83,7 +83,6 @@ static bool is_probe_opcode(unsigned int opcode)
 		|| opcode == JEDEC_RDID
 		|| opcode == JEDEC_REMS
 		|| opcode == JEDEC_RES
-		|| opcode == JEDEC_SFDP
 		|| opcode == ST_M95_RDID)
 			return true;
 
@@ -105,11 +104,12 @@ static int probe_handler(void *state, int fd, unsigned long request, va_list arg
 		struct probe_io_state *probe_state = state;
 		unsigned int opcode = writearr[0];
 
-		if (is_probe_opcode(opcode)) {
+		/* Response for any other opcode (except the one we are emulating) is 0xff */
+		memset(readarr, 0xff, readcount);
+		if (is_probe_opcode(opcode))
 			probe_state->counter++;
-			/* Response for any other opcode (except the one we are emulating) is 0xff */
-			memset(readarr, 0xff, readcount);
-		}
+		if (opcode == JEDEC_SFDP)
+			probe_state->sfdp_counter++;
 
 		/* Detect probing for opcode and number of bytes that we need to emulate. */
 		if (opcode == probe_state->opcode
@@ -160,6 +160,8 @@ static void print_probing_results(const struct probe_io_state probe_io_state)
 		probe_io_state.opcode, probe_io_state.readcount, probe_io_state.opcode_counter);
 	printf("Total count of all probe opcode sent to chip was %d times\n",
 		probe_io_state.counter);
+	printf("Total count of JEDEC_SFDP 0x%2x sent to chip %d times\n",
+		JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 #define MOCK_LINUX_SPI(io_state_ptr) struct io_mock_fallback_open_state linux_spi_fallback_open_state = { \
@@ -195,6 +197,7 @@ void probe_jedec_rdid3_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rdid3_try_all_flashchips(void **state)
@@ -223,6 +226,7 @@ void probe_jedec_rdid3_try_all_flashchips(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rdid3_no_matches_found(void **state)
@@ -252,6 +256,7 @@ void probe_jedec_rdid3_no_matches_found(void **state)
 		       && (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 			&& (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res1_fixed_chipname(void **state)
@@ -278,6 +283,7 @@ void probe_jedec_res1_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	/* probe_spi_res1 tries, in order, RDID, REMS, and if none of these works, RES. */
 	assert_int_equal(3, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res1_try_all_flashchips(void **state)
@@ -308,6 +314,7 @@ void probe_jedec_res1_try_all_flashchips(void **state)
 		       && (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res1_no_matches_found(void **state)
@@ -337,6 +344,7 @@ void probe_jedec_res1_no_matches_found(void **state)
 		       && (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res2_fixed_chipname(void **state)
@@ -360,6 +368,7 @@ void probe_jedec_res2_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res2_try_all_flashchips(void **state)
@@ -387,6 +396,7 @@ void probe_jedec_res2_try_all_flashchips(void **state)
 	// probing functions are using cache.
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_res2_no_matches_found(void **state)
@@ -415,6 +425,7 @@ void probe_jedec_res2_no_matches_found(void **state)
 	// probing functions are using cache.
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rdid4_fixed_chipname(void **state)
@@ -439,6 +450,7 @@ void probe_jedec_rdid4_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rdid4_try_all_flashchips(void **state)
@@ -467,6 +479,7 @@ void probe_jedec_rdid4_try_all_flashchips(void **state)
 	// probing functions are using cache.
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rdid4_no_matches_found(void **state)
@@ -496,6 +509,7 @@ void probe_jedec_rdid4_no_matches_found(void **state)
 	// probing functions are using cache.
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 			&& (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_big_spansion_fixed_chipname(void **state)
@@ -521,6 +535,7 @@ void probe_big_spansion_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_big_spansion_try_all_flashchips(void **state)
@@ -551,6 +566,7 @@ void probe_big_spansion_try_all_flashchips(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_big_spansion_no_matches_found(void **state)
@@ -583,6 +599,7 @@ void probe_big_spansion_no_matches_found(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_st95_fixed_chipname(void **state)
@@ -606,6 +623,7 @@ void probe_st95_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_st95_try_all_flashchips(void **state)
@@ -634,6 +652,7 @@ void probe_st95_try_all_flashchips(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_st95_no_matches_found(void **state)
@@ -663,6 +682,7 @@ void probe_st95_no_matches_found(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_at25f_rdid_fixed_chipname(void **state)
@@ -686,6 +706,7 @@ void probe_at25f_rdid_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_at25f_rdid_try_all_flashchips(void **state)
@@ -711,6 +732,7 @@ void probe_at25f_rdid_try_all_flashchips(void **state)
 
 	// Uncomment when caching is fixed for all opcodes
 	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_at25f_rdid_no_matches_found(void **state)
@@ -737,6 +759,7 @@ void probe_at25f_rdid_no_matches_found(void **state)
 
 	// Uncomment when caching is fixed for all opcodes
 	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rems_fixed_chipname(void **state)
@@ -760,6 +783,7 @@ void probe_jedec_rems_fixed_chipname(void **state)
 	/* Since fixed chip name was given, probing should happen only once, for that name. */
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
+	assert_int_equal(0, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rems_try_all_flashchips(void **state)
@@ -788,6 +812,7 @@ void probe_jedec_rems_try_all_flashchips(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 
 void probe_jedec_rems_no_matches_found(void **state)
@@ -816,6 +841,7 @@ void probe_jedec_rems_no_matches_found(void **state)
 			&& (probe_io_state.opcode_counter <= flashchips_size));
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
+	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
 }
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
