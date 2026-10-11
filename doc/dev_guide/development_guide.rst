@@ -335,8 +335,14 @@ Merge checklist
    of the rules for :ref:`commit-message`
 #. All the comments need to be addressed, especially if there was a negative vote in the process of review (-1 or -2).
 #. flashrom developers are people from everywhere. We usually wait for 2 days (48 hours) after the patch is fully approved
-   just in case of last minute concerns, except for trivial changes such as typo fixes or small documentation updates
-   which may be merged faster after verification by a second reviewer.
+   just in case of last minute concerns. Exceptions which can be merged faster after verification by a reviewer:
+
+   a. trivial changes such as typo fixes or small documentation updates.
+   b. ``tests/``-only changes.
+   c. commits which do not change the compiled code, such as introducing macros or named constants, or renaming.
+      The object files must be byte-identical before and after the change, built with ``-Dprogrammer=all -Duse_git_version=disabled``.
+      The commit message has to state this, and the reviewer should confirm it.
+
 #. In the case of emergency, merging should not take place within less than 24 hours after the review
    started (i.e. the first message by a reviewer on Gerrit).
 
