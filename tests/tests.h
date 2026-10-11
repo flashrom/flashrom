@@ -50,6 +50,13 @@ void probe_spi_res2_test_success(void **state);
 void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 
+/* sfdp.c */
+void sfdp_mx25l6406e_test_success(void **state);
+void sfdp_mx25l25635f_over_16mib_rejected(void **state);
+void sfdp_gd25q256d_over_16mib_rejected(void **state);
+void sfdp_no_signature_rejected(void **state);
+void sfdp_unknown_major_revision_rejected(void **state);
+
 /* probe_spi.c */
 void probe_jedec_rdid3_fixed_chipname(void **state);
 void probe_jedec_rdid3_try_all_flashchips(void **state);

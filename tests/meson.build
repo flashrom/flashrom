@@ -14,6 +14,7 @@ test_srcs = files(
   'libflashrom.c',
   'probe_spi.c',
   'spi25.c',
+  'sfdp.c',
   'lifecycle.c',
   'layout.c',
   'chip.c',

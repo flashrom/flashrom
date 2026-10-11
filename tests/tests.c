@@ -503,6 +503,15 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
 
+	const struct CMUnitTest sfdp_tests[] = {
+		cmocka_unit_test(sfdp_mx25l6406e_test_success),
+		cmocka_unit_test(sfdp_mx25l25635f_over_16mib_rejected),
+		cmocka_unit_test(sfdp_gd25q256d_over_16mib_rejected),
+		cmocka_unit_test(sfdp_no_signature_rejected),
+		cmocka_unit_test(sfdp_unknown_major_revision_rejected),
+	};
+	ret |= cmocka_run_group_tests_name("sfdp.c tests", sfdp_tests, NULL, NULL);
+
 	const struct CMUnitTest probe_spi_tests[] = {
 		cmocka_unit_test(probe_jedec_rdid3_fixed_chipname),
 		cmocka_unit_test(probe_jedec_rdid3_try_all_flashchips),
