@@ -152,7 +152,7 @@ F:	COPYING.rst
 WINDOWS
 M:	David Reguera <regueragarciadavid@gmail.com>
 S:	Maintained
-F:	platform/udelay_windows.c
+F:	platform/*_windows.c
 
 ################################################################################
 # PROGRAMMERS
