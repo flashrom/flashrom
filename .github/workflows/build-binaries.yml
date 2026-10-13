@@ -1,0 +1,120 @@
+name: Build and package binaries
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: Use the release version from VERSION without a Git suffix
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+            shell: bash
+            tests: enabled
+          - platform: macos-arm64
+            runner: macos-15
+            shell: bash
+            tests: disabled
+          - platform: macos-x86_64
+            runner: macos-15-intel
+            shell: bash
+            tests: disabled
+          - platform: windows-x86_64
+            runner: windows-2022
+            shell: 'msys2 {0}'
+            tests: enabled
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    env:
+      PLATFORM: ${{ matrix.platform }}
+      RELEASE_BUILD: ${{ inputs.release }}
+      TESTS: ${{ matrix.tests }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential meson ninja-build pkg-config dpkg-dev \
+            libcmocka-dev libpci-dev libusb-1.0-0-dev libftdi1-dev \
+            libjaylink-dev libssl-dev
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install meson ninja pkgconf libusb libftdi openssl@3 dylibbundler
+          echo "PKG_CONFIG_PATH=$(brew --prefix openssl@3)/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "MACOSX_DEPLOYMENT_TARGET=15.0" >> "$GITHUB_ENV"
+
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git zip
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-cmocka
+            mingw-w64-ucrt-x86_64-libusb
+            mingw-w64-ucrt-x86_64-libftdi
+            mingw-w64-ucrt-x86_64-libjaylink
+            mingw-w64-ucrt-x86_64-openssl
+
+      - name: Configure
+        run: |
+          git_version=enabled
+          if [[ "$RELEASE_BUILD" == true ]]; then git_version=disabled; fi
+          meson setup build --buildtype=release --default-library=static \
+            --wrap-mode=nofallback -Dprogrammer=auto -Dtests="$TESTS" \
+            -Drpmc=enabled -Duse_git_version="$git_version" \
+            -Ddocumentation=disabled -Dman-pages=disabled \
+            -Dich_descriptors_tool=disabled -Dbash_completion=disabled
+
+      - name: Compile
+        run: meson compile -C build
+
+      # The unit tests require GNU ld --wrap, available on Linux and MinGW.
+      - name: Run unit tests
+        if: matrix.tests == 'enabled'
+        run: meson test -C build --print-errorlogs
+
+      - name: Package and smoke-test
+        run: bash scripts/package-binaries.sh
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: flashrom-${{ matrix.platform }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.platform }}
+          path: build/meson-logs/

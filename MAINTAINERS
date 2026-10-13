@@ -244,3 +244,10 @@ FLASHROM DOCKER
 M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
 F:	util/docker/
+
+GITHUB WORKFLOWS AND BINARY PACKAGING
+M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
+S:	Maintained
+F:	.github/
+F:	scripts/package-binaries.sh
+F:	doc/dev_guide/github_binary_builds.rst
