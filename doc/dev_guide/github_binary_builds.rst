@@ -52,6 +52,22 @@ available with the macOS linker. Every job smoke-tests the packaged CLI using
 that bundled binaries no longer reference Homebrew libraries. These checks
 do not test physical programmers.
 
+Releases
+--------
+
+Update ``VERSION``, commit it with these workflows, tag that commit, and
+publish a GitHub Release for the tag. Publishing either a release or a
+prerelease triggers ``release.yml``. It uses the same build and packaging
+jobs as CI, with the version from ``VERSION`` and without a Git suffix.
+Tag names must refer to commits containing these workflows and the packaging
+script.
+
+Once all four builds pass, the workflow attaches their packages, a source
+archive of the release commit, and ``SHA256SUMS`` to that release. Only the
+asset upload job has ``contents: write``; build jobs have read-only access.
+Assets are not overwritten. If an upload partially fails, remove any assets
+uploaded by that attempt before rerunning the upload job.
+
 CI packages append the commit ID to their version. Packages include the source
 commit ID, Meson options and license information. The macOS and Windows builds
 bundle package-manager libraries and include dependency notices/provenance;
