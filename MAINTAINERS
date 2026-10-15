@@ -101,7 +101,7 @@ F:	include/flashchips*
 I2C HELPERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
-F:	i2c_helper_linux.c
+F:	i2c_helper.c
 
 LOGIC
 M:	Anastasia Klimchuk <aklm@chromium.org>

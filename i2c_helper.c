@@ -107,4 +107,3 @@ out:
 	free(device_path);
 	return fd;
 }
-
