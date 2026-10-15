@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef __CLI_GETOPT_H__
-#define __CLI_GETOPT_H__
+#ifndef __PLATFORM_GETOPT_H__
+#define __PLATFORM_GETOPT_H__
 
 /**
  * This header is responsible for either including a standard getop
@@ -35,4 +35,4 @@ int getopt_long_only (int argc, char *const *argv, const char *shortopts,
 			const struct option *longopts, int *longind);
 
 #endif /* HAVE_GETOPT_H */
-#endif /* __CLI_GETOPT_H__ */
+#endif /* __PLATFORM_GETOPT_H__ */
