@@ -468,6 +468,13 @@ union usb_spi_packet_v1 {
 
 #define USB_SPI_PAYLOAD_SIZE_V2_CONTINUE    (60)
 
+/*
+ * Arbitrary host buffer limit (64 * 64 = 4096 bytes per bulk IN transfer),
+ * not a hardware or protocol limit. Large enough to receive a maximum
+ * 2040-byte v2 SPI read response (34 packets) in a single transfer.
+ */
+#define RAIDEN_V2_MAX_BATCH_PACKETS         (64)
+
 enum packet_id_type {
 	/* Request USB SPI configuration data from device. */
 	USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG = 0,
@@ -1101,51 +1108,102 @@ static int read_response_v2(const struct raiden_debug_spi_data *ctx_data,
 {
 	int status = -1;
 	struct usb_spi_packet_ctx response;
+	uint8_t raw_buf[RAIDEN_V2_MAX_BATCH_PACKETS * USB_MAX_PACKET_SIZE];
 
 	/* Reset the read context to the start. */
 	read->receive_index = 0;
 
 	/* Receive the payload to the servo micro. */
 	do {
-		status = receive_packet(ctx_data, &response);
+		size_t remaining = read->receive_size - read->receive_index;
+		size_t num_packets = 1;
+		if (remaining > 0) {
+			/* First packet (START) and subsequent packets (CONTINUE) both
+			 * carry up to 60 bytes of SPI read payload after a 4-byte header.
+			 */
+			num_packets = (remaining + USB_SPI_PAYLOAD_SIZE_V2_CONTINUE - 1) /
+				      USB_SPI_PAYLOAD_SIZE_V2_CONTINUE;
+			if (num_packets > RAIDEN_V2_MAX_BATCH_PACKETS)
+				num_packets = RAIDEN_V2_MAX_BATCH_PACKETS;
+		}
+
+		int received = 0;
+		status = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
+				ctx_data->in_ep,
+				raw_buf,
+				num_packets * USB_MAX_PACKET_SIZE,
+				&received,
+				TRANSFER_TIMEOUT_MS));
 		if (status) {
-			/* Return the transfer error. */
+			msg_perr("Raiden: IN transfer failed\n"
+				 "    received = %d\n"
+				 "    status   = 0x%05x\n",
+				 received, status);
 			return status;
 		}
-		if (response.packet_v2.packet_id == USB_SPI_PKT_ID_RSP_TRANSFER_START) {
-			/*
-			 * The host should only see this packet if an error occurs
-			 * on the device or if it's the first response packet.
-			 */
-			if (response.packet_v2.rsp_start.status_code) {
-				return response.packet_v2.rsp_start.status_code;
-			}
-			if (read->receive_index) {
-				msg_perr("Raiden: Unexpected start packet id = %u\n",
-					 response.packet_v2.rsp_start.packet_id);
+		if (received <= 0) {
+			msg_perr("Raiden: Empty IN transfer\n");
+			return USB_SPI_HOST_RX_READ_FAILURE;
+		}
+
+		for (int offset = 0; offset < received; offset += USB_MAX_PACKET_SIZE) {
+			size_t pkt_len = received - offset;
+			if (pkt_len > USB_MAX_PACKET_SIZE)
+				pkt_len = USB_MAX_PACKET_SIZE;
+
+			memset(&response, 0, sizeof(response));
+			memcpy(response.bytes, raw_buf + offset, pkt_len);
+			response.packet_size = pkt_len;
+
+			if (pkt_len < offsetof(struct usb_spi_response_v2, data)) {
+				msg_perr("Raiden: Truncated response packet len = %zu\n", pkt_len);
 				return USB_SPI_HOST_RX_UNEXPECTED_PACKET;
 			}
-			response.header_size = offsetof(struct usb_spi_response_v2, data);
-		} else if (response.packet_v2.packet_id ==
-				USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE) {
 
-			/* We validate that no packets were missed. */
-			if (read->receive_index !=
-					response.packet_v2.rsp_continue.data_index) {
-				msg_perr("Raiden: Bad Index = %u Expected = %zu\n",
-					 response.packet_v2.rsp_continue.data_index,
-					 read->receive_index);
-				return USB_SPI_HOST_RX_BAD_DATA_INDEX;
+			if (response.packet_v2.packet_id == USB_SPI_PKT_ID_RSP_TRANSFER_START) {
+				/*
+				 * The host should only see this packet if an error occurs
+				 * on the device or if it's the first response packet.
+				 */
+				if (response.packet_v2.rsp_start.status_code) {
+					return response.packet_v2.rsp_start.status_code;
+				}
+				if (read->receive_index) {
+					msg_perr("Raiden: Unexpected start packet id = %u\n",
+						 response.packet_v2.rsp_start.packet_id);
+					return USB_SPI_HOST_RX_UNEXPECTED_PACKET;
+				}
+				response.header_size = offsetof(struct usb_spi_response_v2, data);
+			} else if (response.packet_v2.packet_id ==
+					USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE) {
+
+				/* We validate that no packets were missed. */
+				if (read->receive_index !=
+						response.packet_v2.rsp_continue.data_index) {
+					msg_perr("Raiden: Bad Index = %u Expected = %zu\n",
+						 response.packet_v2.rsp_continue.data_index,
+						 read->receive_index);
+					return USB_SPI_HOST_RX_BAD_DATA_INDEX;
+				}
+				response.header_size = offsetof(struct usb_spi_continue_v2, data);
+			} else {
+				msg_perr("Raiden: Unexpected packet id = %u\n",
+					 response.packet_v2.packet_id);
+				return USB_SPI_HOST_RX_UNEXPECTED_PACKET;
 			}
-			response.header_size = offsetof(struct usb_spi_continue_v2, data);
-		} else {
-			msg_perr("Raiden: Unexpected packet id = %u\n",
-				 response.packet_v2.packet_id);
-			return USB_SPI_HOST_RX_UNEXPECTED_PACKET;
-		}
-		status = read_usb_packet(read, &response);
-		if (status) {
-			return status;
+
+			if (response.packet_size < response.header_size) {
+				msg_perr("Raiden: Truncated response packet\n");
+				return USB_SPI_HOST_RX_UNEXPECTED_PACKET;
+			}
+
+			status = read_usb_packet(read, &response);
+			if (status) {
+				return status;
+			}
+
+			if (read->receive_index >= read->receive_size)
+				break;
 		}
 	} while (read->receive_index < read->receive_size);
 

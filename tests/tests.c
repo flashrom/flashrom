@@ -577,6 +577,8 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(raiden_debug_targetEC_basic_lifecycle_test_success),
 		cmocka_unit_test(raiden_debug_target0_basic_lifecycle_test_success),
 		cmocka_unit_test(raiden_debug_target1_basic_lifecycle_test_success),
+		cmocka_unit_test(raiden_debug_v2_read_response_batched_test_success),
+		cmocka_unit_test(raiden_debug_v2_write_only_test_success),
 		cmocka_unit_test(dediprog_basic_lifecycle_test_success),
 		cmocka_unit_test(linux_mtd_probe_lifecycle_test_success),
 		cmocka_unit_test(linux_spi_probe_lifecycle_test_success),

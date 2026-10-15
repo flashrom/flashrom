@@ -120,6 +120,8 @@ void raiden_debug_targetAP_basic_lifecycle_test_success(void **state);
 void raiden_debug_targetEC_basic_lifecycle_test_success(void **state);
 void raiden_debug_target0_basic_lifecycle_test_success(void **state);
 void raiden_debug_target1_basic_lifecycle_test_success(void **state);
+void raiden_debug_v2_read_response_batched_test_success(void **state);
+void raiden_debug_v2_write_only_test_success(void **state);
 void dediprog_basic_lifecycle_test_success(void **state);
 void linux_mtd_probe_lifecycle_test_success(void **state);
 void linux_spi_probe_lifecycle_test_success(void **state);
