@@ -28,11 +28,11 @@ struct buspirate_speeds {
 #define BP_DEFAULTBAUD 115200
 
 #ifndef FAKE_COMMUNICATION
-static int buspirate_serialport_setup(char *dev)
+static int buspirate_serialport_setup(serialport_fdtype *fd, char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
-	serialport_fd = serialport_openserport(dev, BP_DEFAULTBAUD);
-	if (serialport_fd == SERIALPORT_INV_FD)
+	*fd = serialport_openserport(dev, BP_DEFAULTBAUD);
+	if (*fd == SERIALPORT_INV_FD)
 		return 1;
 	return 0;
 }
@@ -45,6 +45,7 @@ static int buspirate_serialport_setup(char *dev)
 #endif
 
 struct bp_spi_data {
+	serialport_fdtype fd;
 	unsigned char *commbuf;
 	int commbufsize;
 };
@@ -69,7 +70,7 @@ static int buspirate_commbuf_grow(int bufsize, unsigned char **bp_commbuf, int *
 	return 0;
 }
 
-static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
+static int buspirate_sendrecv(serialport_fdtype fd, unsigned char *buf, unsigned int writecnt,
 			      unsigned int readcnt)
 {
 	unsigned int i;
@@ -93,11 +94,11 @@ static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 	ret = 0;
 #else
 	if (writecnt)
-		ret = serialport_write(buf, writecnt);
+		ret = serialport_write(fd, buf, writecnt);
 	if (ret)
 		return ret;
 	if (readcnt)
-		ret = serialport_read(buf, readcnt);
+		ret = serialport_read(fd, buf, readcnt);
 	if (ret)
 		return ret;
 #endif
@@ -109,17 +110,17 @@ static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 	return 0;
 }
 
-static int buspirate_wait_for_string(unsigned char *buf, const char *key)
+static int buspirate_wait_for_string(serialport_fdtype fd, unsigned char *buf, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	int ret;
 
-	ret = buspirate_sendrecv(buf, 0, keylen);
+	ret = buspirate_sendrecv(fd, buf, 0, keylen);
 	while (!ret) {
 		if (!memcmp(buf, key, keylen))
 			return 0;
 		memmove(buf, buf + 1, keylen - 1);
-		ret = buspirate_sendrecv(buf + keylen - 1, 0, 1);
+		ret = buspirate_sendrecv(fd, buf + keylen - 1, 0, 1);
 	}
 	return ret;
 }
@@ -133,11 +134,11 @@ static int buspirate_spi_shutdown(void *data)
 
 	/* Exit raw SPI mode (enter raw bitbang mode) */
 	bp_commbuf[0] = 0x00;
-	if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+	if ((ret = buspirate_sendrecv(bp_data->fd, bp_commbuf, 1, 0)))
 		goto out_shutdown;
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
+	if ((ret = buspirate_wait_for_string(bp_data->fd, bp_commbuf, "BBIO")))
 		goto out_shutdown;
-	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
+	if ((ret = buspirate_sendrecv(bp_data->fd, bp_commbuf, 0, 1)))
 		goto out_shutdown;
 	msg_pdbg("Raw bitbang mode version %c\n", bp_commbuf[0]);
 	if (bp_commbuf[0] != '1') {
@@ -147,11 +148,11 @@ static int buspirate_spi_shutdown(void *data)
 	}
 	/* Reset Bus Pirate (return to user terminal) */
 	bp_commbuf[0] = 0x0f;
-	ret = buspirate_sendrecv(bp_commbuf, 1, 0);
+	ret = buspirate_sendrecv(bp_data->fd, bp_commbuf, 1, 0);
 
 out_shutdown:
 	/* Shut down serial port communication */
-	ret2 = serialport_shutdown(NULL);
+	ret2 = serialport_shutdown(bp_data->fd);
 	/* Keep the oldest error, it is probably the best indicator. */
 	if (ret2 && !ret)
 		ret = ret2;
@@ -225,7 +226,7 @@ static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned 
 	/* De-assert CS# */
 	bp_commbuf[i++] = 0x03;
 
-	ret = buspirate_sendrecv(bp_commbuf, i, i);
+	ret = buspirate_sendrecv(bp_data->fd, bp_commbuf, i, i);
 
 	if (ret) {
 		msg_perr("Bus Pirate communication error!\n");
@@ -278,7 +279,7 @@ static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned 
 	bp_commbuf[i++] = readcnt & 0xff;
 	memcpy(bp_commbuf + i, writearr, writecnt);
 
-	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
+	ret = buspirate_sendrecv(bp_data->fd, bp_commbuf, i + writecnt, 1 + readcnt);
 
 	if (ret) {
 		msg_perr("Bus Pirate communication error!\n");
@@ -324,6 +325,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	bool aux = true;
 	unsigned char *bp_commbuf;
 	int bp_commbufsize;
+	serialport_fdtype fd = SERIALPORT_INV_FD;
 
 	dev = extract_programmer_param_str(cfg, "dev");
 	if (dev && !strlen(dev)) {
@@ -431,7 +433,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	}
 	bp_commbufsize = DEFAULT_BUFSIZE;
 
-	ret = buspirate_serialport_setup(dev);
+	ret = buspirate_serialport_setup(&fd, dev);
 	free(dev);
 	if (ret) {
 		free(bp_commbuf);
@@ -445,6 +447,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		free(bp_commbuf);
 		return 1;
 	}
+	bp_data->fd = fd;
 	bp_data->commbuf = bp_commbuf;
 	bp_data->commbufsize = bp_commbufsize;
 
@@ -457,33 +460,33 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		/* Enter raw bitbang mode */
 		bp_commbuf[0] = 0x00;
 		/* Send the command, don't read the response. */
-		ret = buspirate_sendrecv(bp_commbuf, 1, 0);
+		ret = buspirate_sendrecv(fd, bp_commbuf, 1, 0);
 		if (ret)
 			goto init_err_cleanup_exit;
 		/* The old way to handle responses from a Bus Pirate already in BBIO mode was to flush any
 		 * response which came in over serial. Unfortunately that does not work reliably on Linux
 		 * with FTDI USB-serial.
 		 */
-		//serialport_flush_incoming();
+		//serialport_flush_incoming(fd);
 		/* The Bus Pirate can't handle UART input buffer overflow in BBIO mode, and sending a sequence
 		 * of 0x00 too fast apparently triggers such an UART input buffer overflow.
 		 */
 		default_delay(10000);
 	}
 	/* We know that 20 commands of \0 should elicit at least one BBIO1 response. */
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "BBIO")))
 		goto init_err_cleanup_exit;
 
 	/* Reset the Bus Pirate. */
 	bp_commbuf[0] = 0x0f;
 	/* Send the command, don't read the response. */
-	if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+	if ((ret = buspirate_sendrecv(fd, bp_commbuf, 1, 0)))
 		goto init_err_cleanup_exit;
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "irate ")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "irate ")))
 		goto init_err_cleanup_exit;
 	/* Read the hardware version string. Last byte of the buffer is reserved for \0. */
 	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
-		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
+		if ((ret = buspirate_sendrecv(fd, bp_commbuf + i, 0, 1)))
 			goto init_err_cleanup_exit;
 		if (strchr("\r\n\t ", bp_commbuf[i]))
 			break;
@@ -504,11 +507,11 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	msg_pdbg2(" (\"%s\")", bp_commbuf);
 	msg_pdbg("\n");
 
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "irmware ")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "irmware ")))
 		goto init_err_cleanup_exit;
 	/* Read the firmware version string. Last byte of the buffer is reserved for \0. */
 	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
-		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
+		if ((ret = buspirate_sendrecv(fd, bp_commbuf + i, 0, 1)))
 			goto init_err_cleanup_exit;
 		if (strchr("\r\n\t ", bp_commbuf[i]))
 			break;
@@ -529,7 +532,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	msg_pdbg2(" (\"%s\")", bp_commbuf);
 	msg_pdbg("\n");
 
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "HiZ>")))
 		goto init_err_cleanup_exit;
 
 	/* Tell the user about missing SPI binary mode in firmware 2.3 and older. */
@@ -602,37 +605,37 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 			/* Enter baud rate configuration mode */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "b\n");
-			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+			if ((ret = buspirate_sendrecv(fd, bp_commbuf, cnt, 0)))
 				goto init_err_cleanup_exit;
-			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
+			if ((ret = buspirate_wait_for_string(fd, bp_commbuf, ">")))
 				goto init_err_cleanup_exit;
 
 			/* Enter manual clock divisor entry mode */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "10\n");
-			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+			if ((ret = buspirate_sendrecv(fd, bp_commbuf, cnt, 0)))
 				goto init_err_cleanup_exit;
-			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
+			if ((ret = buspirate_wait_for_string(fd, bp_commbuf, ">")))
 				goto init_err_cleanup_exit;
 
 			/* Set the clock divisor to the value calculated from the user's input */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "%d\n",
 				BP_DIVISOR(serialspeeds[serialspeed_index].speed));
 
-			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+			if ((ret = buspirate_sendrecv(fd, bp_commbuf, cnt, 0)))
 				goto init_err_cleanup_exit;
 			sleep(1);
 
 			/* Reconfigure the host's serial baud rate to the new value */
-			if ((ret = serialport_config(serialport_fd, serialspeeds[serialspeed_index].speed))) {
+			if ((ret = serialport_config(fd, serialspeeds[serialspeed_index].speed))) {
 				msg_perr("Unable to configure system baud rate to specified value.");
 				goto init_err_cleanup_exit;
 			}
 
 			/* Return to the main prompt */
 			bp_commbuf[0] = ' ';
-			if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+			if ((ret = buspirate_sendrecv(fd, bp_commbuf, 1, 0)))
 				goto init_err_cleanup_exit;
-			if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
+			if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "HiZ>")))
 				goto init_err_cleanup_exit;
 
 			msg_pdbg("Serial speed is %d baud\n", serialspeeds[serialspeed_index].speed);
@@ -645,12 +648,12 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	/* Enter raw bitbang mode */
 	for (i = 0; i < 20; i++) {
 		bp_commbuf[0] = 0x00;
-		if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+		if ((ret = buspirate_sendrecv(fd, bp_commbuf, 1, 0)))
 			goto init_err_cleanup_exit;
 	}
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "BBIO")))
 		goto init_err_cleanup_exit;
-	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
+	if ((ret = buspirate_sendrecv(fd, bp_commbuf, 0, 1)))
 		goto init_err_cleanup_exit;
 	msg_pdbg("Raw bitbang mode version %c\n", bp_commbuf[0]);
 	if (bp_commbuf[0] != '1') {
@@ -660,12 +663,12 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	}
 	/* Enter raw SPI mode */
 	bp_commbuf[0] = 0x01;
-	ret = buspirate_sendrecv(bp_commbuf, 1, 0);
+	ret = buspirate_sendrecv(fd, bp_commbuf, 1, 0);
 	if (ret)
 		goto init_err_cleanup_exit;
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "SPI")))
+	if ((ret = buspirate_wait_for_string(fd, bp_commbuf, "SPI")))
 		goto init_err_cleanup_exit;
-	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
+	if ((ret = buspirate_sendrecv(fd, bp_commbuf, 0, 1)))
 		goto init_err_cleanup_exit;
 	msg_pdbg("Raw SPI mode version %c\n", bp_commbuf[0]);
 	if (bp_commbuf[0] != '1') {
@@ -690,7 +693,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	} else {
 		msg_pdbg("Driving AUX low.\n");
 	}
-	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
+	ret = buspirate_sendrecv(fd, bp_commbuf, 1, 1);
 	if (ret)
 		goto init_err_cleanup_exit;
 	if (bp_commbuf[0] != 0x01) {
@@ -701,7 +704,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 	/* Set SPI speed */
 	bp_commbuf[0] = 0x60 | spispeed;
-	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
+	ret = buspirate_sendrecv(fd, bp_commbuf, 1, 1);
 	if (ret)
 		goto init_err_cleanup_exit;
 	if (bp_commbuf[0] != 0x01) {
@@ -716,7 +719,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		bp_commbuf[0] &= ~BIT(3);
 		msg_pdbg("Pull-ups or HiZ enabled, so using HiZ pin output! (Open-Drain mode)\n");
 	}
-	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
+	ret = buspirate_sendrecv(fd, bp_commbuf, 1, 1);
 	if (ret)
 		goto init_err_cleanup_exit;
 	if (bp_commbuf[0] != 0x01) {
@@ -727,7 +730,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 	/* De-assert CS# */
 	bp_commbuf[0] = 0x03;
-	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
+	ret = buspirate_sendrecv(fd, bp_commbuf, 1, 1);
 	if (ret)
 		goto init_err_cleanup_exit;
 	if (bp_commbuf[0] != 0x01) {

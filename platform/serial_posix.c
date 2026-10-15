@@ -230,15 +230,15 @@ err:
 	return SERIALPORT_INV_FD;
 }
 
-void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
+void serialport_set_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin, int val) {
 	int ctl, s;
 
 	if(pin == PIN_TXD) {
-		ioctl(serialport_fd, val ? TIOCSBRK : TIOCCBRK, 0);
+		ioctl(fd, val ? TIOCSBRK : TIOCCBRK, 0);
 	}
 	else {
 		s = (pin == PIN_DTR) ? TIOCM_DTR : TIOCM_RTS;
-		ioctl(serialport_fd, TIOCMGET, &ctl);
+		ioctl(fd, TIOCMGET, &ctl);
 
 		if (val) {
 			ctl |= s;
@@ -246,31 +246,31 @@ void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
 		else {
 			ctl &= ~s;
 		}
-		ioctl(serialport_fd, TIOCMSET, &ctl);
+		ioctl(fd, TIOCMSET, &ctl);
 	}
 }
 
-int serialport_get_pin(enum SERIALPORT_PIN pin) {
+int serialport_get_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin) {
 	int s;
 	int ctl;
 	s = (pin == PIN_CTS) ? TIOCM_CTS : TIOCM_DSR;
-	ioctl(serialport_fd, TIOCMGET, &ctl);
+	ioctl(fd, TIOCMGET, &ctl);
 
 	return ((ctl & s) ? 1 : 0);
 
 }
 
-void serialport_flush_incoming(void)
+void serialport_flush_incoming(serialport_fdtype fd)
 {
-	if (!tcflush(serialport_fd, TCIFLUSH))
+	if (!tcflush(fd, TCIFLUSH))
 		return;
 
-	if (errno == ENOTTY) { // TCP socket case: serialport_fd is not a terminal descriptor - tcflush is not supported
+	if (errno == ENOTTY) { // TCP socket case: fd is not a terminal descriptor - tcflush is not supported
 		unsigned char c;
 		int ret;
 
 		do {
-			ret = serialport_read_nonblock(&c, 1, 1, NULL);
+			ret = serialport_read_nonblock(fd, &c, 1, 1, NULL);
 		} while (ret == 0);
 
 		// positive error code indicates no data available immediately - similar to EAGAIN/EWOULDBLOCK
@@ -278,20 +278,20 @@ void serialport_flush_incoming(void)
 		// negative error code indicates a permanent error
 		if (ret < 0)
 			msg_perr("Could not flush serial port incoming buffer: read has failed");
-	} else { // any other errno indicates an unrecoverable serialport_fd state
+	} else { // any other errno indicates an unrecoverable fd state
 		msg_perr_strerror("Could not flush serial port incoming buffer: ");
 	}
 }
 
-int serialport_shutdown(void *data)
+int serialport_shutdown(serialport_fdtype fd)
 {
-	close(serialport_fd);
+	close(fd);
 	return 0;
 }
 
-int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual)
+int serialport_raw_read(serialport_fdtype fd, unsigned char *buf, unsigned int readcnt, unsigned int *actual)
 {
-	ssize_t rv = read(serialport_fd, buf, readcnt);
+	ssize_t rv = read(fd, buf, readcnt);
 	if (rv < 0) {
 		/* Having nothing to read is not an error while non-blocking. */
 		if (errno == EAGAIN) {
@@ -305,9 +305,9 @@ int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *
 	return 0;
 }
 
-int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
+int serialport_raw_write(serialport_fdtype fd, const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
 {
-	ssize_t rv = write(serialport_fd, buf, writecnt);
+	ssize_t rv = write(fd, buf, writecnt);
 	if (rv < 0) {
 		/* Not being able to write right away is not an error while non-blocking. */
 		if (errno == EAGAIN) {
@@ -323,23 +323,23 @@ int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsign
 
 static int saved_flags;
 
-int serialport_nonblock_enter(void)
+int serialport_nonblock_enter(serialport_fdtype fd)
 {
-	saved_flags = fcntl(serialport_fd, F_GETFL);
+	saved_flags = fcntl(fd, F_GETFL);
 	if (saved_flags == -1) {
 		msg_perr_strerror("Could not get serial port mode: ");
 		return 1;
 	}
-	if (fcntl(serialport_fd, F_SETFL, saved_flags | O_NONBLOCK) != 0) {
+	if (fcntl(fd, F_SETFL, saved_flags | O_NONBLOCK) != 0) {
 		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
 		return 1;
 	}
 	return 0;
 }
 
-int serialport_nonblock_leave(void)
+int serialport_nonblock_leave(serialport_fdtype fd)
 {
-	if (fcntl(serialport_fd, F_SETFL, saved_flags) != 0) {
+	if (fcntl(fd, F_SETFL, saved_flags) != 0) {
 		msg_perr_strerror("Could not restore serial port mode to blocking: ");
 		return 1;
 	}

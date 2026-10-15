@@ -60,6 +60,9 @@
 
 #define MSGHEADER "serprog: "
 
+/* Serial port or network socket connected to the programmer */
+static serialport_fdtype sp_fd = SERIALPORT_INV_FD;
+
 static uint16_t sp_device_serbuf_size = 16;
 static uint16_t sp_device_opbuf_size = 300;
 /* Bitmap of supported commands */
@@ -147,12 +150,12 @@ static int sp_synchronize(void)
 	 * the device serial parser to get to a sane state, unless if it   *
 	 * is waiting for a real long write-n.                             */
 	memset(buf, S_CMD_NOP, 8);
-	if (serialport_write_nonblock(buf, 8, 1, NULL) != 0) {
+	if (serialport_write_nonblock(sp_fd, buf, 8, 1, NULL) != 0) {
 		goto err_out;
 	}
 	/* A second should be enough to get all the answers to the buffer */
 	default_delay(1000 * 1000);
-	serialport_flush_incoming();
+	serialport_flush_incoming(sp_fd);
 
 	/* Then try up to 8 times to send syncnop and get the correct special *
 	 * return of NAK+ACK. Timing note: up to 10 characters, 10*50ms =     *
@@ -161,32 +164,32 @@ static int sp_synchronize(void)
 	for (i = 0; i < 8; i++) {
 		int n;
 		unsigned char c = S_CMD_SYNCNOP;
-		if (serialport_write_nonblock(&c, 1, 1, NULL) != 0) {
+		if (serialport_write_nonblock(sp_fd, &c, 1, 1, NULL) != 0) {
 			goto err_out;
 		}
 		msg_pdbg(".");
 		fflush(stdout);
 		for (n = 0; n < 10; n++) {
-			int ret = serialport_read_nonblock(&c, 1, 50, NULL);
+			int ret = serialport_read_nonblock(sp_fd, &c, 1, 50, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_NAK)
 				continue;
-			ret = serialport_read_nonblock(&c, 1, 20, NULL);
+			ret = serialport_read_nonblock(sp_fd, &c, 1, 20, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_ACK)
 				continue;
 			c = S_CMD_SYNCNOP;
-			if (serialport_write_nonblock(&c, 1, 1, NULL) != 0) {
+			if (serialport_write_nonblock(sp_fd, &c, 1, 1, NULL) != 0) {
 				goto err_out;
 			}
-			ret = serialport_read_nonblock(&c, 1, 500, NULL);
+			ret = serialport_read_nonblock(sp_fd, &c, 1, 500, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_NAK)
 				break;	/* fail */
-			ret = serialport_read_nonblock(&c, 1, 100, NULL);
+			ret = serialport_read_nonblock(sp_fd, &c, 1, 100, NULL);
 			if (ret > 0 || ret < 0)
 				goto err_out;
 			if (c != S_ACK)
@@ -224,15 +227,15 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 	unsigned char c;
 	if (sp_automatic_cmdcheck(command))
 		return 1;
-	if (serialport_write(&command, 1) != 0) {
+	if (serialport_write(sp_fd, &command, 1) != 0) {
 		msg_perr("Error: cannot write op code: %s\n", strerror(errno));
 		return 1;
 	}
-	if (serialport_write(params, parmlen) != 0) {
+	if (serialport_write(sp_fd, params, parmlen) != 0) {
 		msg_perr("Error: cannot write parameters: %s\n", strerror(errno));
 		return 1;
 	}
-	if (serialport_read(&c, 1) != 0) {
+	if (serialport_read(sp_fd, &c, 1) != 0) {
 		msg_perr("Error: cannot read from device: %s\n", strerror(errno));
 		return 1;
 	}
@@ -243,7 +246,7 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 		return 1;
 	}
 	if (retlen) {
-		if (serialport_read(retparms, retlen) != 0) {
+		if (serialport_read(sp_fd, retparms, retlen) != 0) {
 			msg_perr("Error: cannot read return parameters: %s\n", strerror(errno));
 			return 1;
 		}
@@ -256,7 +259,7 @@ static int sp_flush_stream(void)
 	if (sp_streamed_transmit_ops)
 		do {
 			unsigned char c;
-			if (serialport_read(&c, 1) != 0) {
+			if (serialport_read(sp_fd, &c, 1) != 0) {
 				msg_perr("Error: cannot read from device (flushing stream)");
 				return 1;
 			}
@@ -295,7 +298,7 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms)
 			return 1;
 		}
 	}
-	if (serialport_write(sp, 1 + parmlen) != 0) {
+	if (serialport_write(sp_fd, sp, 1 + parmlen) != 0) {
 		msg_perr("Error: cannot write command\n");
 		free(sp);
 		return 1;
@@ -336,11 +339,11 @@ static int sp_pass_writen(void)
 	header[4] = (sp_write_n_addr >> 0) & 0xFF;
 	header[5] = (sp_write_n_addr >> 8) & 0xFF;
 	header[6] = (sp_write_n_addr >> 16) & 0xFF;
-	if (serialport_write(header, 7) != 0) {
+	if (serialport_write(sp_fd, header, 7) != 0) {
 		msg_perr(MSGHEADER "Error: cannot write write-n command\n");
 		return 1;
 	}
-	if (serialport_write(sp_write_n_buf, sp_write_n_bytes) != 0) {
+	if (serialport_write(sp_fd, sp_write_n_buf, sp_write_n_bytes) != 0) {
 		msg_perr(MSGHEADER "Error: cannot write write-n data");
 		return 1;
 	}
@@ -426,7 +429,7 @@ static int serprog_shutdown(void *data)
 			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
 	}
 	/* FIXME: fix sockets on windows(?), especially closing */
-	serialport_shutdown(&serialport_fd);
+	serialport_shutdown(sp_fd);
 	if (sp_max_write_n)
 		free(sp_write_n_buf);
 	return 0;
@@ -553,7 +556,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 		msg_perr(MSGHEADER "Error: cannot flush stream for byte read\n");
 		return c;
 	}
-	if (serialport_read(&c, 1) != 0) {
+	if (serialport_read(sp_fd, &c, 1) != 0) {
 		msg_perr(MSGHEADER "Error: cannot read byte data\n");
 		return c;
 	}
@@ -580,7 +583,7 @@ static int sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 		return 1;
 	if (sp_flush_stream() != 0)
 		return 1;
-	if (serialport_read(buf, len) != 0) {
+	if (serialport_read(sp_fd, buf, len) != 0) {
 		msg_perr(MSGHEADER "Error: cannot read read-n data");
 		return 1;
 	}
@@ -668,8 +671,8 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			baud = atoi(baud_str); // FIXME: replace atoi with strtoul
 		}
 		if (strlen(device) > 0) {
-			serialport_fd = serialport_openserport(device, baud);
-			if (serialport_fd == SERIALPORT_INV_FD) {
+			sp_fd = serialport_openserport(device, baud);
+			if (sp_fd == SERIALPORT_INV_FD) {
 				free(device);
 				return 1;
 			}
@@ -707,8 +710,8 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			return 1;
 		}
 		if (strlen(device)) {
-			serialport_fd = sp_opensocket(device, atoi(port)); // FIXME: replace atoi with strtoul
-			if (serialport_fd < 0) {
+			sp_fd = sp_opensocket(device, atoi(port)); // FIXME: replace atoi with strtoul
+			if (sp_fd < 0) {
 				free(device);
 				return 1;
 			}

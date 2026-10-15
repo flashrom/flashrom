@@ -14,38 +14,37 @@ typedef int serialport_fdtype;
 #define SERIALPORT_INV_FD	-1
 #endif
 
-void serialport_flush_incoming(void);
+void serialport_flush_incoming(serialport_fdtype fd);
 serialport_fdtype serialport_openserport(char *dev, int baud);
-extern serialport_fdtype serialport_fd;
 int serialport_config(serialport_fdtype fd, int baud);
-int serialport_shutdown(void *data);
-int serialport_write(const unsigned char *buf, unsigned int writecnt);
-int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
-int serialport_read(unsigned char *buf, unsigned int readcnt);
-int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read);
+int serialport_shutdown(serialport_fdtype fd);
+int serialport_write(serialport_fdtype fd, const unsigned char *buf, unsigned int writecnt);
+int serialport_write_nonblock(serialport_fdtype fd, const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
+int serialport_read(serialport_fdtype fd, unsigned char *buf, unsigned int readcnt);
+int serialport_read_nonblock(serialport_fdtype fd, unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read);
 
 /* Low level I/O. The functions below are provided by the platform specific
  * implementations and are meant to be used by the common serial code only. */
 
-/* Reads up to readcnt bytes from the serial port into buf. The amount of bytes
+/* Reads up to readcnt bytes from the serial port fd into buf. The amount of bytes
  * that could actually be read is stored in actual, which may be zero if the
  * port had nothing to offer. Returns 0 on success and 1 on error. */
-int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual);
+int serialport_raw_read(serialport_fdtype fd, unsigned char *buf, unsigned int readcnt, unsigned int *actual);
 
-/* Writes up to writecnt bytes from buf to the serial port. The amount of bytes
+/* Writes up to writecnt bytes from buf to the serial port fd. The amount of bytes
  * that could actually be written is stored in actual, which may be zero if the
  * port was not ready to accept any. Returns 0 on success and 1 on error. */
-int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual);
+int serialport_raw_write(serialport_fdtype fd, const unsigned char *buf, unsigned int writecnt, unsigned int *actual);
 
-/* Makes the serial port return from reads and writes immediately instead of
+/* Makes the serial port fd return from reads and writes immediately instead of
  * waiting for the requested amount of bytes. The previous behavior is saved and
  * can be restored with serialport_nonblock_leave().
  * Returns 0 on success and 1 on error. */
-int serialport_nonblock_enter(void);
+int serialport_nonblock_enter(serialport_fdtype fd);
 
 /* Restores the behavior saved by serialport_nonblock_enter().
  * Returns 0 on success and 1 on error. */
-int serialport_nonblock_leave(void);
+int serialport_nonblock_leave(serialport_fdtype fd);
 
 /* Serial port/pin mapping:
 
@@ -71,7 +70,7 @@ enum SERIALPORT_PIN {
 	PIN_RI,
 };
 
-void serialport_set_pin(enum SERIALPORT_PIN pin, int val);
-int serialport_get_pin(enum SERIALPORT_PIN pin);
+void serialport_set_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin, int val);
+int serialport_get_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin);
 
 #endif /* __PLATFORM_SERIAL_H__ */

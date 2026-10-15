@@ -24,16 +24,20 @@
 #include "platform/serial.h"
 #include "log.h"
 
-static int spidriver_serialport_setup(char *dev)
+struct spidriver_spi_data {
+	serialport_fdtype fd;
+};
+
+static int spidriver_serialport_setup(serialport_fdtype *fd, char *dev)
 {
 	/* 460800bps, 8 databits, no parity, 1 stopbit */
-	serialport_fd = serialport_openserport(dev, 460800);
-	if (serialport_fd == SERIALPORT_INV_FD)
+	*fd = serialport_openserport(dev, 460800);
+	if (*fd == SERIALPORT_INV_FD)
 		return 1;
 	return 0;
 }
 
-static int spidriver_sendrecv(unsigned char *buf, unsigned int writecnt,
+static int spidriver_sendrecv(serialport_fdtype fd, unsigned char *buf, unsigned int writecnt,
 			      unsigned int readcnt)
 {
 	unsigned int i;
@@ -49,11 +53,11 @@ static int spidriver_sendrecv(unsigned char *buf, unsigned int writecnt,
 	for (i = 0; i < writecnt; i++)
 		msg_pspew(" 0x%02x", buf[i]);
 	if (writecnt)
-		ret = serialport_write(buf, writecnt);
+		ret = serialport_write(fd, buf, writecnt);
 	if (ret)
 		return ret;
 	if (readcnt)
-		ret = serialport_read(buf, readcnt);
+		ret = serialport_read(fd, buf, readcnt);
 	if (ret)
 		return ret;
 	if (readcnt)
@@ -70,6 +74,7 @@ static int spidriver_sendrecv(unsigned char *buf, unsigned int writecnt,
 static int spidriver_send_command(const struct flashctx *flash, unsigned int writecnt,
 	unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
 {
+	struct spidriver_spi_data *spidriver_data = flash->mst->spi.data;
 	int ret = 0;
 
 	{
@@ -83,7 +88,7 @@ static int spidriver_send_command(const struct flashctx *flash, unsigned int wri
 		buf[i++] = 'e';
 		buf[i++] = 'S';
 
-		if ((ret = spidriver_sendrecv(buf, i, 1))) {
+		if ((ret = spidriver_sendrecv(spidriver_data->fd, buf, i, 1))) {
 			msg_perr("Communication error after writing %u reading %u\n", writecnt, readcnt);
 			return SPI_GENERIC_ERROR;
 		}
@@ -111,7 +116,7 @@ static int spidriver_send_command(const struct flashctx *flash, unsigned int wri
 		buf[i++] = 'e';
 		buf[i++] = 'W';
 
-		if ((ret = spidriver_sendrecv(buf, i, 1))) {
+		if ((ret = spidriver_sendrecv(spidriver_data->fd, buf, i, 1))) {
 			msg_perr("Communication error writing %u\n", len);
 			return SPI_GENERIC_ERROR;
 		}
@@ -133,7 +138,7 @@ static int spidriver_send_command(const struct flashctx *flash, unsigned int wri
 		memset(&buf[i], 0, len);
 		i += len;
 
-		if ((ret = spidriver_sendrecv(buf, i, len))) {
+		if ((ret = spidriver_sendrecv(spidriver_data->fd, buf, i, len))) {
 			msg_perr("Communication error reading %u\n", len);
 			return SPI_GENERIC_ERROR;
 		}
@@ -154,7 +159,7 @@ static int spidriver_send_command(const struct flashctx *flash, unsigned int wri
 		buf[i++] = 'e';
 		buf[i++] = 'U';
 
-		if ((ret = spidriver_sendrecv(buf, i, 1))) {
+		if ((ret = spidriver_sendrecv(spidriver_data->fd, buf, i, 1))) {
 			msg_perr("Communication error after writing %u reading %u\n", writecnt, readcnt);
 			return SPI_GENERIC_ERROR;
 		}
@@ -168,6 +173,15 @@ static int spidriver_send_command(const struct flashctx *flash, unsigned int wri
 	return ret;
 }
 
+static int spidriver_spi_shutdown(void *data)
+{
+	struct spidriver_spi_data *spidriver_data = data;
+	int ret = serialport_shutdown(spidriver_data->fd);
+
+	free(data);
+	return ret;
+}
+
 static struct spi_master spi_master_spidriver = {
 	.features       = SPI_MASTER_4BA,
 	.max_data_read  = MAX_DATA_READ_UNLIMITED,
@@ -175,13 +189,14 @@ static struct spi_master spi_master_spidriver = {
 	.command        = spidriver_send_command,
 	.read           = default_spi_read,
 	.write_256      = default_spi_write_256,
-	.shutdown       = serialport_shutdown,
+	.shutdown       = spidriver_spi_shutdown,
 };
 
 static int spidriver_spi_init(const struct programmer_cfg *cfg)
 {
 	char *tmp;
 	char *dev;
+	serialport_fdtype fd = SERIALPORT_INV_FD;
 	unsigned long fw_version = 0;
 	int ret = 0;
 	long mode = 0;
@@ -235,7 +250,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	}
 	free(tmp);
 
-	ret = spidriver_serialport_setup(dev);
+	ret = spidriver_serialport_setup(&fd, dev);
 	free(dev);
 	if (ret)
 		return ret;
@@ -248,16 +263,16 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	/* Flush any in-progress transfer with 64 zero bytes. */
 	i = 64;
 	memset(buf, 0, i);
-	if ((ret = spidriver_sendrecv(buf, i, 0)))
+	if ((ret = spidriver_sendrecv(fd, buf, i, 0)))
 		goto init_err_cleanup_exit;
 
 	default_delay(1400); /* Enough time to receive 64 bytes at 460800bps */
-	serialport_flush_incoming();
+	serialport_flush_incoming(fd);
 
 	memset(buf, 0, 81);
 	i = 0;
 	buf[i++] = '?';
-	if ((ret = spidriver_sendrecv(buf, i, 80)))
+	if ((ret = spidriver_sendrecv(fd, buf, i, 80)))
 		goto init_err_cleanup_exit;
 
 	/* [spidriver2 AAAAAAAA 000000002 5.190 000 21.9 1 1 1 ffff 0                     ] */
@@ -298,7 +313,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	msg_pdbg("Raising CS#\n");
 	msg_pdbg("Driving A %s\n", a ? "high" : "low");
 	msg_pdbg("Driving B %s\n", b ? "high" : "low");
-	if ((ret = spidriver_sendrecv(buf, i, 0)))
+	if ((ret = spidriver_sendrecv(fd, buf, i, 0)))
 		goto init_err_cleanup_exit;
 
 	if (fw_version >= 2) {
@@ -306,7 +321,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 		i = 0;
 		buf[i++] = 'm';
 		buf[i++] = mode & 0xFF;
-		if ((ret = spidriver_sendrecv(buf, i, 0)))
+		if ((ret = spidriver_sendrecv(fd, buf, i, 0)))
 			goto init_err_cleanup_exit;
 	} else if (mode != 0) {
 		msg_perr("Error: SPI mode %ld not supported by version %lu hardware\n", mode, fw_version);
@@ -314,10 +329,18 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 		goto init_err_cleanup_exit;
 	}
 
-	return register_spi_master(&spi_master_spidriver, NULL);
+	struct spidriver_spi_data *spidriver_data = calloc(1, sizeof(*spidriver_data));
+	if (!spidriver_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
+	spidriver_data->fd = fd;
+
+	return register_spi_master(&spi_master_spidriver, spidriver_data);
 
 init_err_cleanup_exit:
-	serialport_shutdown(NULL);
+	serialport_shutdown(fd);
 	return ret;
 }
 

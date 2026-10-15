@@ -44,6 +44,7 @@ enum pony_type {
 };
 
 struct pony_spi_data {
+	serialport_fdtype fd;
 	/* Pins for master->slave direction */
 	bool negate_cs;
 	bool negate_sck;
@@ -59,7 +60,7 @@ static void pony_bitbang_set_cs(int val, void *spi_data)
 	if (data->negate_cs)
 		val ^=  1;
 
-	serialport_set_pin(PIN_TXD, val);
+	serialport_set_pin(data->fd, PIN_TXD, val);
 }
 
 static void pony_bitbang_set_sck(int val, void *spi_data)
@@ -69,7 +70,7 @@ static void pony_bitbang_set_sck(int val, void *spi_data)
 	if (data->negate_sck)
 		val ^=  1;
 
-	serialport_set_pin(PIN_RTS, val);
+	serialport_set_pin(data->fd, PIN_RTS, val);
 }
 
 static void pony_bitbang_set_mosi(int val, void *spi_data)
@@ -79,13 +80,13 @@ static void pony_bitbang_set_mosi(int val, void *spi_data)
 	if (data->negate_mosi)
 		val ^=  1;
 
-	serialport_set_pin(PIN_DTR, val);
+	serialport_set_pin(data->fd, PIN_DTR, val);
 }
 
 static int pony_bitbang_get_miso(void *spi_data)
 {
 	struct pony_spi_data *data = spi_data;
-	int tmp = serialport_get_pin(PIN_CTS);
+	int tmp = serialport_get_pin(data->fd, PIN_CTS);
 
 	if (data->negate_miso)
 		tmp ^= 1;
@@ -101,10 +102,12 @@ static const struct bitbang_spi_master bitbang_spi_master_pony = {
 	.half_period	= 0,
 };
 
-static int pony_spi_shutdown(void *data)
+static int pony_spi_shutdown(void *spi_data)
 {
+	struct pony_spi_data *data = spi_data;
+
 	/* Shut down serial port communication */
-	int ret = serialport_shutdown(NULL);
+	int ret = serialport_shutdown(data->fd);
 	if (ret)
 		msg_pdbg("Pony SPI shutdown failed.\n");
 	else
@@ -114,7 +117,8 @@ static int pony_spi_shutdown(void *data)
 	return ret;
 }
 
-static int get_params(const struct programmer_cfg *cfg, enum pony_type *type, bool *have_device)
+static int get_params(const struct programmer_cfg *cfg, enum pony_type *type, bool *have_device,
+		      serialport_fdtype *fd)
 {
 	char *arg = NULL;
 	int ret = 0;
@@ -122,12 +126,13 @@ static int get_params(const struct programmer_cfg *cfg, enum pony_type *type, bo
 	/* defaults */
 	*type = TYPE_SI_PROG;
 	*have_device = false;
+	*fd = SERIALPORT_INV_FD;
 
 	/* The parameter is in format "dev=/dev/device,type=serbang" */
 	arg = extract_programmer_param_str(cfg, "dev");
 	if (arg && strlen(arg)) {
-		serialport_fd = serialport_openserport(arg, 9600);
-		if (serialport_fd == SERIALPORT_INV_FD)
+		*fd = serialport_openserport(arg, 9600);
+		if (*fd == SERIALPORT_INV_FD)
 			ret = 1;
 		else
 			*have_device = true;
@@ -160,24 +165,26 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 	const char *name;
 	bool have_device;
 	bool have_prog = false;
+	serialport_fdtype fd;
 
-	if (get_params(cfg, &type, &have_device)) {
-		serialport_shutdown(NULL);
+	if (get_params(cfg, &type, &have_device, &fd)) {
+		serialport_shutdown(fd);
 		return 1;
 	}
 	if (!have_device) {
 		msg_perr("Error: No valid device specified.\n"
 			 "Use flashrom -p pony_spi:dev=/dev/device[,type=name]\n");
-		serialport_shutdown(NULL);
+		serialport_shutdown(fd);
 		return 1;
 	}
 
 	struct pony_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		serialport_shutdown(NULL);
+		serialport_shutdown(fd);
 		return 1;
 	}
+	data->fd = fd;
 	data->negate_cs = true;
 	data->negate_sck = false;
 	data->negate_mosi = false;
@@ -185,7 +192,7 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 
 	if (register_shutdown(pony_spi_shutdown, data) != 0) {
 		free(data);
-		serialport_shutdown(NULL);
+		serialport_shutdown(fd);
 		return 1;
 	}
 
@@ -236,11 +243,11 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 		/* We toggle RTS/SCK a few times and see if DSR changes too. */
 		for (i = 1; i <= 10; i++) {
 			data_out = i & 1;
-			serialport_set_pin(PIN_RTS, data_out);
+			serialport_set_pin(data->fd, PIN_RTS, data_out);
 			default_delay(1000);
 
 			/* If DSR does not change, we are not connected to what we think */
-			if (data_out != serialport_get_pin(PIN_DSR)) {
+			if (data_out != serialport_get_pin(data->fd, PIN_DSR)) {
 				have_prog = false;
 				break;
 			}

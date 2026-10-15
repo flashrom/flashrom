@@ -110,7 +110,7 @@ serialport_fdtype serialport_openserport(char *dev, int baud)
 	return fd;
 }
 
-void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
+void serialport_set_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin, int val) {
 	DWORD ctl;
 
 	if(pin == PIN_TXD) {
@@ -122,35 +122,35 @@ void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
 	else {
 		ctl = val ? SETRTS: CLRRTS;
 	}
-	EscapeCommFunction(serialport_fd, ctl);
+	EscapeCommFunction(fd, ctl);
 }
 
-int serialport_get_pin(enum SERIALPORT_PIN pin) {
+int serialport_get_pin(serialport_fdtype fd, enum SERIALPORT_PIN pin) {
 	int s;
 	DWORD ctl;
 
 	s = (pin == PIN_CTS) ? MS_CTS_ON : MS_DSR_ON;
-	GetCommModemStatus(serialport_fd, &ctl);
+	GetCommModemStatus(fd, &ctl);
 
 	return ((ctl & s) ? 1 : 0);
 
 }
 
-void serialport_flush_incoming(void)
+void serialport_flush_incoming(serialport_fdtype fd)
 {
-	PurgeComm(serialport_fd, PURGE_RXCLEAR);
+	PurgeComm(fd, PURGE_RXCLEAR);
 }
 
-int serialport_shutdown(void *data)
+int serialport_shutdown(serialport_fdtype fd)
 {
-	CloseHandle(serialport_fd);
+	CloseHandle(fd);
 	return 0;
 }
 
-int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *actual)
+int serialport_raw_read(serialport_fdtype fd, unsigned char *buf, unsigned int readcnt, unsigned int *actual)
 {
 	DWORD rv;
-	if (!ReadFile(serialport_fd, buf, readcnt, &rv, NULL)) {
+	if (!ReadFile(fd, buf, readcnt, &rv, NULL)) {
 		msg_perr_strerror("Serial port read error: ");
 		return 1;
 	}
@@ -158,10 +158,10 @@ int serialport_raw_read(unsigned char *buf, unsigned int readcnt, unsigned int *
 	return 0;
 }
 
-int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
+int serialport_raw_write(serialport_fdtype fd, const unsigned char *buf, unsigned int writecnt, unsigned int *actual)
 {
 	DWORD rv;
-	if (!WriteFile(serialport_fd, buf, writecnt, &rv, NULL)) {
+	if (!WriteFile(fd, buf, writecnt, &rv, NULL)) {
 		msg_perr_strerror("Serial port write error: ");
 		return 1;
 	}
@@ -171,7 +171,7 @@ int serialport_raw_write(const unsigned char *buf, unsigned int writecnt, unsign
 
 static COMMTIMEOUTS saved_timeouts;
 
-int serialport_nonblock_enter(void)
+int serialport_nonblock_enter(serialport_fdtype fd)
 {
 	COMMTIMEOUTS timeouts = {
 		.ReadIntervalTimeout = MAXDWORD,
@@ -180,20 +180,20 @@ int serialport_nonblock_enter(void)
 		.WriteTotalTimeoutMultiplier = 0,
 		.WriteTotalTimeoutConstant = 0
 	};
-	if (!GetCommTimeouts(serialport_fd, &saved_timeouts)) {
+	if (!GetCommTimeouts(fd, &saved_timeouts)) {
 		msg_perr_strerror("Could not get serial port timeout settings: ");
 		return 1;
 	}
-	if (!SetCommTimeouts(serialport_fd, &timeouts)) {
+	if (!SetCommTimeouts(fd, &timeouts)) {
 		msg_perr_strerror("Could not set serial port timeout settings: ");
 		return 1;
 	}
 	return 0;
 }
 
-int serialport_nonblock_leave(void)
+int serialport_nonblock_leave(serialport_fdtype fd)
 {
-	if (!SetCommTimeouts(serialport_fd, &saved_timeouts)) {
+	if (!SetCommTimeouts(fd, &saved_timeouts)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		return 1;
 	}
