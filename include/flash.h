@@ -15,11 +15,6 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#if IS_WINDOWS
-#include <windows.h>
-#undef min
-#undef max
-#endif
 
 #include "libflashrom.h"
 #include "layout.h"

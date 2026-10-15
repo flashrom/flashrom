@@ -7,6 +7,8 @@
 
 #if IS_WINDOWS
 #include <windows.h>
+#undef min
+#undef max
 typedef HANDLE serialport_fdtype;
 #define SERIALPORT_INV_FD	INVALID_HANDLE_VALUE
 #else
