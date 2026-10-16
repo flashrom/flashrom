@@ -505,8 +505,12 @@ int main(int argc, char *argv[])
 
 	const struct CMUnitTest sfdp_tests[] = {
 		cmocka_unit_test(sfdp_mx25l6406e_test_success),
-		cmocka_unit_test(sfdp_mx25l25635f_over_16mib_rejected),
-		cmocka_unit_test(sfdp_gd25q256d_over_16mib_rejected),
+		cmocka_unit_test(sfdp_mx25l25635f_no_4ba_info_rejected),
+		cmocka_unit_test(sfdp_gd25q256d_test_success),
+		cmocka_unit_test(sfdp_4ba_enter_wren_test_success),
+		cmocka_unit_test(sfdp_4ba_bank_register_test_success),
+		cmocka_unit_test(sfdp_4ba_ext_addr_register_test_success),
+		cmocka_unit_test(sfdp_4ba_enter_without_exit_rejected),
 		cmocka_unit_test(sfdp_no_signature_rejected),
 		cmocka_unit_test(sfdp_unknown_major_revision_rejected),
 	};

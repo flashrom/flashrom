@@ -52,8 +52,12 @@ void probe_spi_st95_test_success(void **state); /* spi95.c */
 
 /* sfdp.c */
 void sfdp_mx25l6406e_test_success(void **state);
-void sfdp_mx25l25635f_over_16mib_rejected(void **state);
-void sfdp_gd25q256d_over_16mib_rejected(void **state);
+void sfdp_mx25l25635f_no_4ba_info_rejected(void **state);
+void sfdp_gd25q256d_test_success(void **state);
+void sfdp_4ba_enter_wren_test_success(void **state);
+void sfdp_4ba_bank_register_test_success(void **state);
+void sfdp_4ba_ext_addr_register_test_success(void **state);
+void sfdp_4ba_enter_without_exit_rejected(void **state);
 void sfdp_no_signature_rejected(void **state);
 void sfdp_unknown_major_revision_rejected(void **state);
 

@@ -126,6 +126,58 @@ static int compare_erasers(const void *aptr, const void *bptr)
 	return ((int) a->eraseblocks[0].size) - ((int) b->eraseblocks[0].size);
 }
 
+/* Takes the 4-Byte address mode handling from the 16th double word (JESD216H 6.4.19). */
+static int sfdp_fill_4ba(struct flashchip *chip, const uint8_t *buf, uint16_t len)
+{
+	uint32_t tmp32;
+	uint8_t methods;
+
+	if (len < 16 * 4) {
+		msg_cdbg("Flash chip size is bigger than what 3-Byte addressing "
+			 "can access and the table does not describe 4-Byte "
+			 "addressing.\n");
+		return 1;
+	}
+
+	/* 16. double word */
+	tmp32 =  ((unsigned int)buf[(4 * 15) + 0]);
+	tmp32 |= ((unsigned int)buf[(4 * 15) + 1]) << 8;
+	tmp32 |= ((unsigned int)buf[(4 * 15) + 2]) << 16;
+	tmp32 |= ((unsigned int)buf[(4 * 15) + 3]) << 24;
+
+	/* Bits 0-3 of the enter (31:24) and exit (23:14) fields name the same
+	 * method, only use methods that can be both entered and exited. */
+	methods = (tmp32 >> 24) & (tmp32 >> 14) & 0xf;
+
+	if (methods & BIT(0)) {
+		chip->feature_bits |= FEATURE_4BA_ENTER;
+		msg_cdbg2("  4-Byte address mode is entered with 0xb7.\n");
+	} else if (methods & BIT(1)) {
+		chip->feature_bits |= FEATURE_4BA_ENTER_WREN;
+		msg_cdbg2("  4-Byte address mode is entered with WREN and 0xb7.\n");
+	} else if (methods & BIT(3)) {
+		chip->feature_bits |= FEATURE_4BA_ENTER_EAR7;
+		msg_cdbg2("  4-Byte address mode is entered with bit 7 of the bank register.\n");
+	}
+
+	if (methods & BIT(3)) {
+		chip->feature_bits |= FEATURE_4BA_EAR_1716;
+		msg_cdbg2("  Bank register is written with 0x17.\n");
+	} else if (methods & BIT(2)) {
+		chip->feature_bits |= FEATURE_4BA_EAR_C5C8;
+		msg_cdbg2("  Extended address register is written with 0xc5.\n");
+	}
+
+	if (!(methods & 0xf)) {
+		msg_cdbg("Flash chip size is bigger than what 3-Byte addressing "
+			 "can access and no supported 4-Byte address method is "
+			 "described.\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 {
 	uint8_t opcode_4k_erase = 0xFF;
@@ -211,11 +263,8 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	total_size = ((tmp32 & 0x7FFFFFFF) + 1) / 8;
 	chip->total_size = total_size / KiB;
 	msg_cdbg2("  Flash chip size is %d kB.\n", chip->total_size);
-	if (total_size > (1 << 24)) {
-		msg_cdbg("Flash chip size is bigger than what 3-Byte addressing "
-			 "can access.\n");
+	if (total_size > 16 * MiB && sfdp_fill_4ba(chip, buf, len))
 		return 1;
-	}
 
 	if (opcode_4k_erase != 0xFF)
 		sfdp_add_uniform_eraser(chip, opcode_4k_erase, 4 * KiB);

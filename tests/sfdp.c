@@ -160,7 +160,8 @@ void sfdp_mx25l6406e_test_success(void **state)
 	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[2].block_erase);
 }
 
-void sfdp_mx25l25635f_over_16mib_rejected(void **state)
+/* SFDP 1.0 has no DWORD 16, so there is no way to learn how to reach above 16 MiB. */
+void sfdp_mx25l25635f_no_4ba_info_rejected(void **state)
 {
 	(void) state; /* unused */
 	struct flashchip chip;
@@ -168,12 +169,74 @@ void sfdp_mx25l25635f_over_16mib_rejected(void **state)
 	assert_int_equal(0, run_sfdp_probe(&chip, sfdp_mx25l25635f, sizeof(sfdp_mx25l25635f)));
 }
 
-void sfdp_gd25q256d_over_16mib_rejected(void **state)
+void sfdp_gd25q256d_test_success(void **state)
 {
 	(void) state; /* unused */
 	struct flashchip chip;
 
-	assert_int_equal(0, run_sfdp_probe(&chip, sfdp_gd25q256d, sizeof(sfdp_gd25q256d)));
+	assert_int_equal(1, run_sfdp_probe(&chip, sfdp_gd25q256d, sizeof(sfdp_gd25q256d)));
+
+	assert_int_equal(32 * KiB, chip.total_size);
+	assert_int_equal(SPI_CHIP_WRITE256, chip.write);
+	assert_int_equal(SPI_CHIP_READ, chip.read);
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER, chip.feature_bits);
+	assert_eraser(&chip.block_erasers[0], SPI_BLOCK_ERASE_20, 4 * KiB, 8192);
+	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[3].block_erase);
+}
+
+/* Probes the GD25Q256D table with other 4-Byte address enter and exit methods in DWORD 16. */
+static int run_gd25q256d_4ba_methods(struct flashchip *chip, uint8_t enter, uint16_t exit)
+{
+	const size_t dw16 = 0x30 + 15 * 4;
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	memcpy(data, sfdp_gd25q256d, sizeof(data));
+	uint32_t val = data[dw16] | (data[dw16 + 1] << 8) | (data[dw16 + 2] << 16) |
+		       ((uint32_t)data[dw16 + 3] << 24);
+	val = (val & 0x3fff) | ((uint32_t)(exit & 0x3ff) << 14) | ((uint32_t)enter << 24);
+	for (unsigned int i = 0; i < 4; i++)
+		data[dw16 + i] = (val >> (8 * i)) & 0xff;
+
+	return run_sfdp_probe(chip, data, sizeof(data));
+}
+
+void sfdp_4ba_enter_wren_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(1), BIT(1)));
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_WREN, chip.feature_bits);
+}
+
+void sfdp_4ba_bank_register_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(3), BIT(3)));
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716,
+			 chip.feature_bits);
+}
+
+void sfdp_4ba_ext_addr_register_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(2), BIT(2)));
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_EAR_C5C8, chip.feature_bits);
+}
+
+/* Entering with 0xb7 is useless when only a hardware reset leaves the mode again. */
+void sfdp_4ba_enter_without_exit_rejected(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(0, run_gd25q256d_4ba_methods(&chip, BIT(0), BIT(5)));
 }
 
 void sfdp_no_signature_rejected(void **state)
