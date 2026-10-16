@@ -260,6 +260,7 @@ void sfdp_gd25q256d_test_success(void **state)
 	assert_int_equal(1, run_sfdp_probe(&chip, sfdp_gd25q256d, sizeof(sfdp_gd25q256d)));
 
 	assert_int_equal(32 * KiB, chip.total_size);
+	assert_int_equal(256, chip.page_size);
 	assert_int_equal(SPI_CHIP_WRITE256, chip.write);
 	assert_int_equal(SPI_CHIP_READ, chip.read);
 	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER, chip.feature_bits);
@@ -410,6 +411,40 @@ void sfdp_4ba_enter_without_exit_rejected(void **state)
 	struct flashchip chip;
 
 	assert_int_equal(0, run_gd25q256d_4ba_methods(&chip, BIT(0), BIT(5)));
+}
+
+/* Probes the GD25Q256D table with another page size in DWORD 11. */
+static int run_gd25q256d_page_size(struct flashchip *chip, uint8_t n)
+{
+	const size_t dw11 = 0x30 + 10 * 4;
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	memcpy(data, sfdp_gd25q256d, sizeof(data));
+	data[dw11] = (data[dw11] & 0x0f) | (n << 4);
+	return run_sfdp_probe(chip, data, sizeof(data));
+}
+
+void sfdp_page_size_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_page_size(&chip, 9));
+	assert_int_equal(512, chip.page_size);
+	assert_int_equal(1, run_gd25q256d_page_size(&chip, 6));
+	assert_int_equal(64, chip.page_size);
+}
+
+/* Out of range page sizes leave the 64 B write chunk size from DWORD 1. */
+void sfdp_page_size_implausible_use_default(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_page_size(&chip, 5));
+	assert_int_equal(64, chip.page_size);
+	assert_int_equal(1, run_gd25q256d_page_size(&chip, 15));
+	assert_int_equal(64, chip.page_size);
 }
 
 void sfdp_no_signature_rejected(void **state)

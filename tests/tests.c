@@ -515,6 +515,8 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(sfdp_4ba_read_b7_wren_test_success),
 		cmocka_unit_test(sfdp_4ba_read_bank_register_test_success),
 		cmocka_unit_test(sfdp_4ba_read_ext_addr_register_test_success),
+		cmocka_unit_test(sfdp_page_size_test_success),
+		cmocka_unit_test(sfdp_page_size_implausible_use_default),
 		cmocka_unit_test(sfdp_no_signature_rejected),
 		cmocka_unit_test(sfdp_unknown_major_revision_rejected),
 	};

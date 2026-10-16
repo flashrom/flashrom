@@ -301,6 +301,19 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		sfdp_add_uniform_eraser(chip, tmp8, block_size);
 	}
 
+	/* 11. double word (JESD216H 6.4.14) */
+	if (len >= 11 * 4 && chip->write == SPI_CHIP_WRITE256) {
+		tmp8 = (buf[4 * 10] >> 4) & 0xf;
+		/* At least the 64 B from the 1st double word, at most a 4 KiB sector */
+		if (tmp8 >= 6 && tmp8 <= 12) {
+			chip->page_size = 1 << tmp8;
+			msg_cdbg2("  Page size is %u B.\n", chip->page_size);
+		} else {
+			msg_cdbg2("  Page size of 2^%d B is implausible, using %u B instead.\n",
+				  tmp8, chip->page_size);
+		}
+	}
+
 	/* Sort block erasers in ascending order by size; this is required
 	 * for erase logic, see erasure_layout.c */
 	qsort(chip->block_erasers, NUM_ERASEFUNCTIONS,
