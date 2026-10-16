@@ -511,6 +511,10 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(sfdp_4ba_bank_register_test_success),
 		cmocka_unit_test(sfdp_4ba_ext_addr_register_test_success),
 		cmocka_unit_test(sfdp_4ba_enter_without_exit_rejected),
+		cmocka_unit_test(sfdp_4ba_read_b7_test_success),
+		cmocka_unit_test(sfdp_4ba_read_b7_wren_test_success),
+		cmocka_unit_test(sfdp_4ba_read_bank_register_test_success),
+		cmocka_unit_test(sfdp_4ba_read_ext_addr_register_test_success),
 		cmocka_unit_test(sfdp_no_signature_rejected),
 		cmocka_unit_test(sfdp_unknown_major_revision_rejected),
 	};

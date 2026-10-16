@@ -58,6 +58,10 @@ void sfdp_4ba_enter_wren_test_success(void **state);
 void sfdp_4ba_bank_register_test_success(void **state);
 void sfdp_4ba_ext_addr_register_test_success(void **state);
 void sfdp_4ba_enter_without_exit_rejected(void **state);
+void sfdp_4ba_read_b7_test_success(void **state);
+void sfdp_4ba_read_b7_wren_test_success(void **state);
+void sfdp_4ba_read_bank_register_test_success(void **state);
+void sfdp_4ba_read_ext_addr_register_test_success(void **state);
 void sfdp_no_signature_rejected(void **state);
 void sfdp_unknown_major_revision_rejected(void **state);
 
