@@ -117,6 +117,7 @@ if cc.check_header('sys/utsname.h')
 endif
 if host_machine.system() in ['cygwin', 'windows']
   add_project_arguments('-DIS_WINDOWS=1', language : 'c')
+  add_project_arguments('-DNOMINMAX', language : 'c') # keep windows.h from defining min() and max()
 else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
