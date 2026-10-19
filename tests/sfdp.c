@@ -63,7 +63,7 @@ static void emu_jedec_read(const struct emu_chip *emu, unsigned int writecnt, un
 {
 	uint32_t addr;
 
-	if (is_4ba_mode(emu)) {
+	if (writearr[0] == JEDEC_READ_4BA || is_4ba_mode(emu)) {
 		assert_int_equal(writecnt, 5);
 		addr = ((uint32_t)writearr[1] << 24) | (writearr[2] << 16) | (writearr[3] << 8) | writearr[4];
 	} else {
@@ -113,6 +113,7 @@ static int emu_spi_command(const struct flashctx *flash, unsigned int writecnt, 
 		emu->ear = writearr[1];
 		break;
 	case JEDEC_READ:
+	case JEDEC_READ_4BA:
 		emu_jedec_read(emu, writecnt, readcnt, writearr, readarr);
 		break;
 	default:
@@ -263,7 +264,7 @@ void sfdp_gd25q256d_test_success(void **state)
 	assert_int_equal(256, chip.page_size);
 	assert_int_equal(SPI_CHIP_WRITE256, chip.write);
 	assert_int_equal(SPI_CHIP_READ, chip.read);
-	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER, chip.feature_bits);
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER | FEATURE_4BA_NATIVE, chip.feature_bits);
 	assert_eraser(&chip.block_erasers[0], SPI_BLOCK_ERASE_20, 4 * KiB, 8192);
 	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
 	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
@@ -305,19 +306,19 @@ static void assert_emu_read(struct flashctx *flash, uint32_t start, uint32_t len
  * Detects an emulated 32 MiB chip through its SFDP table, sets up 4-Byte addressing the way
  * prepare_flash_access() does and reads across the 16 MiB boundary and the end of the chip.
  */
-static void run_4ba_read(uint8_t methods, enum emu_4ba_method method)
+static void run_32mib_read(const uint8_t *data, size_t len, enum emu_4ba_method method,
+			   uint32_t features)
 {
-	uint8_t data[sizeof(sfdp_gd25q256d)];
 	struct flashchip chip;
 	struct emu_chip emu = {
 		.data = data,
-		.len = sizeof(data),
+		.len = len,
 		.method = method,
 		.size = 32 * MiB,
 	};
 	struct registered_master mst = {
 		.buses_supported = BUS_SPI,
-		.spi.features = SPI_MASTER_4BA,
+		.spi.features = features,
 		.spi.max_data_read = 16,
 		.spi.command = emu_spi_command,
 		.spi.read = default_spi_read,
@@ -329,12 +330,11 @@ static void run_4ba_read(uint8_t methods, enum emu_4ba_method method)
 		.address_high_byte = -1,
 	};
 
-	gd25q256d_with_4ba_methods(data, methods, methods);
 	chip = *sfdp_generic_chip();
 	assert_int_equal(1, probe_spi_sfdp(&flash));
 	assert_int_equal(32 * KiB, chip.total_size);
 
-	if (spi_chip_4ba(&flash))
+	if (spi_chip_4ba(&flash) && !spi_master_no_4ba_modes(&flash))
 		assert_int_equal(0, spi_enter_4ba(&flash));
 
 	assert_emu_read(&flash, 0, 32);
@@ -342,10 +342,20 @@ static void run_4ba_read(uint8_t methods, enum emu_4ba_method method)
 	assert_emu_read(&flash, 32 * MiB - 32, 32);
 	assert_emu_read(&flash, 0x123456, 16);
 
-	if (spi_chip_4ba(&flash)) {
+	if (spi_chip_4ba(&flash) && !spi_master_no_4ba_modes(&flash)) {
 		assert_int_equal(0, spi_exit_4ba(&flash));
 		assert_false(is_4ba_mode(&emu));
 	}
+}
+
+static void run_4ba_read(uint8_t methods, enum emu_4ba_method method)
+{
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	gd25q256d_with_4ba_methods(data, methods, methods);
+	/* Drop the 4-Byte address instruction table, so reads go through the address mode */
+	data[6] = 0x01;
+	run_32mib_read(data, sizeof(data), method, SPI_MASTER_4BA);
 }
 
 void sfdp_4ba_read_b7_test_success(void **state)
@@ -382,7 +392,7 @@ void sfdp_4ba_enter_wren_test_success(void **state)
 	struct flashchip chip;
 
 	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(1), BIT(1)));
-	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_WREN, chip.feature_bits);
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_NATIVE, chip.feature_bits);
 }
 
 void sfdp_4ba_bank_register_test_success(void **state)
@@ -391,8 +401,8 @@ void sfdp_4ba_bank_register_test_success(void **state)
 	struct flashchip chip;
 
 	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(3), BIT(3)));
-	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716,
-			 chip.feature_bits);
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716 |
+			 FEATURE_4BA_NATIVE, chip.feature_bits);
 }
 
 void sfdp_4ba_ext_addr_register_test_success(void **state)
@@ -401,7 +411,7 @@ void sfdp_4ba_ext_addr_register_test_success(void **state)
 	struct flashchip chip;
 
 	assert_int_equal(1, run_gd25q256d_4ba_methods(&chip, BIT(2), BIT(2)));
-	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_EAR_C5C8, chip.feature_bits);
+	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE, chip.feature_bits);
 }
 
 /* Entering with 0xb7 is useless when only a hardware reset leaves the mode again. */
@@ -411,6 +421,56 @@ void sfdp_4ba_enter_without_exit_rejected(void **state)
 	struct flashchip chip;
 
 	assert_int_equal(0, run_gd25q256d_4ba_methods(&chip, BIT(0), BIT(5)));
+}
+
+/* Reads with 0x13 and 4-Byte addresses, the chip never leaves 3-Byte address mode. */
+void sfdp_4ba_read_native_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	run_32mib_read(sfdp_gd25q256d, sizeof(sfdp_gd25q256d), EMU_4BA_NONE,
+		       SPI_MASTER_4BA | SPI_MASTER_NO_4BA_MODES);
+}
+
+/* Probes the GD25Q256D table with one double word replaced. */
+static int run_gd25q256d_with_dword(struct flashchip *chip, size_t offset, uint32_t val)
+{
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	memcpy(data, sfdp_gd25q256d, sizeof(data));
+	for (unsigned int i = 0; i < 4; i++)
+		data[offset + i] = (val >> (8 * i)) & 0xff;
+	return run_sfdp_probe(chip, data, sizeof(data));
+}
+
+void sfdp_4ba_instructions_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	/* Only 0x13 and 0x12 */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0xc0, BIT(0) | BIT(6)));
+	assert_int_equal(FEATURE_4BA_READ | FEATURE_4BA_WRITE, chip.feature_bits & FEATURE_4BA_NATIVE);
+	/* Only 0x0c */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0xc0, BIT(1)));
+	assert_int_equal(FEATURE_4BA_FAST_READ, chip.feature_bits & FEATURE_4BA_NATIVE);
+}
+
+void sfdp_4ba_instructions_ignored(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	/* 16 MiB chip */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x34, 16 * MiB * 8 - 1));
+	assert_int_equal(16 * KiB, chip.total_size);
+	assert_int_equal(0, chip.feature_bits & FEATURE_4BA_NATIVE);
+	/* ID MSB 0x00 instead of 0xff */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x1c, 0x000000c0));
+	assert_int_equal(0, chip.feature_bits & FEATURE_4BA_NATIVE);
+	/* Major version 2 */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x18, 0x02020084));
+	assert_int_equal(0, chip.feature_bits & FEATURE_4BA_NATIVE);
 }
 
 /* Probes the GD25Q256D table with another page size in DWORD 11. */

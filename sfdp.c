@@ -62,6 +62,7 @@ static int spi_sfdp_read_sfdp(struct flashctx *flash, uint32_t address, uint8_t 
 
 struct sfdp_tbl_hdr {
 	uint8_t id;
+	uint8_t id_msb;
 	uint8_t v_minor;
 	uint8_t v_major;
 	uint8_t len;
@@ -176,6 +177,41 @@ static int sfdp_fill_4ba(struct flashchip *chip, const uint8_t *buf, uint16_t le
 	}
 
 	return 0;
+}
+
+/* Takes the native 4-Byte address instructions from the 1st double word (JESD216H 6.7.3). */
+static void sfdp_fill_4ba_instructions(struct flashchip *chip, const uint8_t *buf, uint16_t len)
+{
+	uint32_t tmp32;
+
+	if (len < 1 * 4) {
+		msg_cdbg("Length of the 4-Byte address instruction table is wrong, skipping it.\n");
+		return;
+	}
+
+	msg_cdbg("Parsing 4-Byte address instruction table... ");
+	msg_cdbg2("\n");
+
+	/* 1. double word */
+	tmp32 =  ((unsigned int)buf[(4 * 0) + 0]);
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 1]) << 8;
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 2]) << 16;
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 3]) << 24;
+
+	if (tmp32 & BIT(0)) {
+		chip->feature_bits |= FEATURE_4BA_READ;
+		msg_cdbg2("  Native 4-Byte read (0x13) is supported.\n");
+	}
+	if (tmp32 & BIT(1)) {
+		chip->feature_bits |= FEATURE_4BA_FAST_READ;
+		msg_cdbg2("  Native 4-Byte fast read (0x0c) is supported.\n");
+	}
+	if (tmp32 & BIT(6)) {
+		chip->feature_bits |= FEATURE_4BA_WRITE;
+		msg_cdbg2("  Native 4-Byte page program (0x12) is supported.\n");
+	}
+
+	msg_cdbg("done.\n");
 }
 
 static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
@@ -476,6 +512,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 		hdrs[i].ptp = hbuf[(8 * i) + 4];
 		hdrs[i].ptp |= ((unsigned int)hbuf[(8 * i) + 5]) << 8;
 		hdrs[i].ptp |= ((unsigned int)hbuf[(8 * i) + 6]) << 16;
+		hdrs[i].id_msb = hbuf[(8 * i) + 7];
 		msg_cdbg2("\nSFDP parameter table header %d/%d:\n", i, nph);
 		msg_cdbg2("  ID 0x%02x, version %d.%d\n", hdrs[i].id,
 			  hdrs[i].v_major, hdrs[i].v_minor);
@@ -548,6 +585,21 @@ int probe_spi_sfdp(struct flashctx *flash)
 							 hdrs[i].v_major, hdrs[i].v_minor);
 					} else {
 						parse_rpmc_parameter_table(flash->chip, tbuf, len);
+					}
+					break;
+				case 0x84: /* 4-Byte address instruction table (JESD216H 6.7) */
+					if (hdrs[i].id_msb != 0xff) {
+						msg_cdbg("Support for SFDP Page with ID 0x%02x%02x not "
+							 "implemented, skipping it.\n",
+							 hdrs[i].id_msb, hdrs[i].id);
+					} else if (hdrs[i].v_major != 0x01) {
+						msg_cdbg("The chip contains an unknown "
+							 "version of the 4-Byte address instruction "
+							 "table (Version: %u.%u), skipping it.\n",
+							 hdrs[i].v_major, hdrs[i].v_minor);
+					} else if (ret && flash->chip->total_size > 16 * KiB) {
+						/* Only needed to reach above 16 MiB */
+						sfdp_fill_4ba_instructions(flash->chip, tbuf, len);
 					}
 					break;
 				default:
