@@ -14,8 +14,6 @@
 #endif
 #if IS_WINDOWS
 #include <windows.h>
-#undef min
-#undef max
 #endif
 
 #include "flash.h"
