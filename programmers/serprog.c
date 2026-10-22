@@ -7,20 +7,14 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#if ! IS_WINDOWS /* stuff (presumably) needed for sockets only */
 #include <stdlib.h>
+#if ! IS_WINDOWS /* stuff (presumably) needed for sockets only */
 #include <unistd.h>
-#include <fcntl.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
-#endif
-#if IS_WINDOWS
-#include <conio.h>
-#else
-#include <termios.h>
 #endif
 #include "platform/string.h"
 #include <errno.h>
