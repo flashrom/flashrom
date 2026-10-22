@@ -7,12 +7,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "platform/string.h"
-#include <time.h>
 #include <errno.h>
 
 #include "programmer.h"
 #include "spi.h"
 #include "platform/i2c.h"
+#include "platform/udelay.h"
 #include "i2c_helper.h"
 #include "helpers.h"
 #include "log.h"
@@ -285,8 +285,7 @@ static int parade_lspcon_i2c_clt2_spi_reset(int fd)
 {
 	int ret = 0;
 	ret |= parade_lspcon_write_register(fd, CLT2_SPI, 0x20);
-	struct timespec wait_100ms = { 0, (unsigned)1e8 };
-	nanosleep(&wait_100ms, NULL);
+	default_delay(100 * 1000);
 	ret |= parade_lspcon_write_register(fd, CLT2_SPI, 0x00);
 
 	return ret;

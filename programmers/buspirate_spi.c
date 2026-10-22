@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <unistd.h>
 #include "programmer.h"
 #include "spi.h"
 #include "platform/udelay.h"
@@ -623,7 +622,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 			if ((ret = buspirate_sendrecv(fd, bp_commbuf, cnt, 0)))
 				goto init_err_cleanup_exit;
-			sleep(1);
+			default_delay(1000 * 1000);
 
 			/* Reconfigure the host's serial baud rate to the new value */
 			if ((ret = serialport_config(fd, serialspeeds[serialspeed_index].speed))) {

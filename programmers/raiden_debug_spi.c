@@ -317,7 +317,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "platform/string.h"
-#include <unistd.h>
 #include "log.h"
 
 /*
@@ -1599,7 +1598,7 @@ loop_end:
 	 */
 	if ((request_enable == RAIDEN_DEBUG_SPI_REQ_ENABLE_AP) ||
 		(request_enable == RAIDEN_DEBUG_SPI_REQ_ENABLE_EC))
-		usleep(50 * 1000);
+		default_delay(50 * 1000);
 
 	struct spi_master *spi_config = calloc(1, sizeof(*spi_config));
 	if (!spi_config) {
