@@ -166,7 +166,8 @@ deps += dep_platform_udelay
 if systems_hwaccess.contains(host_machine.system())
   srcs += files('hwaccess_physmap.c')
   if ['x86', 'x86_64'].contains(host_machine.cpu_family())
-    srcs += files('hwaccess_x86_msr.c', 'hwaccess_x86_io.c')
+    srcs += files('hwaccess_x86_io.c')
+    deps += dep_platform_x86_msr
   endif
 endif
 

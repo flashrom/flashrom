@@ -10,7 +10,7 @@
  * and a non-working default implementation on the bottom.
  */
 
-#include "hwaccess_x86_msr.h"
+#include "platform/x86_msr.h"
 #include "flash.h"
 #include "log.h"
 

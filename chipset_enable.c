@@ -35,7 +35,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include "hwaccess_x86_io.h"
-#include "hwaccess_x86_msr.h"
+#include "platform/x86_msr.h"
 
 static int enable_flash_ali_m1533(const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name)
 {

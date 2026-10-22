@@ -82,6 +82,11 @@ cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
   get_option('delay_minimum_sleep_us')
 )]
 
+# x86 MSR
+dep_platform_x86_msr = declare_dependency(
+  sources : files('x86_msr.c'),
+)
+
 # OpenBSD requires libi386 or libamd64 for I/O port handling
 if host_machine.system() == 'openbsd'
   if host_machine.cpu_family() == 'x86'

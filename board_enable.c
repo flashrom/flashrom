@@ -23,7 +23,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include "hwaccess_x86_io.h"
-#include "hwaccess_x86_msr.h"
+#include "platform/x86_msr.h"
 
 /*
  * Helper functions for many Winbond Super I/Os of the W836xx range.

@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: 2009 Carl-Daniel Hailfinger
  */
 
-#ifndef __HWACCESS_X86_MSR_H__
-#define __HWACCESS_X86_MSR_H__ 1
+#ifndef __PLATFORM_X86_MSR_H__
+#define __PLATFORM_X86_MSR_H__
 
 #include <stdint.h>
 
@@ -15,4 +15,4 @@ int msr_write(int addr, msr_t msr);
 int msr_setup(int cpu);
 void msr_cleanup(void);
 
-#endif /* __HWACCESS_X86_MSR_H__ */
+#endif /* __PLATFORM_X86_MSR_H__ */
