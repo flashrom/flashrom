@@ -5,6 +5,7 @@
 
 #include "lifecycle.h"
 #include "helpers.h"
+#include "edi.h"
 
 /*
  * This test does probing based on linux_spi programmer, and therefore the test
@@ -74,6 +75,7 @@ struct probe_io_state {
 	unsigned char model_id_ext_byte2;
 	unsigned int opcode_counter;
 	unsigned int sfdp_counter;
+	unsigned int non_spi25_cmd_counter;
 	unsigned int counter;
 };
 
@@ -110,6 +112,8 @@ static int probe_handler(void *state, int fd, unsigned long request, va_list arg
 			probe_state->counter++;
 		if (opcode == JEDEC_SFDP)
 			probe_state->sfdp_counter++;
+		if (opcode == EDI_READ)
+			probe_state->non_spi25_cmd_counter++;
 
 		/* Detect probing for opcode and number of bytes that we need to emulate. */
 		if (opcode == probe_state->opcode
@@ -162,6 +166,8 @@ static void print_probing_results(const struct probe_io_state probe_io_state)
 		probe_io_state.counter);
 	printf("Total count of JEDEC_SFDP 0x%2x sent to chip %d times\n",
 		JEDEC_SFDP, probe_io_state.sfdp_counter);
+	printf("Total count of EDI_READ 0x%2x sent to chip %d times\n",
+		EDI_READ, probe_io_state.non_spi25_cmd_counter);
 }
 
 #define MOCK_LINUX_SPI(io_state_ptr) struct io_mock_fallback_open_state linux_spi_fallback_open_state = { \
@@ -198,6 +204,7 @@ void probe_jedec_rdid3_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rdid3_try_all_flashchips(void **state)
@@ -226,6 +233,7 @@ void probe_jedec_rdid3_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rdid3_no_matches_found(void **state)
@@ -255,6 +263,7 @@ void probe_jedec_rdid3_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 			&& (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res1_fixed_chipname(void **state)
@@ -282,6 +291,7 @@ void probe_jedec_res1_fixed_chipname(void **state)
 	/* probe_spi_res1 tries, in order, RDID, REMS, and if none of these works, RES. */
 	assert_int_equal(3, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res1_try_all_flashchips(void **state)
@@ -312,6 +322,7 @@ void probe_jedec_res1_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res1_no_matches_found(void **state)
@@ -341,6 +352,7 @@ void probe_jedec_res1_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res2_fixed_chipname(void **state)
@@ -365,6 +377,7 @@ void probe_jedec_res2_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res2_try_all_flashchips(void **state)
@@ -393,6 +406,7 @@ void probe_jedec_res2_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_res2_no_matches_found(void **state)
@@ -422,6 +436,7 @@ void probe_jedec_res2_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rdid4_fixed_chipname(void **state)
@@ -447,6 +462,7 @@ void probe_jedec_rdid4_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rdid4_try_all_flashchips(void **state)
@@ -476,6 +492,7 @@ void probe_jedec_rdid4_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rdid4_no_matches_found(void **state)
@@ -506,6 +523,7 @@ void probe_jedec_rdid4_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 			&& (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_big_spansion_fixed_chipname(void **state)
@@ -532,6 +550,7 @@ void probe_big_spansion_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_big_spansion_try_all_flashchips(void **state)
@@ -563,6 +582,7 @@ void probe_big_spansion_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_big_spansion_no_matches_found(void **state)
@@ -596,6 +616,7 @@ void probe_big_spansion_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_st95_fixed_chipname(void **state)
@@ -620,6 +641,7 @@ void probe_st95_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_st95_try_all_flashchips(void **state)
@@ -649,6 +671,7 @@ void probe_st95_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_st95_no_matches_found(void **state)
@@ -679,6 +702,7 @@ void probe_st95_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_at25f_rdid_fixed_chipname(void **state)
@@ -703,6 +727,7 @@ void probe_at25f_rdid_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_at25f_rdid_try_all_flashchips(void **state)
@@ -729,6 +754,7 @@ void probe_at25f_rdid_try_all_flashchips(void **state)
 	// Uncomment when caching is fixed for all opcodes
 	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_at25f_rdid_no_matches_found(void **state)
@@ -756,6 +782,7 @@ void probe_at25f_rdid_no_matches_found(void **state)
 	// Uncomment when caching is fixed for all opcodes
 	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rems_fixed_chipname(void **state)
@@ -780,6 +807,7 @@ void probe_jedec_rems_fixed_chipname(void **state)
 	assert_int_equal(1, probe_io_state.opcode_counter);
 	assert_int_equal(1, probe_io_state.counter);
 	assert_int_equal(0, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rems_try_all_flashchips(void **state)
@@ -809,6 +837,7 @@ void probe_jedec_rems_try_all_flashchips(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 
 void probe_jedec_rems_no_matches_found(void **state)
@@ -838,6 +867,7 @@ void probe_jedec_rems_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 	assert_int_equal(PROBE_COUNT_JEDEC_SFDP, probe_io_state.sfdp_counter);
+	assert_int_equal(0, probe_io_state.non_spi25_cmd_counter);
 }
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
