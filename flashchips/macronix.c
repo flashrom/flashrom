@@ -193,13 +193,15 @@
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L12835F/MX25L12873F",
+		.name		= "MX25L12835F/MX25L12873F/KH25L12835F",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L12805D,
 		.total_size	= SIZE_16MiB,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
+		/* KH25L12835F: remarked part, identical JEDEC ID (C2 20 18) and RES
+		 * ID (17) per its datasheet (Rev 1.0, P/N PM1939 = Macronix doc) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR | FEATURE_SCUR,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_SPI_RDID,
