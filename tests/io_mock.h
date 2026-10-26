@@ -92,6 +92,18 @@ struct io_mock {
 	int (*iom_read)(void *state, int fd, void *buf, size_t sz);
 	int (*iom_write)(void *state, int fd, const void *buf, size_t sz);
 
+	/*
+	 * Serial port I/O through include/platform/serial.h, the API used by
+	 * programmers. Tests never reach a real port: without serial_open the
+	 * port fails to open, and flushing or closing it does nothing.
+	 * serial_open returns 0 on success. serial_read and serial_write transfer
+	 * the whole buffer and return 0, like serialport_read() and
+	 * serialport_write(), or return non-zero on error.
+	 */
+	int (*serial_open)(void *state, const char *dev, int baud);
+	int (*serial_read)(void *state, unsigned char *buf, unsigned int readcnt);
+	int (*serial_write)(void *state, const unsigned char *buf, unsigned int writecnt);
+
 	/* Standard I/O */
 	FILE* (*iom_fopen)(void *state, const char *pathname, const char *mode);
 	char* (*iom_fgets)(void *state, char *buf, int len, FILE *fp);

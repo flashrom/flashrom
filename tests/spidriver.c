@@ -4,9 +4,8 @@
  */
 
 #include "lifecycle.h"
-#include "helpers.h"
 
-#if CONFIG_SPIDRIVER == 1 && !IS_WINDOWS
+#if CONFIG_SPIDRIVER == 1
 #define SPIDRIVER_TEST_DEBUG 0
 
 struct spidriver_state {
@@ -29,36 +28,37 @@ struct spidriver_state {
 	size_t cs_probe;
 };
 
-static int spidriver_read(void *state, int fd, void *buf, size_t sz)
+static int spidriver_open(void *state, const char *dev, int baud)
 {
-	struct spidriver_state *ts = state;
-
-	assert_int_equal(fd, MOCK_FD);
-	if (SPIDRIVER_TEST_DEBUG)
-		printf("read: %zu\n", sz);
-
-	sz = min(sz, ts->in_len);
-
-	if (sz > 0) {
-		memcpy(buf, ts->input, sz);
-		memmove(ts->input, &ts->input[sz], sizeof(ts->input) - sz);
-		ts->in_len = 0;
-		return sz;
-	} else {
-		return -1;
-	}
+	assert_string_equal(dev, "/dev/null");
+	return 0;
 }
 
-static int spidriver_write(void *state, int fd, const void *buf, size_t sz)
+static int spidriver_read(void *state, unsigned char *buf, unsigned int readcnt)
 {
 	struct spidriver_state *ts = state;
 
-	assert_int_equal(fd, MOCK_FD);
 	if (SPIDRIVER_TEST_DEBUG)
-		printf("write: %zu\n", sz);
+		printf("read: %u\n", readcnt);
 
-	for (size_t i = 0; i < sz; i++) {
-		unsigned char c = ((const char *)buf)[i];
+	if (readcnt > ts->in_len)
+		return 1;
+
+	memcpy(buf, ts->input, readcnt);
+	memmove(ts->input, &ts->input[readcnt], sizeof(ts->input) - readcnt);
+	ts->in_len = 0;
+	return 0;
+}
+
+static int spidriver_write(void *state, const unsigned char *buf, unsigned int writecnt)
+{
+	struct spidriver_state *ts = state;
+
+	if (SPIDRIVER_TEST_DEBUG)
+		printf("write: %u\n", writecnt);
+
+	for (size_t i = 0; i < writecnt; i++) {
+		unsigned char c = buf[i];
 		bool first = ts->state == 0;
 
 		if (first)
@@ -185,22 +185,17 @@ static int spidriver_write(void *state, int fd, const void *buf, size_t sz)
 		}
 	}
 
-	return sz;
+	return 0;
 }
 
 void spidriver_probe_lifecycle_test_success(void **state)
 {
 	struct spidriver_state ts = {};
-	struct io_mock_fallback_open_state spidriver_fallback_open_state = {
-		.noc = 0,
-		.paths = { "/dev/null", NULL },
-		.flags = { O_RDWR | O_NOCTTY | O_NDELAY },
-	};
 	const struct io_mock spidriver_io = {
 		.state = &ts,
-		.iom_read	= spidriver_read,
-		.iom_write	= spidriver_write,
-		.fallback_open_state = &spidriver_fallback_open_state,
+		.serial_open	= spidriver_open,
+		.serial_read	= spidriver_read,
+		.serial_write	= spidriver_write,
 	};
 
 	const char *expected_matched_names[1] = {"W25Q128.V"};
