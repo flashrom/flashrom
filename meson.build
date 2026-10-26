@@ -206,6 +206,7 @@ programmer = {
     'deps'    : [ dep_platform_serial ],
     'groups'  : [ group_serial, group_external ],
     'srcs'    : files('programmers/buspirate_spi.c'),
+    'test_srcs' : files('tests/buspirate_spi.c'),
     'flags'   : [ '-DCONFIG_BUSPIRATE_SPI=1' ],
   },
   'ch341a_spi' : {

@@ -307,7 +307,8 @@ static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned 
 
 static int buspirate_spi_init(const struct programmer_cfg *cfg)
 {
-	char *tmp;
+	char *tmp = NULL;
+	char *endptr;
 	char *dev;
 	int i;
 	int cnt;
@@ -322,9 +323,10 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	bool pullup = false;
 	bool psu = false;
 	bool aux = true;
-	unsigned char *bp_commbuf;
+	unsigned char *bp_commbuf = NULL;
 	int bp_commbufsize;
 	serialport_fdtype fd = SERIALPORT_INV_FD;
+	struct bp_spi_data *bp_data = NULL;
 
 	dev = extract_programmer_param_str(cfg, "dev");
 	if (dev && !strlen(dev)) {
@@ -371,8 +373,8 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 			; // ignore
 		} else {
 			msg_perr("Invalid pullups state. Use on/off.\n");
-			free(tmp);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
@@ -384,15 +386,15 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		} else if (strcasecmp("off", tmp) == 0) {
 			if (pullup) {
 				msg_perr("Invalid combination: pullups=on & hiz=off at same time is not possible.\n");
-				free(tmp);
-				return 1;
+				ret = 1;
+				goto init_err_cleanup_exit;
 			} else {
 				; // ignore
 			}
 		} else {
 			msg_perr("Invalid hiz state. Use on/off.\n");
-			free(tmp);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
@@ -405,8 +407,8 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 			; // ignore
 		} else {
 			msg_perr("Invalid psus state. Use on/off.\n");
-			free(tmp);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
@@ -421,30 +423,30 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 			msg_perr("Invalid AUX state, driving high by default.\n");
 	}
 	free(tmp);
+	tmp = NULL;
 
 	/* Default buffer size is 19: 16 bytes data, 3 bytes control. */
 #define DEFAULT_BUFSIZE (16 + 3)
 	bp_commbuf = malloc(DEFAULT_BUFSIZE);
 	if (!bp_commbuf) {
 		msg_perr("Out of memory!\n");
-		free(dev);
-		return ERROR_OOM;
+		ret = ERROR_OOM;
+		goto init_err_cleanup_exit;
 	}
 	bp_commbufsize = DEFAULT_BUFSIZE;
 
 	ret = buspirate_serialport_setup(&fd, dev);
 	free(dev);
-	if (ret) {
-		free(bp_commbuf);
-		return ret;
-	}
+	dev = NULL;
+	if (ret)
+		goto init_err_cleanup_exit;
 
 
-	struct bp_spi_data *bp_data = calloc(1, sizeof(*bp_data));
+	bp_data = calloc(1, sizeof(*bp_data));
 	if (!bp_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		free(bp_commbuf);
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 	bp_data->fd = fd;
 	bp_data->commbuf = bp_commbuf;
@@ -497,10 +499,10 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	else if (!strchr("0123456789", bp_commbuf[1]))
 		msg_pdbg("(unknown version number format)");
 	else {
-		hw_version_major = strtoul((char *)bp_commbuf + 1, &tmp, 10);
-		while ((*tmp != '\0') && !strchr("0123456789", *tmp))
-			tmp++;
-		hw_version_minor = strtoul(tmp, NULL, 10);
+		hw_version_major = strtoul((char *)bp_commbuf + 1, &endptr, 10);
+		while ((*endptr != '\0') && !strchr("0123456789", *endptr))
+			endptr++;
+		hw_version_minor = strtoul(endptr, NULL, 10);
 		msg_pdbg("%u.%u", hw_version_major, hw_version_minor);
 	}
 	msg_pdbg2(" (\"%s\")", bp_commbuf);
@@ -522,10 +524,10 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	else if (!strchr("0123456789", bp_commbuf[1]))
 		msg_pdbg("(unknown version number format)");
 	else {
-		fw_version_major = strtoul((char *)bp_commbuf + 1, &tmp, 10);
-		while ((*tmp != '\0') && !strchr("0123456789", *tmp))
-			tmp++;
-		fw_version_minor = strtoul(tmp, NULL, 10);
+		fw_version_major = strtoul((char *)bp_commbuf + 1, &endptr, 10);
+		while ((*endptr != '\0') && !strchr("0123456789", *endptr))
+			endptr++;
+		fw_version_minor = strtoul(endptr, NULL, 10);
 		msg_pdbg("%u.%u", fw_version_major, fw_version_minor);
 	}
 	msg_pdbg2(" (\"%s\")", bp_commbuf);
@@ -741,7 +743,16 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	return register_spi_master(&spi_master_buspirate, bp_data);
 
 init_err_cleanup_exit:
-	buspirate_spi_shutdown(bp_data);
+	free(tmp);
+	free(dev);
+	if (bp_data) {
+		/* Also closes the serial port and frees bp_commbuf. */
+		buspirate_spi_shutdown(bp_data);
+	} else {
+		if (fd != SERIALPORT_INV_FD)
+			serialport_shutdown(fd);
+		free(bp_commbuf);
+	}
 	return ret;
 }
 
