@@ -35,6 +35,7 @@ struct emu_chip {
 	bool ear_set;		/* the bank or extended address register was set to non-zero */
 	uint8_t *memory;	/* flash memory, NULL if only reads with emu_byte() content are expected */
 	bool native_only;	/* only native 4-Byte instructions are expected */
+	uint32_t page_size;	/* a page program must not cross a page boundary */
 };
 
 /* Content of the emulated flash array, different in each 16 MiB bank. */
@@ -105,6 +106,22 @@ static void emu_erase(struct emu_chip *emu, unsigned int writecnt, const unsigne
 	memset(emu->memory + addr, 0xff, size);
 }
 
+static void emu_page_program(struct emu_chip *emu, unsigned int writecnt, const unsigned char *writearr)
+{
+	const bool native = writearr[0] == JEDEC_BYTE_PROGRAM_4BA;
+	const unsigned int addr_len = native || is_4ba_mode(emu) ? 4 : 3;
+	const uint32_t addr = emu_address(emu, native, 1 + addr_len, writearr);
+	const unsigned int len = writecnt - 1 - addr_len;
+
+	assert_non_null(emu->memory);
+	assert_true(writecnt > 1 + addr_len);
+	assert_true(addr % emu->page_size + len <= emu->page_size);
+	assert_true(addr + len <= emu->size);
+
+	for (unsigned int i = 0; i < len; i++)
+		emu->memory[addr + i] &= writearr[1 + addr_len + i];
+}
+
 /* Serves SFDP reads from a byte array, unused SFDP space reads as 0xff, and emulates a flash array. */
 static int emu_spi_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 			   const unsigned char *writearr, unsigned char *readarr)
@@ -153,6 +170,11 @@ static int emu_spi_command(const struct flashctx *flash, unsigned int writecnt, 
 	case JEDEC_BE_DC:
 		assert_true(wel);
 		emu_erase(emu, writecnt, writearr);
+		break;
+	case JEDEC_BYTE_PROGRAM:
+	case JEDEC_BYTE_PROGRAM_4BA:
+		assert_true(wel);
+		emu_page_program(emu, writecnt, writearr);
 		break;
 	default:
 		fail_msg("Unexpected opcode 0x%02x", writearr[0]);
@@ -502,13 +524,12 @@ static uint8_t *emu_alloc_memory(void)
 }
 
 /*
- * Detects an emulated 32 MiB chip through its SFDP table and erases a region across the 16 MiB
- * boundary, mixing 4, 32 and 64 KiB blocks. Nothing outside the region may change.
+ * Detects an emulated 32 MiB chip through its SFDP table, then erases or writes the region from
+ * start to end. Nothing outside the region may change.
  */
-static void run_32mib_erase(const uint8_t *data, size_t len, enum emu_4ba_method method,
-			    uint32_t features)
+static void run_32mib_update(const uint8_t *data, size_t len, enum emu_4ba_method method,
+			     uint32_t features, uint32_t start, uint32_t end, bool write)
 {
-	const uint32_t start = 16 * MiB - 100 * KiB, end = 16 * MiB + 136 * KiB;
 	struct flashchip chip;
 	struct emu_chip emu = {
 		.data = data,
@@ -517,20 +538,30 @@ static void run_32mib_erase(const uint8_t *data, size_t len, enum emu_4ba_method
 		.size = 32 * MiB,
 		.memory = emu_alloc_memory(),
 		.native_only = features & SPI_MASTER_NO_4BA_MODES,
+		.page_size = 256,
 	};
 	struct registered_master mst = {
 		.buses_supported = BUS_SPI,
 		.spi.features = features,
 		.spi.max_data_read = 64 * KiB,
+		.spi.max_data_write = 4 * KiB,
 		.spi.command = emu_spi_command,
 		.spi.read = default_spi_read,
+		.spi.write_256 = default_spi_write_256,
 		.spi.data = &emu,
 	};
 	struct flashctx flash = {
 		.chip = &chip,
 		.mst = &mst,
 		.flags.force = true,
+		.flags.verify_after_write = true,
 	};
+	uint8_t *contents = malloc(32 * MiB);
+
+	assert_non_null(contents);
+	for (uint32_t addr = 0; addr < 32 * MiB; addr++)
+		contents[addr] = addr >= start && addr < end ? (write ? emu_byte(addr) ^ 0x5a : 0xff) :
+							       emu_byte(addr);
 
 	chip = *sfdp_generic_chip();
 	assert_int_equal(1, probe_spi_sfdp(&flash));
@@ -539,16 +570,34 @@ static void run_32mib_erase(const uint8_t *data, size_t len, enum emu_4ba_method
 	assert_int_equal(0, flashrom_layout_add_region(flash.default_layout, start, end - 1, "region"));
 	assert_int_equal(0, flashrom_layout_include_region(flash.default_layout, "region"));
 
-	assert_int_equal(0, flashrom_flash_erase(&flash));
+	if (write)
+		assert_int_equal(0, flashrom_image_write(&flash, contents, 32 * MiB, NULL));
+	else
+		assert_int_equal(0, flashrom_flash_erase(&flash));
 
 	for (uint32_t addr = 0; addr < 32 * MiB; addr++) {
-		if (emu.memory[addr] != (addr >= start && addr < end ? 0xff : emu_byte(addr)))
+		if (emu.memory[addr] != contents[addr])
 			fail_msg("Unexpected content at 0x%08x", addr);
 	}
 	assert_register_used(&emu);
 
 	flashrom_layout_release(flash.default_layout);
+	free(contents);
 	free(emu.memory);
+}
+
+/* Erases a region across the 16 MiB boundary, mixing 4, 32 and 64 KiB blocks. */
+static void run_32mib_erase(const uint8_t *data, size_t len, enum emu_4ba_method method,
+			    uint32_t features)
+{
+	run_32mib_update(data, len, method, features, 16 * MiB - 100 * KiB, 16 * MiB + 136 * KiB, false);
+}
+
+/* Writes an unaligned region across the 16 MiB boundary, page programs start mid-page. */
+static void run_32mib_write(const uint8_t *data, size_t len, enum emu_4ba_method method,
+			    uint32_t features)
+{
+	run_32mib_update(data, len, method, features, 16 * MiB - 4 * KiB - 100, 16 * MiB + 4 * KiB + 60, true);
 }
 
 /* Erases with the native 4-Byte instructions of the 0x84 table. */
@@ -568,6 +617,25 @@ void sfdp_4ba_erase_ext_addr_register_test_success(void **state)
 
 	gd25q256d_without_4ba_instructions(data, BIT(2));
 	run_32mib_erase(data, sizeof(data), EMU_4BA_EAR, SPI_MASTER_4BA);
+}
+
+/* Writes with the native 4-Byte page program of the 0x84 table. */
+void sfdp_4ba_write_native_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	run_32mib_write(sfdp_gd25q256d, sizeof(sfdp_gd25q256d), EMU_4BA_B7,
+			SPI_MASTER_4BA | SPI_MASTER_NO_4BA_MODES);
+}
+
+/* Writes with the 3-Byte page program, the extended address register selects the 16 MiB bank. */
+void sfdp_4ba_write_ext_addr_register_test_success(void **state)
+{
+	(void) state; /* unused */
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	gd25q256d_without_4ba_instructions(data, BIT(2));
+	run_32mib_write(data, sizeof(data), EMU_4BA_EAR, SPI_MASTER_4BA);
 }
 
 /* Probes the GD25Q256D table with one double word replaced. */
