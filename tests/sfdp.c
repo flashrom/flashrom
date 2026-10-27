@@ -4,12 +4,14 @@
  */
 
 #include <include/test.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tests.h"
 #include "chipdrivers.h"
 #include "flash.h"
 #include "flashchips.h"
+#include "libflashrom.h"
 #include "programmer.h"
 #include "spi.h"
 
@@ -30,6 +32,9 @@ struct emu_chip {
 	bool wel;
 	bool in_4ba;
 	uint8_t ear;
+	bool ear_set;		/* the bank or extended address register was set to non-zero */
+	uint8_t *memory;	/* flash memory, NULL if only reads with emu_byte() content are expected */
+	bool native_only;	/* only native 4-Byte instructions are expected */
 };
 
 /* Content of the emulated flash array, different in each 16 MiB bank. */
@@ -58,23 +63,46 @@ static void emu_read_sfdp(const struct emu_chip *emu, unsigned int writecnt, uns
 	}
 }
 
+/* Address of an instruction, 4 bytes for native ones and in 4-Byte address mode. */
+static uint32_t emu_address(const struct emu_chip *emu, bool native, unsigned int writecnt,
+			    const unsigned char *writearr)
+{
+	assert_true(native || !emu->native_only);
+	if (native || is_4ba_mode(emu)) {
+		assert_int_equal(writecnt, 5);
+		return ((uint32_t)writearr[1] << 24) | (writearr[2] << 16) | (writearr[3] << 8) | writearr[4];
+	}
+
+	assert_int_equal(writecnt, 4);
+	const uint8_t high = emu->method == EMU_4BA_BANK ? emu->ear & 0x7f : emu->ear;
+	return ((uint32_t)high << 24) | (writearr[1] << 16) | (writearr[2] << 8) | writearr[3];
+}
+
 static void emu_jedec_read(const struct emu_chip *emu, unsigned int writecnt, unsigned int readcnt,
 			   const unsigned char *writearr, unsigned char *readarr)
 {
-	uint32_t addr;
+	const uint32_t addr = emu_address(emu, writearr[0] == JEDEC_READ_4BA, writecnt, writearr);
 
-	if (writearr[0] == JEDEC_READ_4BA || is_4ba_mode(emu)) {
-		assert_int_equal(writecnt, 5);
-		addr = ((uint32_t)writearr[1] << 24) | (writearr[2] << 16) | (writearr[3] << 8) | writearr[4];
-	} else {
-		assert_int_equal(writecnt, 4);
-		const uint8_t high = emu->method == EMU_4BA_BANK ? emu->ear & 0x7f : emu->ear;
-		addr = ((uint32_t)high << 24) | (writearr[1] << 16) | (writearr[2] << 8) | writearr[3];
-	}
 	assert_true(addr + readcnt <= emu->size);
 
 	for (unsigned int i = 0; i < readcnt; i++)
-		readarr[i] = emu_byte(addr + i);
+		readarr[i] = emu->memory ? emu->memory[addr + i] : emu_byte(addr + i);
+}
+
+/* 0x21, 0x5c and 0xdc are the native 4-Byte variants of 0x20, 0x52 and 0xd8. */
+static void emu_erase(struct emu_chip *emu, unsigned int writecnt, const unsigned char *writearr)
+{
+	const uint8_t op = writearr[0];
+	const uint32_t size = op == JEDEC_SE || op == 0x21 ? 4 * KiB :
+			      op == JEDEC_BE_52 || op == 0x5c ? 32 * KiB : 64 * KiB;
+	const bool native = op == 0x21 || op == 0x5c || op == JEDEC_BE_DC;
+	const uint32_t addr = emu_address(emu, native, writecnt, writearr);
+
+	assert_non_null(emu->memory);
+	assert_int_equal(0, addr % size);
+	assert_true(addr + size <= emu->size);
+
+	memset(emu->memory + addr, 0xff, size);
 }
 
 /* Serves SFDP reads from a byte array, unused SFDP space reads as 0xff, and emulates a flash array. */
@@ -111,10 +139,20 @@ static int emu_spi_command(const struct flashctx *flash, unsigned int writecnt, 
 		assert_int_equal(writecnt, 2);
 		assert_true(wel);
 		emu->ear = writearr[1];
+		emu->ear_set |= emu->ear != 0;
 		break;
 	case JEDEC_READ:
 	case JEDEC_READ_4BA:
 		emu_jedec_read(emu, writecnt, readcnt, writearr, readarr);
+		break;
+	case JEDEC_SE:
+	case 0x21:
+	case JEDEC_BE_52:
+	case 0x5c:
+	case JEDEC_BE_D8:
+	case JEDEC_BE_DC:
+		assert_true(wel);
+		emu_erase(emu, writecnt, writearr);
 		break;
 	default:
 		fail_msg("Unexpected opcode 0x%02x", writearr[0]);
@@ -287,6 +325,16 @@ static void gd25q256d_with_4ba_methods(uint8_t *data, uint8_t enter, uint16_t ex
 		data[dw16 + i] = (val >> (8 * i)) & 0xff;
 }
 
+/*
+ * Copies the GD25Q256D table with one 4-Byte address method and without the 4-Byte address
+ * instruction table, so accesses above 16 MiB go through that method.
+ */
+static void gd25q256d_without_4ba_instructions(uint8_t *data, uint8_t method)
+{
+	gd25q256d_with_4ba_methods(data, method, method);
+	data[6] = 0x01; /* NPH = 1, the 0x84 header is the last one */
+}
+
 static int run_gd25q256d_4ba_methods(struct flashchip *chip, uint8_t enter, uint16_t exit)
 {
 	uint8_t data[sizeof(sfdp_gd25q256d)];
@@ -305,6 +353,13 @@ static void assert_emu_read(struct flashctx *flash, uint32_t start, uint32_t len
 		assert_int_equal(emu_byte(start + i), buf[i]);
 }
 
+/* Accesses above 16 MiB without native instructions must have gone through the register. */
+static void assert_register_used(const struct emu_chip *emu)
+{
+	if (emu->method == EMU_4BA_BANK || emu->method == EMU_4BA_EAR)
+		assert_true(emu->ear_set);
+}
+
 /*
  * Detects an emulated 32 MiB chip through its SFDP table, sets up 4-Byte addressing the way
  * prepare_flash_access() does and reads across the 16 MiB boundary and the end of the chip.
@@ -318,6 +373,7 @@ static void run_32mib_read(const uint8_t *data, size_t len, enum emu_4ba_method 
 		.len = len,
 		.method = method,
 		.size = 32 * MiB,
+		.native_only = features & SPI_MASTER_NO_4BA_MODES,
 	};
 	struct registered_master mst = {
 		.buses_supported = BUS_SPI,
@@ -344,6 +400,7 @@ static void run_32mib_read(const uint8_t *data, size_t len, enum emu_4ba_method 
 	assert_emu_read(&flash, 16 * MiB - 24, 48);
 	assert_emu_read(&flash, 32 * MiB - 32, 32);
 	assert_emu_read(&flash, 0x123456, 16);
+	assert_register_used(&emu);
 
 	if (spi_chip_4ba(&flash) && !spi_master_no_4ba_modes(&flash)) {
 		assert_int_equal(0, spi_exit_4ba(&flash));
@@ -355,9 +412,7 @@ static void run_4ba_read(uint8_t methods, enum emu_4ba_method method)
 {
 	uint8_t data[sizeof(sfdp_gd25q256d)];
 
-	gd25q256d_with_4ba_methods(data, methods, methods);
-	/* Drop the 4-Byte address instruction table, so reads go through the address mode */
-	data[6] = 0x01;
+	gd25q256d_without_4ba_instructions(data, methods);
 	run_32mib_read(data, sizeof(data), method, SPI_MASTER_4BA);
 }
 
@@ -433,6 +488,86 @@ void sfdp_4ba_read_native_test_success(void **state)
 
 	run_32mib_read(sfdp_gd25q256d, sizeof(sfdp_gd25q256d), EMU_4BA_NONE,
 		       SPI_MASTER_4BA | SPI_MASTER_NO_4BA_MODES);
+}
+
+/* Fills a 32 MiB flash memory with the emu_byte() content, freed by the caller. */
+static uint8_t *emu_alloc_memory(void)
+{
+	uint8_t *memory = malloc(32 * MiB);
+
+	assert_non_null(memory);
+	for (uint32_t addr = 0; addr < 32 * MiB; addr++)
+		memory[addr] = emu_byte(addr);
+	return memory;
+}
+
+/*
+ * Detects an emulated 32 MiB chip through its SFDP table and erases a region across the 16 MiB
+ * boundary, mixing 4, 32 and 64 KiB blocks. Nothing outside the region may change.
+ */
+static void run_32mib_erase(const uint8_t *data, size_t len, enum emu_4ba_method method,
+			    uint32_t features)
+{
+	const uint32_t start = 16 * MiB - 100 * KiB, end = 16 * MiB + 136 * KiB;
+	struct flashchip chip;
+	struct emu_chip emu = {
+		.data = data,
+		.len = len,
+		.method = method,
+		.size = 32 * MiB,
+		.memory = emu_alloc_memory(),
+		.native_only = features & SPI_MASTER_NO_4BA_MODES,
+	};
+	struct registered_master mst = {
+		.buses_supported = BUS_SPI,
+		.spi.features = features,
+		.spi.max_data_read = 64 * KiB,
+		.spi.command = emu_spi_command,
+		.spi.read = default_spi_read,
+		.spi.data = &emu,
+	};
+	struct flashctx flash = {
+		.chip = &chip,
+		.mst = &mst,
+		.flags.force = true,
+	};
+
+	chip = *sfdp_generic_chip();
+	assert_int_equal(1, probe_spi_sfdp(&flash));
+
+	assert_int_equal(0, flashrom_layout_new(&flash.default_layout));
+	assert_int_equal(0, flashrom_layout_add_region(flash.default_layout, start, end - 1, "region"));
+	assert_int_equal(0, flashrom_layout_include_region(flash.default_layout, "region"));
+
+	assert_int_equal(0, flashrom_flash_erase(&flash));
+
+	for (uint32_t addr = 0; addr < 32 * MiB; addr++) {
+		if (emu.memory[addr] != (addr >= start && addr < end ? 0xff : emu_byte(addr)))
+			fail_msg("Unexpected content at 0x%08x", addr);
+	}
+	assert_register_used(&emu);
+
+	flashrom_layout_release(flash.default_layout);
+	free(emu.memory);
+}
+
+/* Erases with the native 4-Byte instructions of the 0x84 table. */
+void sfdp_4ba_erase_native_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	run_32mib_erase(sfdp_gd25q256d, sizeof(sfdp_gd25q256d), EMU_4BA_B7,
+			SPI_MASTER_4BA | SPI_MASTER_NO_4BA_MODES);
+}
+
+/* Erases with 3-Byte instructions, the extended address register selects the 16 MiB bank. */
+void sfdp_4ba_erase_ext_addr_register_test_success(void **state)
+{
+	(void) state; /* unused */
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	gd25q256d_without_4ba_instructions(data, BIT(2));
+	run_32mib_erase(data, sizeof(data), EMU_4BA_EAR, SPI_MASTER_4BA);
 }
 
 /* Probes the GD25Q256D table with one double word replaced. */

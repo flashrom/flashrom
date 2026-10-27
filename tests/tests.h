@@ -65,6 +65,8 @@ void sfdp_4ba_read_ext_addr_register_test_success(void **state);
 void sfdp_page_size_test_success(void **state);
 void sfdp_page_size_implausible_use_default(void **state);
 void sfdp_4ba_read_native_test_success(void **state);
+void sfdp_4ba_erase_native_test_success(void **state);
+void sfdp_4ba_erase_ext_addr_register_test_success(void **state);
 void sfdp_4ba_instructions_test_success(void **state);
 void sfdp_4ba_instructions_ignored(void **state);
 void sfdp_4ba_erasers_test_success(void **state);
