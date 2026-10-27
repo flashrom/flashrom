@@ -619,6 +619,16 @@ void sfdp_4ba_erase_ext_addr_register_test_success(void **state)
 	run_32mib_erase(data, sizeof(data), EMU_4BA_EAR, SPI_MASTER_4BA);
 }
 
+/* Erases through the extended address register, the master can't send native 4-Byte erases. */
+void sfdp_4ba_erase_3byte_master_test_success(void **state)
+{
+	(void) state; /* unused */
+	uint8_t data[sizeof(sfdp_gd25q256d)];
+
+	gd25q256d_with_4ba_methods(data, BIT(2), BIT(2));
+	run_32mib_erase(data, sizeof(data), EMU_4BA_EAR, 0);
+}
+
 /* Writes with the native 4-Byte page program of the 0x84 table. */
 void sfdp_4ba_write_native_test_success(void **state)
 {

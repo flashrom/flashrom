@@ -520,6 +520,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(sfdp_4ba_read_native_test_success),
 		cmocka_unit_test(sfdp_4ba_erase_native_test_success),
 		cmocka_unit_test(sfdp_4ba_erase_ext_addr_register_test_success),
+		cmocka_unit_test(sfdp_4ba_erase_3byte_master_test_success),
 		cmocka_unit_test(sfdp_4ba_write_native_test_success),
 		cmocka_unit_test(sfdp_4ba_write_ext_addr_register_test_success),
 		cmocka_unit_test(sfdp_4ba_instructions_test_success),

@@ -484,6 +484,20 @@ erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
 	return NULL;
 }
 
+/* Erase functions that always send a 4-byte address. */
+static bool erasefn_is_native_4ba(enum block_erase_func func)
+{
+	switch (func) {
+	case SPI_BLOCK_ERASE_21:
+	case SPI_BLOCK_ERASE_53:
+	case SPI_BLOCK_ERASE_5C:
+	case SPI_BLOCK_ERASE_DC:
+		return true;
+	default:
+		return false;
+	}
+}
+
 int check_block_eraser(const struct flashctx *flash, int k, int log)
 {
 	struct block_eraser eraser = flash->chip->block_erasers[k];
@@ -517,6 +531,12 @@ int check_block_eraser(const struct flashctx *flash, int k, int log)
 					return 1;
 				}
 			}
+		if (erasefn_is_native_4ba(eraser.block_erase) && !spi_master_4ba(flash)) {
+			if (log)
+				msg_cdbg("block erase function uses 4-byte addresses "
+					 "but SPI master doesn't support them. ");
+			return 1;
+		}
 	}
 	// TODO: Once erase functions are annotated with allowed buses, check that as well.
 	return 0;
