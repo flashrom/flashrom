@@ -124,7 +124,27 @@ static int compare_erasers(const void *aptr, const void *bptr)
 	if (b->block_erase == NO_BLOCK_ERASE_FUNC)
 		return -1;
 	/* sort by block size, ascending */
-	return ((int) a->eraseblocks[0].size) - ((int) b->eraseblocks[0].size);
+	if (a->eraseblocks[0].size != b->eraseblocks[0].size)
+		return ((int) a->eraseblocks[0].size) - ((int) b->eraseblocks[0].size);
+	/* same size (3-Byte and native 4-Byte opcode), keep a fixed order */
+	return ((int) a->block_erase) - ((int) b->block_erase);
+}
+
+static void sfdp_sort_erasers(struct flashchip *chip)
+{
+	int j;
+
+	/* Sort block erasers in ascending order by size; this is required
+	 * for erase logic, see erasure_layout.c */
+	qsort(chip->block_erasers, NUM_ERASEFUNCTIONS,
+		sizeof(chip->block_erasers[0]), compare_erasers);
+	for (j = 0; j < NUM_ERASEFUNCTIONS; j++) {
+		const struct block_eraser *eraser = &chip->block_erasers[j];
+		msg_cdbg2("  Sorted eraser #%u: %"PRId32" x %"PRId32" B\n",
+			j,
+			eraser->eraseblocks[0].count,
+			eraser->eraseblocks[0].size);
+	}
 }
 
 /* Takes the 4-Byte address mode handling from the 16th double word (JESD216H 6.4.19). */
@@ -179,10 +199,17 @@ static int sfdp_fill_4ba(struct flashchip *chip, const uint8_t *buf, uint16_t le
 	return 0;
 }
 
-/* Takes the native 4-Byte address instructions from the 1st double word (JESD216H 6.7.3). */
-static void sfdp_fill_4ba_instructions(struct flashchip *chip, const uint8_t *buf, uint16_t len)
+/*
+ * Takes the native 4-Byte address instructions from the 1st double word (JESD216H 6.7.3)
+ * and the erase instructions from the 2nd (JESD216H 6.7.4), sized by the erase types
+ * of the JEDEC flash parameter table.
+ */
+static void sfdp_fill_4ba_instructions(struct flashchip *chip, const uint8_t *buf, uint16_t len,
+				       const uint32_t erase_sizes[4])
 {
 	uint32_t tmp32;
+	uint8_t erase_types;
+	int j;
 
 	if (len < 1 * 4) {
 		msg_cdbg("Length of the 4-Byte address instruction table is wrong, skipping it.\n");
@@ -211,10 +238,41 @@ static void sfdp_fill_4ba_instructions(struct flashchip *chip, const uint8_t *bu
 		msg_cdbg2("  Native 4-Byte page program (0x12) is supported.\n");
 	}
 
+	erase_types = (tmp32 >> 9) & 0xf;
+	if (erase_types && len < 2 * 4) {
+		msg_cdbg("  Native 4-Byte erase instructions are missing, skipping them.\n");
+		erase_types = 0;
+	}
+
+	/* 2. double word */
+	if (erase_types) {
+		tmp32 =  ((unsigned int)buf[(4 * 1) + 0]);
+		tmp32 |= ((unsigned int)buf[(4 * 1) + 1]) << 8;
+		tmp32 |= ((unsigned int)buf[(4 * 1) + 2]) << 16;
+		tmp32 |= ((unsigned int)buf[(4 * 1) + 3]) << 24;
+	}
+
+	for (j = 0; j < 4; j++) {
+		if (!(erase_types & BIT(j)))
+			continue;
+		if (erase_sizes[j] == 0) {
+			msg_cdbg2("  Erase Type %d has no size in the JEDEC flash parameter "
+				  "table, skipping its native 4-Byte instruction.\n", j + 1);
+			continue;
+		}
+		msg_cspew("   Erase Type %d native 4-Byte Opcode: 0x%02x\n", j + 1,
+			  (tmp32 >> (8 * j)) & 0xff);
+		sfdp_add_uniform_eraser(chip, (tmp32 >> (8 * j)) & 0xff, erase_sizes[j]);
+	}
+	if (erase_types)
+		sfdp_sort_erasers(chip);
+
 	msg_cdbg("done.\n");
 }
 
-static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
+/* Also fills erase_sizes with the Erase Type sizes, for sfdp_fill_4ba_instructions(). */
+static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len,
+			   uint32_t erase_sizes[4])
 {
 	uint8_t opcode_4k_erase = 0xFF;
 	uint32_t tmp32;
@@ -330,6 +388,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 			continue;
 		}
 		block_size = 1 << (tmp8); /* block_size = 2 ^ field */
+		erase_sizes[j] = block_size;
 
 		tmp8 = buf[(4 * 7) + (j * 2) + 1];
 		msg_cspew("   Erase Sector Type %d Opcode: 0x%02x\n", j + 1,
@@ -350,17 +409,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		}
 	}
 
-	/* Sort block erasers in ascending order by size; this is required
-	 * for erase logic, see erasure_layout.c */
-	qsort(chip->block_erasers, NUM_ERASEFUNCTIONS,
-		sizeof(chip->block_erasers[0]), compare_erasers);
-	for (j = 0; j < NUM_ERASEFUNCTIONS; j++) {
-		const struct block_eraser *eraser = &chip->block_erasers[j];
-		msg_cdbg2("  Sorted eraser #%u: %"PRId32" x %"PRId32" B\n",
-			j,
-			eraser->eraseblocks[0].count,
-			eraser->eraseblocks[0].size);
-	}
+	sfdp_sort_erasers(chip);
 
 done:
 	msg_cdbg("done.\n");
@@ -460,6 +509,8 @@ int probe_spi_sfdp(struct flashctx *flash)
 	struct sfdp_tbl_hdr *hdrs;
 	uint8_t *hbuf;
 	uint8_t *tbuf;
+	/* Erase Type 1-4 block sizes from the JEDEC flash parameter table */
+	uint32_t erase_sizes[4] = { 0 };
 
 	if (spi_sfdp_read_sfdp(flash, 0x00, buf, 4)) {
 		msg_cdbg("Receiving SFDP signature failed.\n");
@@ -571,7 +622,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 				msg_cdbg("Length of the mandatory JEDEC SFDP "
 					 "parameter table is wrong (%d B), "
 					 "skipping it.\n", len);
-			} else if (sfdp_fill_flash(flash->chip, tbuf, len) == 0) {
+			} else if (sfdp_fill_flash(flash->chip, tbuf, len, erase_sizes) == 0) {
 				ret = 1;
 			}
 		} else {
@@ -599,7 +650,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 							 hdrs[i].v_major, hdrs[i].v_minor);
 					} else if (ret && flash->chip->total_size > 16 * KiB) {
 						/* Only needed to reach above 16 MiB */
-						sfdp_fill_4ba_instructions(flash->chip, tbuf, len);
+						sfdp_fill_4ba_instructions(flash->chip, tbuf, len, erase_sizes);
 					}
 					break;
 				default:

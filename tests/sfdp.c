@@ -266,9 +266,12 @@ void sfdp_gd25q256d_test_success(void **state)
 	assert_int_equal(SPI_CHIP_READ, chip.read);
 	assert_int_equal(FEATURE_WRSR_EWSR | FEATURE_4BA_ENTER | FEATURE_4BA_NATIVE, chip.feature_bits);
 	assert_eraser(&chip.block_erasers[0], SPI_BLOCK_ERASE_20, 4 * KiB, 8192);
-	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
-	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
-	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[3].block_erase);
+	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_21, 4 * KiB, 8192);
+	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[3], SPI_BLOCK_ERASE_5C, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[4], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
+	assert_eraser(&chip.block_erasers[5], SPI_BLOCK_ERASE_DC, 64 * KiB, 512);
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[6].block_erase);
 }
 
 /* Copies the GD25Q256D table with other 4-Byte address enter and exit methods in DWORD 16. */
@@ -454,6 +457,41 @@ void sfdp_4ba_instructions_test_success(void **state)
 	/* Only 0x0c */
 	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0xc0, BIT(1)));
 	assert_int_equal(FEATURE_4BA_FAST_READ, chip.feature_bits & FEATURE_4BA_NATIVE);
+	/* No native erase instruction */
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[3].block_erase);
+}
+
+void sfdp_4ba_erasers_test_success(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	/* Only Erase Type 3, 64 KiB with 0xdc */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0xc0, BIT(11)));
+	assert_eraser(&chip.block_erasers[0], SPI_BLOCK_ERASE_20, 4 * KiB, 8192);
+	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
+	assert_eraser(&chip.block_erasers[3], SPI_BLOCK_ERASE_DC, 64 * KiB, 512);
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[4].block_erase);
+	/* Opcodes 0x5c and 0x21 swapped, the sizes come from the erase types */
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0xc4, 0xffdc215c));
+	assert_eraser(&chip.block_erasers[0], SPI_BLOCK_ERASE_20, 4 * KiB, 8192);
+	assert_eraser(&chip.block_erasers[1], SPI_BLOCK_ERASE_5C, 4 * KiB, 8192);
+	assert_eraser(&chip.block_erasers[2], SPI_BLOCK_ERASE_21, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[3], SPI_BLOCK_ERASE_52, 32 * KiB, 1024);
+	assert_eraser(&chip.block_erasers[4], SPI_BLOCK_ERASE_D8, 64 * KiB, 512);
+	assert_eraser(&chip.block_erasers[5], SPI_BLOCK_ERASE_DC, 64 * KiB, 512);
+}
+
+/* Erase types are flagged in the 1st double word but the table has no 2nd. */
+void sfdp_4ba_erasers_missing_dword_ignored(void **state)
+{
+	(void) state; /* unused */
+	struct flashchip chip;
+
+	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x18, 0x01010084));
+	assert_int_equal(FEATURE_4BA_NATIVE, chip.feature_bits & FEATURE_4BA_NATIVE);
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[3].block_erase);
 }
 
 void sfdp_4ba_instructions_ignored(void **state)
@@ -465,6 +503,7 @@ void sfdp_4ba_instructions_ignored(void **state)
 	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x34, 16 * MiB * 8 - 1));
 	assert_int_equal(16 * KiB, chip.total_size);
 	assert_int_equal(0, chip.feature_bits & FEATURE_4BA_NATIVE);
+	assert_int_equal(NO_BLOCK_ERASE_FUNC, chip.block_erasers[3].block_erase);
 	/* ID MSB 0x00 instead of 0xff */
 	assert_int_equal(1, run_gd25q256d_with_dword(&chip, 0x1c, 0x000000c0));
 	assert_int_equal(0, chip.feature_bits & FEATURE_4BA_NATIVE);

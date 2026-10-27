@@ -520,6 +520,8 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(sfdp_4ba_read_native_test_success),
 		cmocka_unit_test(sfdp_4ba_instructions_test_success),
 		cmocka_unit_test(sfdp_4ba_instructions_ignored),
+		cmocka_unit_test(sfdp_4ba_erasers_test_success),
+		cmocka_unit_test(sfdp_4ba_erasers_missing_dword_ignored),
 		cmocka_unit_test(sfdp_no_signature_rejected),
 		cmocka_unit_test(sfdp_unknown_major_revision_rejected),
 	};
