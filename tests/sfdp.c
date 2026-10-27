@@ -580,6 +580,9 @@ static void run_32mib_update(const uint8_t *data, size_t len, enum emu_4ba_metho
 			fail_msg("Unexpected content at 0x%08x", addr);
 	}
 	assert_register_used(&emu);
+	/* finalize_flash_access() leaves 4-Byte address mode and selects the lowest 16 MiB */
+	assert_false(is_4ba_mode(&emu));
+	assert_int_equal(0, emu.ear);
 
 	flashrom_layout_release(flash.default_layout);
 	free(contents);

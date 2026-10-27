@@ -2054,6 +2054,11 @@ int prepare_flash_access(struct flashctx *const flash,
 void finalize_flash_access(struct flashctx *const flash)
 {
 	deregister_chip_restore(flash);
+	/* Leave the chip as firmware reading with 3-Byte addresses expects it */
+	if (flash->in_4ba_mode && spi_exit_4ba(flash))
+		msg_cwarn("Failed to leave 4-Byte address mode.\n");
+	if (flash->address_high_byte > 0 && spi_set_extended_address(flash, 0))
+		msg_cwarn("Failed to reset the extended address register.\n");
 	unmap_flash(flash);
 }
 
