@@ -148,6 +148,7 @@ void ch347_spi_fault_wrapped_basic_test_success(void **state);
 void ch347_spi_fault_wrapped_probe_test_success(void **state);
 void buspirate_spi_init_fails_invalid_param_test_success(void **state);
 void spidriver_probe_lifecycle_test_success(void **state);
+void spidriver_init_fails_unknown_device_test_success(void **state);
 void nv_sma_spi_basic_lifecycle_test_success(void **state);
 void fault_basic_lifecycle_test_success(void **state);
 void fault_init_missing_backend_test_success(void **state);

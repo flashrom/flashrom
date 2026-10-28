@@ -286,7 +286,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	/*                                |     |   ` Temperature                           */
 	/*                                |     ` Current                                   */
 	/*                                ` Voltage                                         */
-	if (buf[0] != '[' || buf[79] != ']' || !strcmp((char*)&buf[1], "spidriver")) {
+	if (buf[0] != '[' || buf[79] != ']' || strncmp((char*)&buf[1], "spidriver", strlen("spidriver"))) {
 		msg_perr("Invalid status response: %s\n", buf);
 		ret = 1;
 		goto init_err_cleanup_exit;

@@ -8,7 +8,14 @@
 #if CONFIG_SPIDRIVER == 1
 #define SPIDRIVER_TEST_DEBUG 0
 
+/* Status line of a SPIDriver v2, the 80 byte reply to '?'. */
+#define SPIDRIVER_V2_STATUS "[spidriver2 AAAAAAAA 000000002 5.190 000" \
+			    " 21.9 1 1 1 ffff 0                     ]"
+
 struct spidriver_state {
+	// reply to '?'
+	const char *status;
+
 	// most recent command
 	unsigned char state;
 
@@ -70,9 +77,7 @@ static int spidriver_write(void *state, const unsigned char *buf, unsigned int w
 		switch (ts->state) {
 		case '?':
 			assert_int_equal(ts->in_len, 0);
-			snprintf((char *)ts->input, sizeof(ts->input),
-				"[spidriver2 AAAAAAAA 000000002 5.190 000"
-				" 21.9 1 1 1 ffff 0                     ]");
+			snprintf((char *)ts->input, sizeof(ts->input), "%s", ts->status);
 			ts->in_len = 80;
 			ts->state = 0;
 			break;
@@ -190,7 +195,9 @@ static int spidriver_write(void *state, const unsigned char *buf, unsigned int w
 
 void spidriver_probe_lifecycle_test_success(void **state)
 {
-	struct spidriver_state ts = {};
+	struct spidriver_state ts = {
+		.status = SPIDRIVER_V2_STATUS,
+	};
 	const struct io_mock spidriver_io = {
 		.state = &ts,
 		.serial_open	= spidriver_open,
@@ -202,6 +209,27 @@ void spidriver_probe_lifecycle_test_success(void **state)
 	run_probe_v2_lifecycle(state, &spidriver_io, &programmer_spidriver, "dev=/dev/null", "W25Q128.V",
 				expected_matched_names, 1);
 }
+
+void spidriver_init_fails_unknown_device_test_success(void **state)
+{
+	/*
+	 * A valid status line except for the product name. The I2CDriver, from
+	 * the same maker, answers '?' in this format.
+	 */
+	struct spidriver_state ts = {
+		.status = "[i2cdriver1 AAAAAAAA 000000002 5.190 000"
+			  " 21.9 1 1 1 ffff 0                     ]",
+	};
+	const struct io_mock spidriver_io = {
+		.state = &ts,
+		.serial_open	= spidriver_open,
+		.serial_read	= spidriver_read,
+		.serial_write	= spidriver_write,
+	};
+
+	run_init_error_path(state, &spidriver_io, &programmer_spidriver, "dev=/dev/null", 1);
+}
 #else
 	SKIP_TEST(spidriver_probe_lifecycle_test_success)
+	SKIP_TEST(spidriver_init_fails_unknown_device_test_success)
 #endif /* CONFIG_SPIDRIVER */
