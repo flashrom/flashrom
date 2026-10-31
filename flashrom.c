@@ -1488,21 +1488,21 @@ static int erase_by_layout(struct flashctx *const flashctx)
 {
 	bool all_skipped = true;
 	const uint32_t flash_size = flashctx->chip->total_size * KiB;
-	uint8_t* curcontents = malloc(flash_size);
-	uint8_t* newcontents = malloc(flash_size);
-	struct erase_layout *erase_layout;
-	create_erase_layout(flashctx, &erase_layout);
 	int ret = 0;
 
-	//erase layout creation failed
-	if (!erase_layout) {
-		ret = 1;
-		goto _ret;
-	}
+	uint8_t* curcontents = malloc(flash_size);
+	uint8_t* newcontents = malloc(flash_size);
 
-	//not enough memory
+	struct erase_layout *erase_layout;
+	ret = create_erase_layout(flashctx, &erase_layout);
+
+	// erase layout creation failed
+	if (!erase_layout)
+		goto _ret;
+
+	// not enough memory
 	if (!curcontents || !newcontents) {
-		ret = 1;
+		ret = ERROR_OOM;
 		goto _ret;
 	}
 
@@ -1535,16 +1535,16 @@ static int write_by_layout(struct flashctx *const flashctx,
 			   bool *all_skipped)
 {
 	const int erasefn_count = count_usable_erasers(flashctx);
-	int ret = 1;
+	int ret = 0;
 
 	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
 	struct erase_layout *erase_layout;
-	create_erase_layout(flashctx, &erase_layout);
+	ret = create_erase_layout(flashctx, &erase_layout);
 
-	if (!flash_layout) {
+	if (!erase_layout)
 		goto _ret;
-	}
-	if (!erase_layout) {
+	if (!flash_layout) {
+		ret = 1;
 		goto _ret;
 	}
 

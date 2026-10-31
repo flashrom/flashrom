@@ -76,6 +76,7 @@ void free_erase_layout(struct erase_layout *layout, unsigned int erasefn_count)
  * @param	e_layout	address to the pointer to store the layout
  * @return	0 on success,
  *		-1 if layout creation fails
+		ERROR_OOM if unable to allocate memory for layout
  *
  * This function creates a layout of which erase functions erase which regions
  * of the flash chip. This helps to optimally select the erase functions for
@@ -93,7 +94,7 @@ int create_erase_layout(struct flashctx *const flashctx, struct erase_layout **e
 	struct erase_layout *layout = calloc(erasefn_count, sizeof(struct erase_layout));
 	if (!layout) {
 		msg_gerr("Out of memory!\n");
-		return -1;
+		return ERROR_OOM;
 	}
 
 	size_t layout_idx = 0;
