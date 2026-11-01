@@ -148,7 +148,7 @@ static void sfdp_sort_erasers(struct flashchip *chip)
 }
 
 /* Takes the 4-Byte address mode handling from the 16th double word (JESD216H 6.4.19). */
-static int sfdp_fill_4ba(struct flashchip *chip, const uint8_t *buf, uint16_t len)
+static int sfdp_fill_4ba_feature_flags(struct flashchip *chip, const uint8_t *buf, uint16_t len)
 {
 	uint32_t tmp32;
 	uint8_t methods;
@@ -357,7 +357,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len,
 	total_size = ((tmp32 & 0x7FFFFFFF) + 1) / 8;
 	chip->total_size = total_size / KiB;
 	msg_cdbg2("  Flash chip size is %d kB.\n", chip->total_size);
-	if (total_size > 16 * MiB && sfdp_fill_4ba(chip, buf, len))
+	if (total_size > 16 * MiB && sfdp_fill_4ba_feature_flags(chip, buf, len))
 		return 1;
 
 	if (opcode_4k_erase != 0xFF)
