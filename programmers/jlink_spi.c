@@ -214,6 +214,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	enum cs_wiring cs;
 	struct jlink_spi_data *jlink_data = NULL;
 	bool enable_target_power;
+	int init_err_ret = 1;
 
 	arg = extract_programmer_param_str(cfg, "spispeed");
 
@@ -519,6 +520,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	jlink_data = calloc(1, sizeof(*jlink_data));
 	if (!jlink_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
+		init_err_ret = ERROR_OOM;
 		goto init_err;
 	}
 
@@ -544,7 +546,7 @@ init_err:
 	if (jlink_data)
 		free(jlink_data);
 
-	return 1;
+	return init_err_ret;
 }
 
 const struct programmer_entry programmer_jlink_spi = {
