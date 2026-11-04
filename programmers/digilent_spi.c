@@ -362,6 +362,7 @@ static int digilent_spi_init(const struct programmer_cfg *cfg)
 	int i;
 	struct libusb_device_handle *handle = NULL;
 	bool reset_board;
+	int init_err_ret = -1;
 
 	int32_t ret = libusb_init(NULL);
 	if (ret < 0) {
@@ -432,6 +433,7 @@ static int digilent_spi_init(const struct programmer_cfg *cfg)
 	struct digilent_spi_data *digilent_data = calloc(1, sizeof(*digilent_data));
 	if (!digilent_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
+		init_err_ret = ERROR_OOM;
 		goto close_handle;
 	}
 	digilent_data->reset_board = reset_board;
@@ -441,7 +443,7 @@ static int digilent_spi_init(const struct programmer_cfg *cfg)
 
 close_handle:
 	libusb_close(handle);
-	return -1;
+	return init_err_ret;
 }
 
 const struct programmer_entry programmer_digilent_spi = {
