@@ -91,6 +91,7 @@ static int nic3com_init(const struct programmer_cfg *cfg)
 	uint32_t io_base_addr = 0;
 	uint32_t internal_conf = 0;
 	uint16_t id;
+	int ret = 1;
 
 	if (rget_io_perms())
 		return 1;
@@ -126,6 +127,7 @@ static int nic3com_init(const struct programmer_cfg *cfg)
 	struct nic3com_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for PAR master data\n");
+		ret = ERROR_OOM;
 		goto init_err_cleanup_exit;
 	}
 	data->io_base_addr = io_base_addr;
@@ -144,7 +146,7 @@ init_err_cleanup_exit:
 		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
 		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
 	}
-	return 1;
+	return ret;
 }
 
 const struct programmer_entry programmer_nic3com = {
