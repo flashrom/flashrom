@@ -163,6 +163,7 @@ static int linux_spi_init(const struct programmer_cfg *cfg)
 	int fd;
 	size_t max_kernel_buf_size;
 	struct linux_spi_data *spi_data;
+	int init_err_ret = 1;
 
 	param_str = extract_programmer_param_str(cfg, "spispeed");
 	if (param_str && strlen(param_str)) {
@@ -221,6 +222,7 @@ static int linux_spi_init(const struct programmer_cfg *cfg)
 	spi_data = calloc(1, sizeof(*spi_data));
 	if (!spi_data) {
 		msg_perr("Unable to allocated space for SPI master data\n");
+		init_err_ret = ERROR_OOM;
 		goto init_err;
 	}
 	spi_data->fd = fd;
@@ -230,7 +232,7 @@ static int linux_spi_init(const struct programmer_cfg *cfg)
 
 init_err:
 	close(fd);
-	return 1;
+	return init_err_ret;
 }
 
 const struct programmer_entry programmer_linux_spi = {
