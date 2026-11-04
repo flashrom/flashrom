@@ -291,7 +291,7 @@ static int nicintel_spi_init(const struct programmer_cfg *cfg)
 	struct nicintel_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	if ((dev->device_id & 0xfff0) == 0x1530) {

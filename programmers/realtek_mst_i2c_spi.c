@@ -482,7 +482,7 @@ static int realtek_mst_i2c_spi_init(const struct programmer_cfg *cfg)
 	struct realtek_mst_i2c_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 
 	data->fd = fd;

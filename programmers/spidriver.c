@@ -332,7 +332,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	struct spidriver_spi_data *spidriver_data = calloc(1, sizeof(*spidriver_data));
 	if (!spidriver_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		ret = 1;
+		ret = ERROR_OOM;
 		goto init_err_cleanup_exit;
 	}
 	spidriver_data->fd = fd;

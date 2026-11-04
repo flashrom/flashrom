@@ -146,7 +146,7 @@ static int ogp_spi_init(const struct programmer_cfg *cfg)
 	struct ogp_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->spibar = ogp_spibar;
 	data->reg_sel = ogp_reg_sel;

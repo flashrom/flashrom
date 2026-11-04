@@ -426,7 +426,7 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 	struct ch341a_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Out of memory!\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	uint16_t vid = devs_ch341a_spi[0].vendor_id;

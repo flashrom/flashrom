@@ -468,7 +468,7 @@ static int mediatek_init(const struct programmer_cfg *cfg)
 	if (!port) {
 		msg_perr("Unable to allocate space for SPI master data\n");
 		i2c_close(fd);
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 	port->fd = fd;
 

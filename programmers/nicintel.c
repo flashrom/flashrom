@@ -90,7 +90,7 @@ static int nicintel_init(const struct programmer_cfg *cfg)
 	struct nicintel_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for PAR master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->mmio.bar = bar;
 	data->mmio.mask = NICINTEL_MEMMAP_MASK;

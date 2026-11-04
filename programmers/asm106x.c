@@ -133,7 +133,7 @@ static int asm106x_init(const struct programmer_cfg *cfg)
 	data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("cannot allocate memory for asm106x_data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->pci = pci;
 	return register_spi_master(&asm106x_spi_master, data);

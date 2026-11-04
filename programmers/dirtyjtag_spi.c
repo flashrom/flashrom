@@ -197,7 +197,7 @@ static int dirtyjtag_spi_init(const struct programmer_cfg *cfg)
 	djtag_data = calloc(1, sizeof(struct dirtyjtag_spi_data));
 	if (djtag_data == NULL) {
 		msg_perr("%s: failed to allocate internal driver data structure\n", __func__);
-		return -1;
+		return ERROR_OOM;
 	}
 
 	int ret = libusb_init(&djtag_data->libusb_ctx);

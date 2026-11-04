@@ -182,7 +182,7 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
 		serialport_shutdown(fd);
-		return 1;
+		return ERROR_OOM;
 	}
 	data->fd = fd;
 	data->negate_cs = true;

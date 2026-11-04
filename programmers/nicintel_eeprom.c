@@ -515,7 +515,7 @@ static int nicintel_ee_init(const struct programmer_cfg *cfg)
 	struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for OPAQUE master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->nicintel_pci = dev;
 	data->nicintel_eebar = eebar;

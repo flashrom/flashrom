@@ -445,7 +445,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	bp_data = calloc(1, sizeof(*bp_data));
 	if (!bp_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		ret = 1;
+		ret = ERROR_OOM;
 		goto init_err_cleanup_exit;
 	}
 	bp_data->fd = fd;

@@ -290,7 +290,7 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 	struct ch347_spi_data *ch347_data = calloc(1, sizeof(*ch347_data));
 	if (!ch347_data) {
 		msg_perr("Could not allocate space for SPI data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	int32_t ret = libusb_init(NULL);

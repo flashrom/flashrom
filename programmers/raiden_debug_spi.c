@@ -1661,13 +1661,13 @@ loop_end:
 	struct spi_master *spi_config = calloc(1, sizeof(*spi_config));
 	if (!spi_config) {
 		msg_perr("Unable to allocate space for SPI master.\n");
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 	struct raiden_debug_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		free(spi_config);
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 
 	*spi_config = spi_master_raiden_debug;

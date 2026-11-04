@@ -220,7 +220,7 @@ static int mstarddc_spi_init(const struct programmer_cfg *cfg)
 	mstarddc_data = calloc(1, sizeof(*mstarddc_data));
 	if (!mstarddc_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		ret = -1;
+		ret = ERROR_OOM;
 		goto out;
 	}
 

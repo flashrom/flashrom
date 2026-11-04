@@ -414,7 +414,7 @@ static int pickit2_spi_init(const struct programmer_cfg *cfg)
 		msg_perr("Unable to allocate space for SPI master data\n");
 		libusb_close(pickit2_handle);
 		libusb_exit(NULL);
-		return 1;
+		return ERROR_OOM;
 	}
 	pickit2_data->pickit2_handle = pickit2_handle;
 

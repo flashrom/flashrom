@@ -431,7 +431,7 @@ static int parade_lspcon_init(const struct programmer_cfg *cfg)
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		i2c_close(fd);
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 
 	data->fd = fd;

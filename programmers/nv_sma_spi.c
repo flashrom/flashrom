@@ -519,7 +519,7 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 	struct nv_sma_spi_data *nv_sma_data = calloc(1, sizeof(*nv_sma_data));
 	if (!nv_sma_data) {
 		msg_perr("Could not allocate space for SPI data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	int32_t ret = libusb_init(NULL);

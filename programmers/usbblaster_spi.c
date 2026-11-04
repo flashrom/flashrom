@@ -208,7 +208,7 @@ static int usbblaster_spi_init(const struct programmer_cfg *cfg)
 	usbblaster_data = calloc(1, sizeof(*usbblaster_data));
 	if (!usbblaster_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		return -1;
+		return ERROR_OOM;
 	}
 	usbblaster_data->ftdic = ftdic;
 

@@ -740,7 +740,7 @@ format_error:
 	spi_data = calloc(1, sizeof(*spi_data));
 	if (!spi_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		return SPI_GENERIC_ERROR;
+		return ERROR_OOM;
 	}
 	spi_data->cs_bits = cs_bits;
 	spi_data->aux_bits = aux_bits;

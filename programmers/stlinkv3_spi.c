@@ -529,6 +529,7 @@ static int stlinkv3_spi_init(const struct programmer_cfg *cfg)
 	stlinkv3_data = calloc(1, sizeof(*stlinkv3_data));
 	if (!stlinkv3_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
+		ret = ERROR_OOM;
 		goto init_err_exit;
 	}
 

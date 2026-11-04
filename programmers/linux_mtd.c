@@ -557,7 +557,7 @@ static int linux_mtd_init(const struct programmer_cfg *cfg)
 	data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate memory for linux_mtd_data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	param_str = extract_programmer_param_str(cfg, "ignore_read_errors");

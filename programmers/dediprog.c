@@ -1147,7 +1147,7 @@ static int dediprog_init(const struct programmer_cfg *cfg)
 	struct dediprog_data *dp_data = calloc(1, sizeof(*dp_data));
 	if (!dp_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	dp_data->firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 	dp_data->devicetype = DEV_UNKNOWN;

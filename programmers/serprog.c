@@ -395,7 +395,7 @@ static int serprog_spi_send_command(const struct flashctx *flash,
 	parmbuf = malloc(writecnt + 6);
 	if (!parmbuf) {
 		msg_perr("Error: could not allocate SPI send param buffer.\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	parmbuf[0] = (writecnt >> 0) & 0xFF;
 	parmbuf[1] = (writecnt >> 8) & 0xFF;

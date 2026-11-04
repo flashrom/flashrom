@@ -116,7 +116,7 @@ static int nicrealtek_init(const struct programmer_cfg *cfg)
 	struct nicrealtek_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for PAR master data\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->io_base_addr = io_base_addr;
 	data->bios_rom_addr = bios_rom_addr;

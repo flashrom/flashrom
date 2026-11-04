@@ -1317,7 +1317,7 @@ static int init_data(const struct programmer_cfg *cfg,
 	data->flashchip_contents = malloc(data->emu_chip_size);
 	if (!data->flashchip_contents) {
 		msg_perr("Out of memory!\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	return 0;
@@ -1331,7 +1331,7 @@ static int dummy_init(const struct programmer_cfg *cfg)
 	struct emu_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Out of memory!\n");
-		return 1;
+		return ERROR_OOM;
 	}
 	data->emu_chip = EMULATE_NONE;
 	data->delay_ns = 0;
@@ -1340,9 +1340,10 @@ static int dummy_init(const struct programmer_cfg *cfg)
 	msg_pspew("%s\n", __func__);
 
 	enum chipbustype dummy_buses_supported;
-	if (init_data(cfg, data, &dummy_buses_supported)) {
+	int init_ret = init_data(cfg, data, &dummy_buses_supported);
+	if (init_ret) {
 		free(data);
-		return 1;
+		return init_ret;
 	}
 
 	if (data->emu_chip == EMULATE_NONE) {
