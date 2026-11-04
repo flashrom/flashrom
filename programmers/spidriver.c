@@ -194,7 +194,7 @@ static struct spi_master spi_master_spidriver = {
 
 static int spidriver_spi_init(const struct programmer_cfg *cfg)
 {
-	char *tmp;
+	char *tmp = NULL;
 	char *dev;
 	serialport_fdtype fd = SERIALPORT_INV_FD;
 	unsigned long fw_version = 0;
@@ -219,7 +219,8 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 		mode = strtol(tmp, NULL, 10);
 		if (mode < 0 || mode > 3) {
 			msg_perr("Error: Invalid SPI mode %ld\nValid values are 0, 1, 2 or 3\n", mode);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
@@ -232,7 +233,8 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 			a = false;
 		} else {
 			msg_perr("Error: Invalid A state %s\nValid values are \"high\" or \"low\"\n", tmp);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
@@ -245,15 +247,18 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 			b = false;
 		} else {
 			msg_perr("Error: Invalid B state %s\nValid values are \"high\" or \"low\"\n", tmp);
-			return 1;
+			ret = 1;
+			goto init_err_cleanup_exit;
 		}
 	}
 	free(tmp);
+	tmp = NULL;
 
 	ret = spidriver_serialport_setup(&fd, dev);
 	free(dev);
+	dev = NULL;
 	if (ret)
-		return ret;
+		goto init_err_cleanup_exit;
 
 	/* Largest message is: 1 byte command (tx), 80 byte response plus 1 for
 	 * string null termination (rx).
@@ -298,7 +303,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	if (!strchr("0123456789", buf[10])) {
 		msg_pdbg("(unknown version number format)");
 	} else {
-		fw_version = strtoul((char*)&buf[10], &tmp, 10);
+		fw_version = strtoul((char*)&buf[10], NULL, 10);
 		msg_pdbg("v%lu", fw_version);
 	}
 	msg_pdbg("\n");
@@ -340,7 +345,10 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 	return register_spi_master(&spi_master_spidriver, spidriver_data);
 
 init_err_cleanup_exit:
-	serialport_shutdown(fd);
+	free(tmp);
+	free(dev);
+	if (fd != SERIALPORT_INV_FD)
+		serialport_shutdown(fd);
 	return ret;
 }
 

@@ -229,7 +229,21 @@ void spidriver_init_fails_unknown_device_test_success(void **state)
 
 	run_init_error_path(state, &spidriver_io, &programmer_spidriver, "dev=/dev/null", 1);
 }
+
+void spidriver_init_fails_invalid_param_test_success(void **state)
+{
+	/* All of these are rejected before the serial port is opened. */
+	const char *const params[] = {
+		"dev=/dev/null,mode=4",
+		"dev=/dev/null,a=invalid",
+		"dev=/dev/null,b=invalid",
+	};
+
+	for (size_t i = 0; i < ARRAY_SIZE(params); i++)
+		run_init_error_path(state, NULL, &programmer_spidriver, params[i], 1);
+}
 #else
 	SKIP_TEST(spidriver_probe_lifecycle_test_success)
 	SKIP_TEST(spidriver_init_fails_unknown_device_test_success)
+	SKIP_TEST(spidriver_init_fails_invalid_param_test_success)
 #endif /* CONFIG_SPIDRIVER */
