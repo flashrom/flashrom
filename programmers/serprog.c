@@ -644,6 +644,7 @@ static int serprog_init(const struct programmer_cfg *cfg)
 	unsigned char c;
 	char *device;
 	bool have_device = false;
+	int init_err_ret = 1;
 
 	/* the parameter is either of format "dev=/dev/device[:baud]" or "ip=ip:port" */
 	device = extract_programmer_param_str(cfg, "dev");
@@ -938,6 +939,7 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			if (!sp_write_n_buf) {
 				msg_perr("Error: cannot allocate memory for "
 					 "Write-n buffer\n");
+				init_err_ret = ERROR_OOM;
 				goto init_err_cleanup_exit;
 			}
 			sp_write_n_bytes = 0;
@@ -1019,7 +1021,7 @@ static int serprog_init(const struct programmer_cfg *cfg)
 
 init_err_cleanup_exit:
 	serprog_shutdown(NULL);
-	return 1;
+	return init_err_ret;
 }
 
 const struct programmer_entry programmer_serprog = {
