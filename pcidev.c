@@ -334,6 +334,7 @@ static int undo_pci_write(void *p)
 		msg_perr("%s: Tried to undo PCI writes without a valid PCI %s!\n"
 			"Please report a bug at flashrom@flashrom.org\n",
 			__func__, data->dev == NULL ? "device" : "context");
+		free(p);
 		return 1;
 	}
 	msg_pdbg("Restoring PCI config space for %02x:%02x:%01x reg 0x%02x\n",
@@ -349,7 +350,8 @@ static int undo_pci_write(void *p)
 		pci_write_long(data->dev, data->reg, data->longdata);
 		break;
 	}
-	/* p was allocated in register_undo_pci_write. */
+	/* data and data->dev were allocated in register_undo_pci_write. */
+	pci_free_dev(data->dev);
 	free(p);
 	return 0;
 }
