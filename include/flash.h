@@ -30,9 +30,28 @@
 
 #define ERROR_PTR ((void*)-1)
 
-/* Error codes */
+/* Error codes below should be defined all in one place (here),
+ * to make sure they are not repeated. */
+
 #define ERROR_OOM	-100
 #define TIMEOUT_ERROR	-101
+
+/* Something happened that shouldn't happen, but we can go on. */
+#define ERROR_FLASHROM_NONFATAL 0x100
+
+/* Something happened that shouldn't happen, we'll abort. */
+#define ERROR_FLASHROM_FATAL -0xee
+#define ERROR_FLASHROM_BUG -200
+/* We reached one of the hardcoded limits of flashrom. This can be fixed by
+ * increasing the limit of a compile-time allocation or by switching to dynamic
+ * allocation.
+ * Note: If this warning is triggered, check first for runaway registrations.
+ */
+#define ERROR_FLASHROM_LIMIT -201
+
+#define ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND -1
+#define ERROR_FLASHROM_PROBE_INTERNAL_ERROR -2
+#define ERROR_FLASHROM_PREPARE_FLASH_ACCESS -3
 
 /* TODO: check using code for correct usage of types */
 typedef uintptr_t chipaddr;
@@ -699,24 +718,6 @@ int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int 
 unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len, unsigned int *first_start, enum write_granularity gran);
 int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 dieselect_func_t *lookup_dieselect_func_ptr(const struct flashchip *chip);
-
-
-/* Something happened that shouldn't happen, but we can go on. */
-#define ERROR_FLASHROM_NONFATAL 0x100
-
-/* Something happened that shouldn't happen, we'll abort. */
-#define ERROR_FLASHROM_FATAL -0xee
-#define ERROR_FLASHROM_BUG -200
-/* We reached one of the hardcoded limits of flashrom. This can be fixed by
- * increasing the limit of a compile-time allocation or by switching to dynamic
- * allocation.
- * Note: If this warning is triggered, check first for runaway registrations.
- */
-#define ERROR_FLASHROM_LIMIT -201
-
-#define ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND -1
-#define ERROR_FLASHROM_PROBE_INTERNAL_ERROR -2
-#define ERROR_FLASHROM_PREPARE_FLASH_ACCESS -3
 
 struct cli_progress {
 	unsigned int stage_pc[FLASHROM_PROGRESS_NR];
