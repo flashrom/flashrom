@@ -1339,7 +1339,6 @@ int main(int argc, char *argv[])
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
 			flashrom_flag_set(context, FLASHROM_FLAG_FORCE, options.force);
 			ret = do_read(context, options.filename);
-			free(context->chip);
 			goto out_shutdown;
 		}
 		ret = 1;
