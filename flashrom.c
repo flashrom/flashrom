@@ -583,7 +583,7 @@ int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int 
 	uint8_t *cmpbuf = malloc(len);
 	if (!cmpbuf) {
 		msg_gerr("Out of memory!\n");
-		return -1;
+		return ERROR_OOM;
 	}
 	memset(cmpbuf, erased_value, len);
 	ret = verify_range(flash, cmpbuf, start, len);
@@ -697,7 +697,7 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 	uint8_t *readbuf = malloc(len);
 	if (!readbuf) {
 		msg_gerr("Out of memory!\n");
-		return -1;
+		return ERROR_OOM;
 	}
 
 	int ret = 0;
@@ -1517,7 +1517,6 @@ static int erase_by_layout(struct flashctx *const flashctx)
 	while ((entry = layout_next_included(flash_layout, entry))) {
 		ret = erase_write(flashctx, entry->region.start, entry->region.end, curcontents, newcontents, erase_layout, &all_skipped);
 		if (ret) {
-			ret = 1;
 			msg_cerr("Erase Failed");
 			goto _ret;
 		}

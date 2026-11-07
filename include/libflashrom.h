@@ -339,6 +339,7 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *flashctx);
  * @param flashctx The context of the flash chip to erase.
  * @return 0 on success.
  *         -3 if prepare_flash_access check failed and operation has not started
+ *         -100 on out of memory error
  */
 int flashrom_flash_erase(struct flashrom_flashctx *flashctx);
 /**
