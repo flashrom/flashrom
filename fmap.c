@@ -98,8 +98,9 @@ static ssize_t fmap_lsearch(const uint8_t *buf, size_t len)
  * @param[in] len Length (in bytes) to search
  *
  * @return 0 if successful
- *         1 to indicate error
- *         2 to indicate fmap is not found
+ *         2 if fmap is not found
+ *         ERROR_OOM if unable to allocate memory for data
+ *         1 on any other error
  */
 int fmap_read_from_buffer(struct fmap **fmap_out, const uint8_t *const buf, size_t len)
 {
@@ -114,7 +115,7 @@ int fmap_read_from_buffer(struct fmap **fmap_out, const uint8_t *const buf, size
 	*fmap_out = malloc(fmap_size(fmap));
 	if (*fmap_out == NULL) {
 		msg_gerr("Out of memory.\n");
-		return 1;
+		return ERROR_OOM;
 	}
 
 	memcpy(*fmap_out, fmap, fmap_size(fmap));
@@ -135,6 +136,7 @@ static int fmap_lsearch_rom(struct fmap **fmap_out,
 	buf = malloc(rom_offset + len);
 	if (!buf) {
 		msg_gerr("Out of memory.\n");
+		ret = ERROR_OOM;
 		goto _finalize_ret;
 	}
 
@@ -176,6 +178,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 	fmap = malloc(sizeof(*fmap));
 	if (!fmap) {
 		msg_gerr("Out of memory.\n");
+		ret = ERROR_OOM;
 		goto _free_ret;
 	}
 
@@ -289,6 +292,7 @@ _free_ret:
  *
  * @return 0 on success,
  *         2 if the fmap couldn't be read,
+ *         ERROR_OOM if unable to allocate memory for data
  *         1 on any other error.
  */
 int fmap_read_from_rom(struct fmap **fmap_out,

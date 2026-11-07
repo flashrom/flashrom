@@ -1203,8 +1203,7 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage(NULL);
 
 	if (options.list_supported) {
-		if (print_supported())
-			ret = 1;
+		ret = print_supported();
 		goto out;
 	}
 
@@ -1268,9 +1267,9 @@ int main(int argc, char *argv[])
 
 	time(&time_start);
 
-	if (programmer_init(options.prog, options.pparam)) {
+	ret = programmer_init(options.prog, options.pparam);
+	if (ret) {
 		msg_perr("Error: Programmer initialization failed.\n");
-		ret = 1;
 		goto out_shutdown;
 	}
 	tempstr = flashbuses_to_text(get_buses_supported());

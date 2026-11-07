@@ -116,7 +116,7 @@ static int print_supported_chips(void)
 		s = flashbuses_to_text(chip->bustype);
 		if (s == NULL) {
 			msg_gerr("Out of memory!\n");
-			return 1;
+			return ERROR_OOM;
 		}
 		maxtypelen = max(maxtypelen, strlen(s));
 		free(s);
@@ -184,7 +184,7 @@ static int print_supported_chips(void)
 		ven = malloc(strlen(chip->vendor) + 1);
 		if (ven == NULL) {
 			msg_gerr("Out of memory!\n");
-			return 1;
+			return ERROR_OOM;
 		}
 		strcpy(ven, chip->vendor);
 
@@ -199,7 +199,7 @@ static int print_supported_chips(void)
 		if (dev == NULL) {
 			msg_gerr("Out of memory!\n");
 			free(ven);
-			return 1;
+			return ERROR_OOM;
 		}
 		strcpy(dev, chip->name);
 
@@ -274,7 +274,7 @@ static int print_supported_chips(void)
 			msg_gerr("Out of memory!\n");
 			free(ven);
 			free(dev);
-			return 1;
+			return ERROR_OOM;
 		}
 		msg_ginfo("%s", s);
 		for (i = strlen(s); i < maxtypelen; i++)
@@ -470,8 +470,9 @@ int print_supported(void)
 	int num_pci_devs = 0;
 	int num_usb_devs = 0;
 
-	if (print_supported_chips())
-		return 1;
+	int ret = print_supported_chips();
+	if (ret)
+		return ret;
 
 	msg_ginfo("\nSupported programmers:\n");
 	list_programmers_linebreak(0, 80, 0);

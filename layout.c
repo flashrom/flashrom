@@ -155,6 +155,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 	struct layout_include_args *tmp;
 	char *name;
 	char *file;
+	int ret = 1;
 
 	if (!parse_include_args(arg, &name, &file))
 		return 1;
@@ -169,6 +170,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 	tmp = malloc(sizeof(*tmp));
 	if (tmp == NULL) {
 		msg_gerr("Out of memory\n");
+		ret = ERROR_OOM;
 		goto error;
 	}
 
@@ -181,7 +183,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 error:
 	free(name);
 	free(file);
-	return 1;
+	return ret;
 }
 
 static char *sanitise_filename(char *filename)
