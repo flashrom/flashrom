@@ -83,23 +83,28 @@ cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
 )]
 
 # x86 MSR
-if host_machine.system() == 'linux'
-  x86_msr_c = 'x86_msr_linux.c'
-elif host_machine.system() in ['freebsd', 'dragonfly']
-  x86_msr_c = 'x86_msr_freebsd.c'
-# OpenBSD only supports certain AMD Geode LX systems, see amdmsr(4)
-elif host_machine.system() == 'openbsd' and host_machine.cpu_family() == 'x86'
-  x86_msr_c = 'x86_msr_openbsd.c'
-elif host_machine.system() == 'darwin'
-  x86_msr_c = 'x86_msr_darwin.c'
-elif host_machine.system() == 'libpayload'
-  x86_msr_c = 'x86_msr_libpayload.c'
+# MSRs only exist on x86, other CPUs get an empty dependency
+if ['x86', 'x86_64'].contains(host_machine.cpu_family())
+  if host_machine.system() == 'linux'
+    x86_msr_c = 'x86_msr_linux.c'
+  elif host_machine.system() in ['freebsd', 'dragonfly']
+    x86_msr_c = 'x86_msr_freebsd.c'
+  # OpenBSD only supports certain AMD Geode LX systems, see amdmsr(4)
+  elif host_machine.system() == 'openbsd' and host_machine.cpu_family() == 'x86'
+    x86_msr_c = 'x86_msr_openbsd.c'
+  elif host_machine.system() == 'darwin'
+    x86_msr_c = 'x86_msr_darwin.c'
+  elif host_machine.system() == 'libpayload'
+    x86_msr_c = 'x86_msr_libpayload.c'
+  else
+    x86_msr_c = 'x86_msr.c'
+  endif
+  dep_platform_x86_msr = declare_dependency(
+    sources : files(x86_msr_c),
+  )
 else
-  x86_msr_c = 'x86_msr.c'
+  dep_platform_x86_msr = declare_dependency()
 endif
-dep_platform_x86_msr = declare_dependency(
-  sources : files(x86_msr_c),
-)
 
 # OpenBSD requires libi386 or libamd64 for I/O port handling
 if host_machine.system() == 'openbsd'
