@@ -131,6 +131,26 @@ void nv_sma_spi_basic_lifecycle_test_success(void **state)
 	run_basic_lifecycle(state, &nv_sma_spi_io, &programmer_nv_sma_spi, "");
 }
 
+void nv_sma_spi_init_fails_device_not_found_test_success(void **state)
+{
+	struct io_mock_fallback_open_state nv_sma_spi_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock nv_sma_spi_io = {
+		.libusb_get_device_list = nv_sma_spi_libusb_get_device_list,
+		.libusb_free_device_list = nv_sma_spi_libusb_free_device_list,
+		.libusb_get_device_descriptor = nv_sma_spi_libusb_get_device_descriptor,
+		.libusb_get_config_descriptor = nv_sma_spi_libusb_get_config_descriptor,
+		.libusb_free_config_descriptor = nv_sma_spi_libusb_free_config_descriptor,
+		.libusb_bulk_transfer = nv_sma_spi_libusb_bulk_transfer,
+		.fallback_open_state = &nv_sma_spi_fallback_open_state,
+	};
+	/* The mocked device is on bus 0 at address USB_DEVICE_ADDRESS, not on bus 1 at address 1. */
+	run_init_error_path(state, &nv_sma_spi_io, &programmer_nv_sma_spi, "bus=1,devnum=1", 1);
+}
+
 #else
 	SKIP_TEST(nv_sma_spi_basic_lifecycle_test_success)
+	SKIP_TEST(nv_sma_spi_init_fails_device_not_found_test_success)
 #endif /* CONFIG_NV_SMA_SPI */

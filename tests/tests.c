@@ -607,6 +607,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(spidriver_probe_lifecycle_test_success),
 		cmocka_unit_test(spidriver_init_fails_unknown_device_test_success),
 		cmocka_unit_test(nv_sma_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(nv_sma_spi_init_fails_device_not_found_test_success),
 		cmocka_unit_test(fault_basic_lifecycle_test_success),
 		cmocka_unit_test(fault_init_missing_backend_test_success),
 		cmocka_unit_test(fault_init_self_wrap_test_success),

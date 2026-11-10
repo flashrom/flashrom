@@ -547,7 +547,8 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 
 	long bus_num = 0;
 	long dev_num = 0;
-	if (bus_str && devnum_str) {
+	const bool select_by_bus = bus_str && devnum_str;
+	if (select_by_bus) {
 		char *endptr;
 		errno = 0;
 		bus_num = strtol(bus_str, &endptr, 10);
@@ -579,7 +580,7 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 		/* fixme: remove pid check if subclass is accepted globaly for NVIDIA CORPORATION */
 		pid = devs_nv_sma_spi[index].device_id;
 
-		if (bus_str && devnum_str) {
+		if (select_by_bus) {
 			/* Select by bus and devnum */
 			struct usb_match match;
 			struct usb_device *found_device = NULL;
@@ -593,8 +594,6 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 			ret = usb_device_find(&match, &found_device);
 			if (ret != 0) {
 				msg_perr("Failed to find devices\n");
-				free(bus_str);
-				free(devnum_str);
 				free(nv_sma_data);
 				return ret;
 			}
@@ -603,8 +602,6 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 			usb_device_free(found_device);
 			if (ret != 0) {
 				msg_perr("Failed to open device\n");
-				free(bus_str);
-				free(devnum_str);
 				free(nv_sma_data);
 				return ret;
 			}
