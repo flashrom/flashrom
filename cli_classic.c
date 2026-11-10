@@ -680,7 +680,7 @@ static int do_read(struct flashctx *const flash, const char *const filename)
 		return 1;
 
 	ret = flashrom_image_read(flash, buf, size);
-	if (ret > 0)
+	if (ret)
 		goto free_out;
 
 	if (write_buf_to_include_args(get_layout(flash), buf)) {
@@ -1658,5 +1658,10 @@ out:
 		(int)(difftime(time_end, time_start) / 60), (int)(difftime(time_end, time_start)) % 60);
 
 	ret |= close_logfile();
+
+	// Some internal errors have negative error codes, but they all are represented as 1 on exit.
+	if (ret < 0)
+		ret = 1;
+
 	return ret;
 }

@@ -1557,7 +1557,9 @@ ENVIRONMENT
 EXIT STATUS
 -----------
 
-**flashrom** exits with 0 on success, 1 on most failures but with 3 if a call to mmap() fails.
+**flashrom** exits with 0 on success, and positive exit code on error.
+Specifically, return code is 2 for write failure, 3 if chip content does not match
+verification image, and 1 on most other failures.
 
 
 REQUIREMENTS
