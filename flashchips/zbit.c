@@ -47,3 +47,36 @@
 		.read		= SPI_CHIP_READ,
 		.voltage	= {MV_2700, MV_3600},
 	},
+
+	{
+		.vendor		= "Zbit Semiconductor, Inc.",
+		.name		= "ZB25VQ32E",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ZBIT_ID_NOPREFIX,
+		.model_id	= ZBIT_ZB25VQ32E,
+		.total_size	= SIZE_4MiB,
+		.page_size	= 256,
+		/* supports SFDP */
+		/* OTP: 3 x 1024B security registers; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI |
+				  FEATURE_WRSR_EXT2 | FEATURE_WRSR2 | FEATURE_WRSR3,
+		.tested		= TEST_OK_PREWB,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= SPI_ERASERS_20_52_D8_60_C7(SIZE_4MiB),
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {MV_2300, MV_3600},
+		.reg_bits	=
+		{
+			.srp    = {STATUS1, 7, RW},
+			.srl    = {STATUS2, 0, RW},
+			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}},
+			.tb     = {STATUS1, 5, RW},
+			.sec    = {STATUS1, 6, RW},
+			.cmp    = {STATUS2, 6, RW},
+		},
+		.decode_range	= DECODE_RANGE_SPI25,
+	},

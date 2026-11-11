@@ -1135,7 +1135,9 @@
  * However, the device actually sends 0x0E; 0x40; 0x15. I don't know why.
  */
 #define ZBIT_ID			0x0E	/* Zbit Semiconductor, Inc. */
+#define ZBIT_ID_NOPREFIX	0x5E	/* Zbit, missing 0x7F prefix */
 #define ZBIT_ZB25VQ16		0x4015
+#define ZBIT_ZB25VQ32E		0x4016
 
 #define ZETTA_ID		0xBA	/* Zetta Device */
 #define ZETTA_ZD25D20		0x2012
