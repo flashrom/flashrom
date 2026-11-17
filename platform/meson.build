@@ -106,6 +106,11 @@ else
   dep_platform_x86_msr = declare_dependency()
 endif
 
+# x86 I/O ports
+dep_platform_x86_io = declare_dependency(
+  sources : files('x86_io.c'),
+)
+
 # OpenBSD requires libi386 or libamd64 for I/O port handling
 if host_machine.system() == 'openbsd'
   if host_machine.cpu_family() == 'x86'

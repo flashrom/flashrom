@@ -29,7 +29,7 @@
 #include "platform/string.h"
 
 #include "flash.h"
-#include "hwaccess_x86_io.h"
+#include "platform/x86_io.h"
 #include "log.h"
 
 /* IO_PORT_FUNCTION */

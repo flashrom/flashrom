@@ -8,8 +8,8 @@
  * This file contains prototypes for x86 I/O Port access.
  */
 
-#ifndef __HWACCESS_X86_IO_H__
-#define __HWACCESS_X86_IO_H__ 1
+#ifndef __PLATFORM_X86_IO_H__
+#define __PLATFORM_X86_IO_H__
 
 #include <stdint.h>
 /**
@@ -23,4 +23,4 @@ uint8_t INB(uint16_t port);
 uint16_t INW(uint16_t port);
 uint32_t INL(uint16_t port);
 
-#endif /* __HWACCESS_X86_IO_H__ */
+#endif /* __PLATFORM_X86_IO_H__ */

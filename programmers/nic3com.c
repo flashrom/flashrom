@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
-#include "hwaccess_x86_io.h"
+#include "platform/x86_io.h"
 #include "pcidev.h"
 #include "log.h"
 

@@ -22,7 +22,7 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-#include "hwaccess_x86_io.h"
+#include "platform/x86_io.h"
 #include "platform/x86_msr.h"
 
 /*

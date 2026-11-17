@@ -5,7 +5,7 @@
  */
 
 #include "programmer.h"
-#include "hwaccess_x86_io.h"
+#include "platform/x86_io.h"
 #include "spi.h"
 #include "platform/pci.h"
 #include "platform/udelay.h"
