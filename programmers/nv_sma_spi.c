@@ -655,7 +655,7 @@ static int nv_sma_spi_init(const struct programmer_cfg *cfg)
 		} else {
 			msg_perr("Invalid chip select pin specified: '%s'. Valid values are 0, 1, 2, or 3.\n", arg);
 			free(arg);
-			return 1;
+			goto error_exit;
 		}
 		free(arg);
 	} else {
