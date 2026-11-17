@@ -260,6 +260,7 @@ struct pci_dev *pcidev_init(const struct programmer_cfg *cfg, const struct dev_e
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);
+			free(pcidev_bdf);
 			return NULL;
 		}
 	}
