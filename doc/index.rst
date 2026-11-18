@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: logo/flashrom_logo.png
+.. image:: logo/flashrom_runes_with_rommy_500x189.png
   :alt: flashrom logo
+  :align: center
 
 .. toctree::
   :hidden:
